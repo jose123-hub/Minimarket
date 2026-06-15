@@ -7,71 +7,50 @@ use Illuminate\Http\Request;
 
 class CategoryController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-    $categories = Category::all();
-
-    return view('categories.index', compact('categories'));
+        $categories = Category::all();
+        return view('categories.index', compact('categories'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-    return view('categories.create');
-    }  
+        return view('categories.create');
+    }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-    Category::create([
-        'nombre' => $request->nombre,
-        'descripcion' => $request->descripcion
-    ]);
+        Category::create([
+            'nombre'      => $request->nombre,
+            'descripcion' => $request->descripcion,
+        ]);
 
-    return redirect('/categories');
-    }  
+        return redirect('/admin/categories')->with('success', 'Categoría creada.');
+    }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(Category $category)
     {
         //
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(Category $category)
-    {   
-    return view('categories.edit', compact('category'));
+    {
+        return view('categories.edit', compact('category'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, Category $category)
     {
-    $category->update([
-        'nombre' => $request->nombre,
-        'descripcion' => $request->descripcion
-    ]);
+        $category->update([
+            'nombre'      => $request->nombre,
+            'descripcion' => $request->descripcion,
+        ]);
 
-    return redirect('/categories');
+        return redirect('/admin/categories')->with('success', 'Categoría actualizada.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Category $category)
     {
-        //
+        $category->delete();
+        return redirect('/admin/categories')->with('success', 'Categoría eliminada.');
     }
 }

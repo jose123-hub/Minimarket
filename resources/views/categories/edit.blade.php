@@ -1,27 +1,37 @@
-<h1>Edit Category</h1>
+<x-app-layout>
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            Edit Category
+        </h2>
+    </x-slot>
 
-<form action="/categories/{{ $category->id }}" method="POST">
+    <div class="py-8 max-w-xl mx-auto px-4">
+        <form action="/admin/categories/{{ $category->id }}" method="POST" class="space-y-4">
+            @csrf
+            @method('PUT')
 
-    @csrf
-    @method('PUT')
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Name</label>
+                <input type="text" name="nombre" value="{{ $category->nombre }}"
+                       class="mt-1 block w-full border border-gray-300 rounded px-3 py-2">
+            </div>
 
-    <label>Name</label>
-    <input
-        type="text"
-        name="nombre"
-        value="{{ $category->nombre }}"
-    >
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Description</label>
+                <textarea name="descripcion" rows="3"
+                          class="mt-1 block w-full border border-gray-300 rounded px-3 py-2">{{ $category->descripcion }}</textarea>
+            </div>
 
-    <br><br>
-
-    <label>Description</label>
-
-    <textarea name="descripcion">{{ $category->descripcion }}</textarea>
-
-    <br><br>
-
-    <button type="submit">
-        Update
-    </button>
-
-</form>
+            <div class="flex gap-3">
+                <button type="submit"
+                        class="bg-indigo-600 text-black px-4 py-2 rounded hover:bg-indigo-700">
+                    Update
+                </button>
+                <a href="/admin/categories"
+                   class="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</x-app-layout>
