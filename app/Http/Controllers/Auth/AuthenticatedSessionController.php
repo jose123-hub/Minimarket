@@ -11,54 +11,41 @@ use Illuminate\View\View;
 
 class AuthenticatedSessionController extends Controller
 {
-    /**
-     * Display the login view.
-     */
     public function create(): View
     {
         return view('auth.login');
     }
 
-    /**
-     * Handle an incoming authentication request.
-     */
     public function store(Request $request): RedirectResponse
     {
-    $credentials = $request->only('email', 'password');
+        $credentials = $request->only('email', 'password');
 
-    if (Auth::attempt($credentials)) {
-        $request->session()->regenerate();
+        if (Auth::attempt($credentials)) {
+            $request->session()->regenerate();
 
-        $role = Auth::user()->role;
+            $role = Auth::user()->role;
 
-        if ($role === 'admin') {
-            return redirect('/admin/products');
+            if ($role === 'admin') {
+                return redirect('/dashboard');
+            }
+
+            if ($role === 'cashier') {
+                return redirect('/cashier/products');
+            }
+
+            return redirect('/client/catalog');
         }
 
-        if ($role === 'cashier') {
-            return redirect('/cashier/products');
-        }
-
-        // cliente y cualquier otro rol
-        return redirect('/client/catalog');
+        return back()->withErrors([
+            'email' => 'Credenciales inválidas.',
+        ]);
     }
 
-    return back()->withErrors([
-        'email' => 'Invalid credentials.',
-    ]);
-    }
-
-    /**
-     * Destroy an authenticated session.
-     */
     public function destroy(Request $request): RedirectResponse
     {
         Auth::guard('web')->logout();
-
         $request->session()->invalidate();
-
         $request->session()->regenerateToken();
-
         return redirect('/');
     }
 }
