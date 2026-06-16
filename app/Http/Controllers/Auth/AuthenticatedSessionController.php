@@ -30,14 +30,14 @@ class AuthenticatedSessionController extends Controller
             }
 
             if ($role === 'cashier') {
-                return redirect('/cashier/products');
+                return redirect('/cashier/dashboard');
             }
 
             return redirect('/client/catalog');
         }
 
         return back()->withErrors([
-            'email' => 'Credenciales inválidas.',
+            'email' => 'Invalid credentials.',
         ]);
     }
 

@@ -6,6 +6,7 @@ use App\Models\Product;
 use App\Models\Category;
 use App\Models\User;
 use App\Models\Sale;
+use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
@@ -46,5 +47,26 @@ class DashboardController extends Controller
         'recentProducts',
         'lowStock'
     ));
-}
+    }
+    public function cashierDashboard()
+    {
+    $todaySales = Sale::whereDate('created_at', today())
+        ->where('cashier_id', Auth::id())
+        ->get();
+
+    $totalToday = $todaySales->sum('total');
+    $transactionsToday = $todaySales->count();
+
+    $recentSales = Sale::with(['customer'])
+        ->where('cashier_id', Auth::id())
+        ->latest()
+        ->take(6)
+        ->get();
+
+    return view('cashier.dashboard', compact(
+        'totalToday',
+        'transactionsToday',
+        'recentSales'
+    ));
+    }
 }

@@ -26,14 +26,11 @@ class SaleController extends Controller
     }
     public function create()
     {
-        $products = Product::all();
+    $products = Product::with('category')->get();
+    $customers = User::where('role', 'customer')->get();
+    $categories = \App\Models\Category::all();
 
-        $customers = User::where('role', 'customer')->get();
-
-        return view('cashier.sales.create', compact(
-            'products',
-            'customers'
-        ));
+    return view('cashier.sales.create', compact('products', 'customers', 'categories'));
     }
 
     public function store(Request $request)

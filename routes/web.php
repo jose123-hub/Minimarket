@@ -25,6 +25,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
 });
 
 Route::middleware(['auth', 'cashier'])->prefix('cashier')->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'cashierDashboard'])->name('cashier.dashboard');
     Route::get('/products', [ProductController::class, 'index'])->name('cashier.products');
     Route::get('/sales/create', [SaleController::class, 'create'])
         ->name('sales.create');
