@@ -11,7 +11,8 @@ class ProductController extends Controller
     public function index()
     {
         $products = Product::with('category')->get();
-        return view('products.index', compact('products'));
+        $categories = Category::all();
+        return view('products.index', compact('products', 'categories'));
     }
 
     public function create()
@@ -22,12 +23,24 @@ class ProductController extends Controller
 
     public function store(Request $request)
     {
+        $request->validate([
+            'category_id' => 'required|exists:categories,id',
+            'name'        => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'price'       => 'required|numeric|min:0',
+            'cost'        => 'nullable|numeric|min:0',
+            'stock'       => 'required|integer|min:0',
+            'min_stock'   => 'nullable|integer|min:0',
+        ]);
+
         Product::create([
             'category_id' => $request->category_id,
             'name'      => $request->name,
             'description' => $request->description,
             'price'      => $request->price,
+            'cost'       => $request->cost ?? 0,
             'stock'       => $request->stock,
+            'min_stock'   => $request->min_stock ?? 5,
         ]);
 
         return redirect('/admin/products')->with('success', 'created product.');
@@ -46,12 +59,24 @@ class ProductController extends Controller
 
     public function update(Request $request, Product $product)
     {
+        $request->validate([
+            'category_id' => 'required|exists:categories,id',
+            'name'        => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'price'       => 'required|numeric|min:0',
+            'cost'        => 'nullable|numeric|min:0',
+            'stock'       => 'required|integer|min:0',
+            'min_stock'   => 'nullable|integer|min:0',
+        ]);
+
         $product->update([
             'category_id' => $request->category_id,
             'name'      => $request->name,
             'description' => $request->description,
             'price'      => $request->price,
+            'cost'       => $request->cost ?? 0,
             'stock'       => $request->stock,
+            'min_stock'   => $request->min_stock ?? 5,
         ]);
 
         return redirect('/admin/products')->with('success', 'product updated.');

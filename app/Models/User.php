@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use App\Models\Role;
 
 class User extends Authenticatable implements \Illuminate\Contracts\Auth\MustVerifyEmail
 {
@@ -18,9 +20,12 @@ class User extends Authenticatable implements \Illuminate\Contracts\Auth\MustVer
      */
     protected $fillable = [
         'name',
+        'last_name',
         'email',
         'password',
-        'role',
+        'phone',
+        'status',
+        'role_id',
     ];
 
     /**
@@ -44,4 +49,25 @@ class User extends Authenticatable implements \Illuminate\Contracts\Auth\MustVer
             'password' => 'hashed',
         ];
     }
+    public function roleInfo()
+    {
+        return $this->belongsTo(Role::class, 'role_id');
+    }
+
+    public function employee()
+    {
+        return $this->hasOne(Employee::class);
+    }
+
+    public function client()
+    {
+        return $this->hasOne(Client::class, 'user_id');
+    }
+
+    // Backwards-compatible accessor so `Auth::user()->role` returns the role name
+    public function getRoleAttribute()
+    {
+        return $this->roleInfo?->name;
+    }
 }
+

@@ -147,8 +147,21 @@
       <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
       Categories
     </a>
-    <a href="/admin/sales" class="nav-item">
-    Sales
+    <a href="/admin/rewards" class="nav-item">
+      <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      Rewards
+    </a>
+    <a href="/admin/purchases" class="nav-item">
+      <svg viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
+      Purchases
+    </a>
+    <a href="/admin/promotions" class="nav-item">
+      <svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+      Promotions
+    </a>
+    <a href="/admin/reports" class="nav-item">
+      <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Reports
     </a>
   </nav>
 
@@ -180,8 +193,8 @@
 
     <div class="info-banner">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-      <p><strong>Sales module is active.</strong> 
-    All sales registered by cashiers are reflected in the dashboard statistics.</p>
+      <p><strong>Sales are recorded by cashiers.</strong> 
+    Sales, purchases and promotions are reflected here for supervision and reporting only.</p>
     </div>
 
     <div class="metrics">
@@ -225,7 +238,7 @@
         <div>
           <div class="metric-label">Registered Users</div>
           <div class="metric-value">{{ $totalUsers }}</div>
-          <div class="metric-note">Admin · Cajero · Cliente</div>
+          <div class="metric-note">Clients</div>
         </div>
         <div class="metric-icon dark">
           <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
@@ -242,12 +255,20 @@
         <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         New Category
       </a>
-      <a href="/admin/products" class="quick-btn">
-        <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
-        View Inventory
+      <a href="/admin/rewards/create" class="quick-btn">
+        <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        New Reward
       </a>
-      <a href="/admin/sales" class="quick-btn">
-    Sales History
+      <a href="/admin/purchases/create" class="quick-btn">
+        <svg viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
+        New Purchase
+      </a>
+      <a href="/admin/promotions/create" class="quick-btn">
+        <svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+        New Promotion
+      </a>
+      <a href="/admin/reports" class="quick-btn">
+    Sales Reports
        </a>
     </div>
 
@@ -258,7 +279,7 @@
             <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
             Last Products Added
           </h3>
-          <a href="/admin/products" class="ver-todo">Ver todos</a>
+          <a href="/admin/products" class="ver-todo">View all</a>
         </div>
 
         @if($recentProducts->count() > 0)
@@ -274,8 +295,8 @@
           <tbody>
             @foreach($recentProducts as $p)
             <tr>
-              <td>{{ $p->nombre }}</td>
-              <td><span class="badge">{{ $p->category->nombre ?? '—' }}</span></td>
+              <td>{{ $p->name }}</td>
+              <td><span class="badge">{{ $p->category->name ?? '—' }}</span></td>
               <td>
                 @if($p->stock < 10)
                   <span class="badge warn">{{ $p->stock }} uds</span>
@@ -283,7 +304,7 @@
                   {{ $p->stock }} uds
                 @endif
               </td>
-              <td style="text-align:right; font-weight:700">S/ {{ number_format($p->precio, 2) }}</td>
+              <td style="text-align:right; font-weight:700">S/ {{ number_format($p->price, 2) }}</td>
             </tr>
             @endforeach
           </tbody>
@@ -309,8 +330,8 @@
           @foreach($lowStock as $p)
           <div class="stock-item">
             <div>
-              <div class="stock-name">{{ $p->nombre }}</div>
-              <div class="stock-sub">{{ $p->category->nombre ?? 'Sin categoría' }}</div>
+              <div class="stock-name">{{ $p->name }}</div>
+              <div class="stock-sub">{{ $p->category->name ?? 'No category' }}</div>
             </div>
             <div class="stock-qty">
               <strong>{{ $p->stock }}</strong>

@@ -24,7 +24,23 @@ class AuthenticatedSessionController extends Controller
             $request->session()->regenerate();
 
             $role = Auth::user()->role;
+            $loginType = $request->login_type;
 
+        if ($loginType === 'employee' && !in_array($role, ['admin', 'cashier'])) {
+        Auth::logout();
+
+        return back()->withErrors([
+        'email' => 'This portal is for employees only.',
+         ]);
+        }
+
+        if ($loginType === 'client' && $role !== 'client') {
+        Auth::logout();
+
+        return back()->withErrors([
+        'email' => 'This portal is for customers only.',
+         ]);
+        }
             if ($role === 'admin') {
                 return redirect('/dashboard');
             }
