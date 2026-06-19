@@ -168,8 +168,6 @@
   </div>
 
   <div class="pos-layout">
-
-    <!-- PRODUCTS PANEL -->
     <div class="products-panel">
 
       @if(session('success'))
@@ -209,7 +207,6 @@
       </div>
     </div>
 
-    <!-- CART PANEL -->
     <div class="cart-panel">
       <div class="cart-header">
         <h3>
@@ -222,11 +219,15 @@
       <div class="cart-customer">
         <label>Customer</label>
         <select id="customer-select">
-          <option value="">— Select customer —</option>
-          @foreach($customers as $customer)
-            <option value="{{ $customer->id }}">{{ $customer->name }}</option>
-          @endforeach
-        </select>
+         <option value="">— Select customer —</option>
+           @foreach($customers as $customer)
+         <option value="{{ $customer->id }}"
+          {{ $customer->email === 'cliente@example.com' ? 'selected' : '' }}>
+          {{ $customer->name }}
+          {{ $customer->email === 'cliente@example.com' ? '(Generic)' : '' }}
+    </option>
+  @endforeach
+</select>
       </div>
 
       <div class="cart-items" id="cart-items">
@@ -263,9 +264,6 @@
 </form>
 
 <script>
-// =============================================
-// LINKED LIST - Data Structure (Algorithms Course)
-// =============================================
 class Node {
   constructor(data) {
     this.data = data;
@@ -349,9 +347,6 @@ class LinkedList {
 
 const cart = new LinkedList();
 
-// =============================================
-// CART FUNCTIONS
-// =============================================
 function addToCart(el) {
   const product = {
     id: parseInt(el.dataset.id),
@@ -384,7 +379,6 @@ function renderCart() {
   const countEl = document.getElementById('cart-count');
   const btn = document.getElementById('btn-checkout');
 
-  // Always clear container
   container.innerHTML = '';
 
   if (items.length === 0) {
@@ -454,7 +448,6 @@ function submitSale() {
   document.getElementById('sale-form').submit();
 }
 
-// Search
 document.getElementById('search-input').addEventListener('input', function() {
   const q = this.value.toLowerCase();
   document.querySelectorAll('.product-card').forEach(card => {
@@ -462,7 +455,6 @@ document.getElementById('search-input').addEventListener('input', function() {
   });
 });
 
-// Filter by category
 function filterCategory(catId, btn) {
   document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');

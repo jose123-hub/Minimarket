@@ -93,10 +93,10 @@
     </div>
   </div>
   <div class="nav-links">
-    <a href="#">Home</a>
-    <a href="#">About</a>
-    <a href="#">Services</a>
-    <a href="#">Contact</a>
+    <a href="/">Home</a>
+    <a href="/about">About</a>
+    <a href="/services">Services</a>
+    <a href="/contact">Contact</a>
     <a href="{{ route('login') }}" class="nav-btn">Sign in</a>
   </div>
 </nav>
@@ -191,9 +191,9 @@
 <footer>
   <p>© 2026 Express Minimarket — All rights reserved</p>
   <div>
-    <a href="#">About</a>
-    <a href="#">Services</a>
-    <a href="#">Contact</a>
+    <a href="/about">About</a>
+    <a href="/services">Services</a>
+    <a href="/contact">Contact</a>
   </div>
 </footer>
 

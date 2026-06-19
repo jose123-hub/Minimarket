@@ -6,10 +6,19 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SaleController;
+use App\Http\Controllers\ContactController;
+use App\Http\Controllers\LoyaltyController;
 
 Route::get('/', function () {
     return view('welcome');
 });
+
+Route::get('/about', function () { return view('about'); });
+Route::get('/services', function () { return view('services'); });
+Route::get('/contact', function () { return view('contact'); });
+
+Route::post('/contact', [ContactController::class, 'send'])
+    ->name('contact.send');
 
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified', 'admin'])
@@ -26,16 +35,19 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
 
 Route::middleware(['auth', 'cashier'])->prefix('cashier')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'cashierDashboard'])->name('cashier.dashboard');
-    Route::get('/products', [ProductController::class, 'index'])->name('cashier.products');
+    Route::get('/inventory', [ProductController::class, 'cashierInventory'])->name('cashier.inventory');
     Route::get('/sales/create', [SaleController::class, 'create'])
         ->name('sales.create');
-
     Route::post('/sales', [SaleController::class, 'store'])
         ->name('sales.store');
+    Route::get('/loyalty', [\App\Http\Controllers\LoyaltyController::class, 'index'])->name('cashier.loyalty');
+    Route::post('/loyalty/earn', [\App\Http\Controllers\LoyaltyController::class, 'earn'])->name('cashier.loyalty.earn');
+    Route::post('/loyalty/redeem', [\App\Http\Controllers\LoyaltyController::class, 'redeem'])->name('cashier.loyalty.redeem');
 });
 
 Route::middleware(['auth'])->prefix('client')->group(function () {
-    Route::get('/catalog', [ProductController::class, 'index'])->name('client.catalog');
+    Route::get('/catalog', [\App\Http\Controllers\ClientController::class, 'catalog'])->name('client.catalog');
+    Route::post('/orders', [\App\Http\Controllers\ClientController::class, 'store'])->name('client.orders.store');
 });
 
 Route::middleware(['auth'])->group(function () {

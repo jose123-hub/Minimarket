@@ -62,4 +62,10 @@ class ProductController extends Controller
         $product->delete();
         return redirect('/admin/products')->with('success', 'Producto eliminado.');
     }
+    public function cashierInventory()
+    {
+    $products = Product::with('category')->get();
+    $categories = \App\Models\Category::all();
+    return view('cashier.inventory', compact('products', 'categories'));
+    }
 }
