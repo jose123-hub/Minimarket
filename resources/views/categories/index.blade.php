@@ -32,8 +32,8 @@
             <tbody>
                 @foreach($categories as $category)
                 <tr class="border-t border-gray-200">
-                    <td class="p-3">{{ $category->nombre }}</td>
-                    <td class="p-3">{{ $category->descripcion }}</td>
+                    <td class="p-3">{{ $category->name }}</td>
+                    <td class="p-3">{{ $category->description }}</td>
                     <td class="p-3 text-center space-x-2">
                         <a href="/admin/categories/{{ $category->id }}/edit"
                            class="bg-yellow-400 text-black px-3 py-1 rounded hover:bg-yellow-500">

@@ -193,7 +193,6 @@
           <p>Select a customer to view their stars</p>
         </div>
       @else
-        <!-- Profile -->
         <div class="client-profile">
           <div class="profile-left">
             <h2>{{ $selected->first_name }} {{ $selected->last_name }}</h2>
@@ -214,7 +213,6 @@
           </div>
         </div>
 
-        <!-- Actions -->
         <div class="actions-row">
           <div class="action-card">
             <h3>📈 Earn stars</h3>
@@ -242,7 +240,6 @@
           </div>
         </div>
 
-        <!-- History -->
         <div class="history-card">
           <h3>Points history</h3>
           @if($history->count() > 0)

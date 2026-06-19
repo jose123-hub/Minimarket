@@ -18,9 +18,9 @@ return new class extends Migration
           ->constrained()
           ->onDelete('cascade');
 
-    $table->string('nombre');
-    $table->text('descripcion')->nullable();
-    $table->decimal('precio', 10, 2);
+    $table->string('name');
+    $table->text('description')->nullable();
+    $table->decimal('price', 10, 2);
     $table->integer('stock');
 
     $table->timestamps();

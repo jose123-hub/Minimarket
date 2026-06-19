@@ -12,7 +12,7 @@ return new class extends Migration
         $table->id();
         $table->datetime('redemption_date');
         $table->integer('stars_used');
-        $table->string('status')->default('pending'); // pending, completed, cancelled
+        $table->string('status')->default('pending'); 
         $table->foreignId('client_id')->constrained('clientes', 'id_cliente')->onDelete('cascade');
         $table->foreignId('reward_id')->constrained('rewards')->onDelete('cascade');
         $table->foreignId('employee_id')->nullable()->constrained('users')->onDelete('set null');

@@ -14,26 +14,26 @@
                 <select name="category_id"
                         class="mt-1 block w-full border border-gray-300 rounded px-3 py-2">
                     @foreach($categories as $category)
-                        <option value="{{ $category->id }}">{{ $category->nombre }}</option>
+                        <option value="{{ $category->id }}">{{ $category->name }}</option>
                     @endforeach
                 </select>
             </div>
 
             <div>
                 <label class="block text-sm font-medium text-gray-700">Name</label>
-                <input type="text" name="nombre" value="{{ old('nombre') }}"
+                <input type="text" name="name" value="{{ old('name') }}"
                        class="mt-1 block w-full border border-gray-300 rounded px-3 py-2">
             </div>
 
             <div>
                 <label class="block text-sm font-medium text-gray-700">Description</label>
-                <textarea name="descripcion" rows="3"
-                          class="mt-1 block w-full border border-gray-300 rounded px-3 py-2">{{ old('descripcion') }}</textarea>
+                <textarea name="description" rows="3"
+                          class="mt-1 block w-full border border-gray-300 rounded px-3 py-2">{{ old('description') }}</textarea>
             </div>
 
             <div>
                 <label class="block text-sm font-medium text-gray-700">Price</label>
-                <input type="number" step="0.01" name="precio" value="{{ old('precio') }}"
+                <input type="number" step="0.01" name="price" value="{{ old('price') }}"
                        class="mt-1 block w-full border border-gray-300 rounded px-3 py-2">
             </div>
 

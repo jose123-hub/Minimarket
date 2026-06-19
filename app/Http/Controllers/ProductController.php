@@ -24,13 +24,13 @@ class ProductController extends Controller
     {
         Product::create([
             'category_id' => $request->category_id,
-            'nombre'      => $request->nombre,
-            'descripcion' => $request->descripcion,
-            'precio'      => $request->precio,
+            'name'      => $request->name,
+            'description' => $request->description,
+            'price'      => $request->price,
             'stock'       => $request->stock,
         ]);
 
-        return redirect('/admin/products')->with('success', 'Producto creado.');
+        return redirect('/admin/products')->with('success', 'created product.');
     }
 
     public function show(Product $product)
@@ -48,19 +48,19 @@ class ProductController extends Controller
     {
         $product->update([
             'category_id' => $request->category_id,
-            'nombre'      => $request->nombre,
-            'descripcion' => $request->descripcion,
-            'precio'      => $request->precio,
+            'name'      => $request->name,
+            'description' => $request->description,
+            'price'      => $request->price,
             'stock'       => $request->stock,
         ]);
 
-        return redirect('/admin/products')->with('success', 'Producto actualizado.');
+        return redirect('/admin/products')->with('success', 'product updated.');
     }
 
     public function destroy(Product $product)
     {
         $product->delete();
-        return redirect('/admin/products')->with('success', 'Producto eliminado.');
+        return redirect('/admin/products')->with('success', 'product removed.');
     }
     public function cashierInventory()
     {

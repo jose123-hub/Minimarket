@@ -42,13 +42,13 @@ class SaleController extends Controller
 
             foreach ($request->products as $item) {
                 $product  = Product::findOrFail($item['product_id']);
-                $subtotal = $product->precio * $item['quantity'];
+                $subtotal = $product->price * $item['quantity'];
 
                 SaleDetail::create([
                     'sale_id'    => $sale->id,
                     'product_id' => $product->id,
                     'quantity'   => $item['quantity'],
-                    'price'      => $product->precio,
+                    'price'      => $product->price,
                     'subtotal'   => $subtotal
                 ]);
 

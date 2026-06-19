@@ -12,11 +12,11 @@ return new class extends Migration
         $table->id();
         $table->string('name');
         $table->string('description')->nullable();
-        $table->string('type'); // discount, product, free_item
+        $table->string('type'); 
         $table->integer('stars_required');
         $table->decimal('discount_value', 8, 2)->default(0);
         $table->integer('available_stock')->default(0);
-        $table->string('status')->default('active'); // active, inactive
+        $table->string('status')->default('active'); 
         $table->datetime('start_date')->nullable();
         $table->datetime('end_date')->nullable();
         $table->timestamps();

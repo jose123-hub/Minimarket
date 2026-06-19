@@ -156,7 +156,7 @@
     <div class="filters">
       <button class="filter-btn active" onclick="filterCat('all', this)">All</button>
       @foreach($categories as $cat)
-        <button class="filter-btn" onclick="filterCat('{{ $cat->id }}', this)">{{ $cat->nombre }}</button>
+        <button class="filter-btn" onclick="filterCat('{{ $cat->id }}', this)">{{ $cat->name }}</button>
       @endforeach
     </div>
 
@@ -164,22 +164,22 @@
       @foreach($products as $product)
       <div class="product-card"
            data-id="{{ $product->id }}"
-           data-name="{{ $product->nombre }}"
-           data-price="{{ $product->precio }}"
+           data-name="{{ $product->name }}"
+           data-price="{{ $product->price }}"
            data-stock="{{ $product->stock }}"
            data-category="{{ $product->category_id }}">
-        <div class="product-img">{{ strtoupper(substr($product->nombre, 0, 1)) }}</div>
+        <div class="product-img">{{ strtoupper(substr($product->name, 0, 1)) }}</div>
         <div class="product-info">
-          <div class="product-category">{{ $product->category?->nombre }}</div>
-          <div class="product-name">{{ $product->nombre }}</div>
+          <div class="product-category">{{ $product->category?->name }}</div>
+          <div class="product-name">{{ $product->name }}</div>
           @if($product->stock <= 5)
             <div class="low-stock">Low stock!</div>
           @endif
-          <div class="product-price">S/ {{ number_format($product->precio, 2) }}</div>
+          <div class="product-price">S/ {{ number_format($product->price, 2) }}</div>
           <button class="btn-add"
           data-id="{{ $product->id }}"
-          data-name="{{ $product->nombre }}"
-          data-price="{{ $product->precio }}"
+          data-name="{{ $product->name }}"
+          data-price="{{ $product->price }}"
           data-stock="{{ $product->stock }}"
           onclick="addToCart(this)">
             <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>

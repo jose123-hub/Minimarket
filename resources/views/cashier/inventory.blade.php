@@ -95,7 +95,7 @@
       <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
       Inventory
     </a>
-    <a href="#" class="nav-item">
+    <a href="/cashier/loyalty" class="nav-item">
       <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
       Loyalty
     </a>
@@ -135,7 +135,7 @@
       <select class="filter-select" id="category-filter">
         <option value="all">All</option>
         @foreach($categories as $cat)
-          <option value="{{ $cat->nombre }}">{{ $cat->nombre }}</option>
+          <option value="{{ $cat->name }}">{{ $cat->name }}</option>
         @endforeach
       </select>
       <button class="btn-filter">
@@ -158,11 +158,11 @@
         </thead>
         <tbody id="products-table">
           @forelse($products as $index => $product)
-          <tr data-name="{{ strtolower($product->nombre) }}" data-category="{{ $product->category?->nombre }}">
+          <tr data-name="{{ strtolower($product->name) }}" data-category="{{ $product->category?->name }}">
             <td><span class="code">P{{ str_pad($index + 1, 3, '0', STR_PAD_LEFT) }}</span></td>
-            <td><span class="product-name">{{ $product->nombre }}</span></td>
-            <td><span class="category">{{ $product->category?->nombre }}</span></td>
-            <td><span class="price">S/ {{ number_format($product->precio, 2) }}</span></td>
+            <td><span class="product-name">{{ $product->name }}</span></td>
+            <td><span class="category">{{ $product->category?->name }}</span></td>
+            <td><span class="price">S/ {{ number_format($product->price, 2) }}</span></td>
             <td><span class="stock-num">{{ $product->stock }}</span></td>
             <td>
               @if($product->stock <= 0)

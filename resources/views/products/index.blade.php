@@ -35,10 +35,10 @@
             <tbody>
                 @foreach($products as $product)
                 <tr class="border-t border-gray-200">
-                    <td class="p-3">{{ $product->category?->nombre }}</td>
-                    <td class="p-3">{{ $product->nombre }}</td>
-                    <td class="p-3">{{ $product->descripcion }}</td>
-                    <td class="p-3">S/ {{ number_format($product->precio, 2) }}</td>
+                    <td class="p-3">{{ $product->category?->name }}</td>
+                    <td class="p-3">{{ $product->name }}</td>
+                    <td class="p-3">{{ $product->description }}</td>
+                    <td class="p-3">S/ {{ number_format($product->price, 2) }}</td>
                     <td class="p-3">{{ $product->stock }}</td>
                     <td class="p-3 text-center space-x-2">
                         <a href="/admin/products/{{ $product->id }}/edit"

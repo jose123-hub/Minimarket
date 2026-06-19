@@ -21,11 +21,11 @@ class CategoryController extends Controller
     public function store(Request $request)
     {
         Category::create([
-            'nombre'      => $request->nombre,
-            'descripcion' => $request->descripcion,
+            'name'      => $request->name,
+            'description' => $request->description,
         ]);
 
-        return redirect('/admin/categories')->with('success', 'Categoría creada.');
+        return redirect('/admin/categories')->with('success', 'category created.');
     }
 
     public function show(Category $category)
@@ -41,16 +41,16 @@ class CategoryController extends Controller
     public function update(Request $request, Category $category)
     {
         $category->update([
-            'nombre'      => $request->nombre,
-            'descripcion' => $request->descripcion,
+            'name'      => $request->name,
+            'description' => $request->description,
         ]);
 
-        return redirect('/admin/categories')->with('success', 'Categoría actualizada.');
+        return redirect('/admin/categories')->with('success', 'updated category.');
     }
 
     public function destroy(Category $category)
     {
         $category->delete();
-        return redirect('/admin/categories')->with('success', 'Categoría eliminada.');
+        return redirect('/admin/categories')->with('success', 'category deleted.');
     }
 }
