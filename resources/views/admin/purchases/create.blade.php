@@ -157,9 +157,9 @@
               <option value="">— Select product —</option>
               @foreach($products as $product)
                 <option value="{{ $product->id }}"
-                  data-name="{{ $product->nombre }}"
+                  data-name="{{ $product->name }}"
                   data-cost="{{ $product->cost ?? 0 }}">
-                  {{ $product->nombre }} — S/ {{ number_format($product->cost ?? 0, 2) }}
+                  {{ $product->name }} — S/ {{ number_format($product->cost ?? 0, 2) }}
                 </option>
               @endforeach
             </select>

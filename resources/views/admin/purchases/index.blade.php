@@ -55,8 +55,12 @@
   .total { font-weight: 700; color: #111; }
   .badge { display: inline-flex; padding: 4px 10px; border-radius: 100px; font-size: 11px; font-weight: 600; }
   .badge-pending { background: #fff7ed; color: #ea580c; }
+  .badge-partial { background: #eff6ff; color: #2563eb; }
   .badge-received { background: #f0fdf4; color: #16a34a; }
   .badge-cancelled { background: #f5f5f5; color: #999; }
+  .btn-receive { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background: #111; color: #fff; border-radius: 7px; font-size: 12px; font-weight: 600; text-decoration: none; }
+  .btn-receive:hover { background: #e8192c; }
+  .btn-receive svg { width: 13px; height: 13px; stroke: #fff; fill: none; stroke-width: 2; }
   .empty { text-align: center; padding: 48px; color: #aaa; font-size: 14px; }
   .success-msg { background: #f0fff4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 10px 14px; font-size: 13px; color: #16a34a; margin-bottom: 16px; }
 </style>
@@ -127,6 +131,7 @@
             <th>Items</th>
             <th>Total</th>
             <th>Status</th>
+            <th style="text-align:right">Actions</th>
           </tr>
         </thead>
         <tbody id="purchases-table">
@@ -140,15 +145,25 @@
             <td>
               @if($purchase->status === 'pending')
                 <span class="badge badge-pending">Pending</span>
+              @elseif($purchase->status === 'partial')
+                <span class="badge badge-partial">Partial</span>
               @elseif($purchase->status === 'received')
                 <span class="badge badge-received">Received</span>
               @else
                 <span class="badge badge-cancelled">Cancelled</span>
               @endif
             </td>
+            <td style="text-align:right">
+              @if($purchase->status === 'pending' || $purchase->status === 'partial')
+                <a href="/admin/purchases/{{ $purchase->id }}/receive" class="btn-receive">
+                  <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  Receive
+                </a>
+              @endif
+            </td>
           </tr>
           @empty
-          <tr><td colspan="6" class="empty">No purchase orders yet</td></tr>
+          <tr><td colspan="7" class="empty">No purchase orders yet</td></tr>
           @endforelse
         </tbody>
       </table>

@@ -32,6 +32,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::get('/purchases', [PurchaseController::class, 'index'])->name('admin.purchases');
     Route::get('/purchases/create', [PurchaseController::class, 'create'])->name('admin.purchases.create');
     Route::post('/purchases', [PurchaseController::class, 'store'])->name('admin.purchases.store');
+    Route::get('/purchases/{purchase}/receive', [PurchaseController::class, 'receiveForm'])->name('admin.purchases.receive.form');
+    Route::post('/purchases/{purchase}/receive', [PurchaseController::class, 'receive'])->name('admin.purchases.receive');
     Route::resource('products', ProductController::class);
     Route::get(
             '/sales',
