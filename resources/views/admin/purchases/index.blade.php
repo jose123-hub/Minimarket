@@ -50,7 +50,8 @@
   tr:last-child td { border-bottom: none; }
   tr:hover td { background: #fafafa; }
 
-  .order-number { font-family: monospace; font-weight: 600; color: #111; }
+  .order-number { font-family: monospace; font-weight: 600; color: #111; text-decoration: none; }
+  .order-number:hover { color: #e8192c; text-decoration: underline; }
   .supplier-name { font-weight: 600; color: #111; }
   .total { font-weight: 700; color: #111; }
   .badge { display: inline-flex; padding: 4px 10px; border-radius: 100px; font-size: 11px; font-weight: 600; }
@@ -137,7 +138,7 @@
         <tbody id="purchases-table">
           @forelse($purchases as $purchase)
           <tr data-name="{{ strtolower($purchase->order_number) }}">
-            <td><span class="order-number">{{ $purchase->order_number }}</span></td>
+            <td><a href="/admin/purchases/{{ $purchase->id }}" class="order-number">{{ $purchase->order_number }}</a></td>
             <td><span class="supplier-name">{{ $purchase->supplier->company_name }}</span></td>
             <td>{{ \Carbon\Carbon::parse($purchase->order_date)->format('d/m/Y') }}</td>
             <td>{{ $purchase->details->count() }} products</td>

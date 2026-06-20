@@ -211,11 +211,11 @@
     <div class="toolbar">
       <div class="search-box">
         <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input type="text" id="productSearch" placeholder="Buscar producto...">
+        <input type="text" id="productSearch" placeholder="Search product...">
       </div>
 
       <select class="filter-select" id="categoryFilter">
-        <option value="">Todos</option>
+        <option value="">All</option>
         @foreach($products->pluck('category')->filter()->unique('id') as $cat)
           <option value="{{ $cat->name }}">{{ $cat->name }}</option>
         @endforeach
@@ -223,12 +223,12 @@
 
       <button class="btn" id="exportBtn">
         <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        Exportar
+        Export
       </button>
 
       <button class="btn btn-primary" id="openCreateModal" type="button">
         <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Agregar producto
+        Add product
       </button>
     </div>
 
@@ -236,13 +236,13 @@
       <table id="productsTable">
         <thead>
           <tr>
-            <th>Código</th>
-            <th>Producto</th>
-            <th>Categoría</th>
-            <th>Precio</th>
+            <th>Code</Code></th>
+            <th>Product</th>
+            <th>Categoríe</th>
+            <th>Price</th>
             <th>Stock</th>
-            <th>Estado</th>
-            <th style="text-align:right">Acciones</th>
+            <th>Status</th>
+            <th style="text-align:right">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -252,13 +252,13 @@
               $minStock = $product->min_stock ?? 5;
               if ($stock <= 0) {
                   $statusClass = 'out';
-                  $statusLabel = 'Agotado';
+                  $statusLabel = 'Out of stock';
               } elseif ($stock < $minStock) {
                   $statusClass = 'low';
-                  $statusLabel = 'Bajo stock';
+                  $statusLabel = 'Low stock';
               } else {
                   $statusClass = 'ok';
-                  $statusLabel = 'Disponible';
+                  $statusLabel = 'Available';
               }
             @endphp
             <tr data-name="{{ strtolower($product->name) }}" data-category="{{ $product->category->name ?? '' }}">
@@ -273,7 +273,7 @@
                   <a href="/admin/products/{{ $product->id }}/edit" class="icon-btn">
                     <svg viewBox="0 0 24 24"><path d="M17 3a2.85 2.83 0 114 4L7.5 20.5 2 22l1.5-5.5z"/></svg>
                   </a>
-                  <form action="/admin/products/{{ $product->id }}" method="POST" onsubmit="return confirm('¿Eliminar este producto?');">
+                  <form action="/admin/products/{{ $product->id }}" method="POST" onsubmit="return confirm('¿Deleted this product?');">
                     @csrf
                     @method('DELETE')
                     <button type="submit" class="icon-btn danger">
@@ -285,7 +285,7 @@
             </tr>
           @empty
             <tr class="empty-row">
-              <td colspan="7">No hay productos registrados todavía.</td>
+              <td colspan="7">There are no products registered yet.</td>
             </tr>
           @endforelse
         </tbody>
