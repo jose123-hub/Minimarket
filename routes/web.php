@@ -8,6 +8,8 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SaleController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\LoyaltyController;
+use App\Http\Controllers\SupplierController;
+use App\Http\Controllers\PurchaseController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -26,6 +28,10 @@ Route::get('/dashboard', [DashboardController::class, 'index'])
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::resource('categories', CategoryController::class);
+    Route::resource('suppliers', SupplierController::class);
+    Route::get('/purchases', [PurchaseController::class, 'index'])->name('admin.purchases');
+    Route::get('/purchases/create', [PurchaseController::class, 'create'])->name('admin.purchases.create');
+    Route::post('/purchases', [PurchaseController::class, 'store'])->name('admin.purchases.store');
     Route::resource('products', ProductController::class);
     Route::get(
             '/sales',
