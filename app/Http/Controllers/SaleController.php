@@ -20,80 +20,91 @@ class SaleController extends Controller
         return view('admin.sales.index', compact('sales'));
     }
 
-    public function create()
+    public function create(Request $request)
     {
-        $products = Product::with('category')->get();
-        $customers = User::whereHas('roleInfo', fn($q) => $q->where('name', 'client'))->get();
-        $categories = \App\Models\Category::all();
-        return view('cashier.sales.create', compact('products', 'customers', 'categories'));
+    $products   = Product::with('category')->get();
+    $customers  = User::where('role', 'customer')->get();
+    $categories = \App\Models\Category::all();
+    $orderItems = collect();
+
+    if ($request->has('order_id')) {
+        $order = Sale::with('details.product')->find($request->order_id);
+        if ($order && $order->status === 'pending') {
+            $orderItems = $order->details;
+        }
+    }
+
+    return view('cashier.sales.create', compact('products', 'customers', 'categories', 'orderItems'));
     }
 
     public function store(Request $request)
     {
-        $opening = \App\Models\CashOpening::where('user_id', Auth::id())
-            ->where('status', 'open')
-            ->first();
-
-        if (!$opening) {
-            return redirect()->route('cashier.cash')->with('error', 'You must open the cash register before registering a sale.');
+    DB::beginTransaction();
+    try {
+        if ($request->has('order_id') && $request->order_id) {
+            $sale = Sale::findOrFail($request->order_id);
+            $sale->update([
+                'cashier_id'     => Auth::id(),
+                'status'         => 'completed',
+                'payment_method' => $request->payment_method ?? 'cash',
+            ]);
+            $sale->details()->delete();
+        } else {
+            $sale = Sale::create([
+                'customer_id'    => $request->customer_id,
+                'cashier_id'     => Auth::id(),
+                'total'          => 0,
+                'status'         => 'completed',
+                'payment_method' => $request->payment_method ?? 'cash',
+                'voucher_type'   => 'receipt',
+            ]);
         }
 
-        DB::beginTransaction();
-        try {
-            $sale = Sale::create([
-                'customer_id'     => $request->customer_id,
-                'cashier_id'      => Auth::id(),
-                'cash_opening_id' => $opening->id,
-                'total'           => 0
+        $total = 0;
+
+        foreach ($request->products as $item) {
+            $product  = Product::findOrFail($item['product_id']);
+            $subtotal = $product->price * $item['quantity'];
+
+            SaleDetail::create([
+                'sale_id'    => $sale->id,
+                'product_id' => $product->id,
+                'quantity'   => $item['quantity'],
+                'price'      => $product->price,
+                'subtotal'   => $subtotal,
             ]);
 
-            $total = 0;
+            $product->stock -= $item['quantity'];
+            $product->save();
 
-            foreach ($request->products as $item) {
-                $product  = Product::findOrFail($item['product_id']);
-                $subtotal = $product->price * $item['quantity'];
-
-                SaleDetail::create([
-                    'sale_id'    => $sale->id,
-                    'product_id' => $product->id,
-                    'quantity'   => $item['quantity'],
-                    'price'      => $product->price,
-                    'subtotal'   => $subtotal
-                ]);
-
-                $product->stock -= $item['quantity'];
-                $product->save();
-
-                $total += $subtotal;
-            }
-
-            $sale->update(['total' => $total]);
-
-            $starsEarned = (int) floor($total);
-
-            $client = Client::where('user_id', $request->customer_id)->first();
-
-            if ($client && $starsEarned > 0) {
-                $client->accumulated_stars += $starsEarned;
-                $client->save();
-
-                StarHistory::create([
-                    'movement_type' => 'earned',
-                    'amount'        => $starsEarned,
-                    'reason'        => 'Purchase — Sale #' . $sale->id,
-                    'date'          => now(),
-                    'client_id'     => $client->id_cliente,
-                    'sale_id'       => $sale->id,
-                ]);
-            }
-
-            DB::commit();
-
-            return redirect()->back()->with('success', 'Sale registered successfully. ' . ($starsEarned > 0 ? "+{$starsEarned} stars earned!" : ''));
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return redirect()->back()->with('error', 'Error registering sale: ' . $e->getMessage());
+            $total += $subtotal;
         }
+
+        $sale->update(['total' => $total]);
+
+        $starsEarned = (int) floor($total);
+        $client = \App\Models\Client::where('user_id', $sale->customer_id)->first();
+
+        if ($client && $starsEarned > 0) {
+            $client->accumulated_stars += $starsEarned;
+            $client->save();
+
+            \App\Models\StarHistory::create([
+                'movement_type' => 'earned',
+                'amount'        => $starsEarned,
+                'reason'        => 'Purchase — Sale #' . $sale->id,
+                'date'          => now(),
+                'client_id'     => $client->id_cliente,
+                'sale_id'       => $sale->id,
+            ]);
+        }
+
+        DB::commit();
+        return redirect()->back()->with('success', 'Sale registered successfully. ' . ($starsEarned > 0 ? "+{$starsEarned} stars earned!" : ''));
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return redirect()->back()->with('error', 'Error registering sale: ' . $e->getMessage());
+    }
     }
 }

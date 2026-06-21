@@ -37,9 +37,38 @@
   .search-box input { border: none; background: transparent; font-size: 13px; color: #555; outline: none; width: 100%; }
   .topbar-date { font-size: 13px; color: #888; }
 
+  .btn-sales-history-toggle {
+    display: flex; align-items: center; gap: 7px; background: #fff; border: 1px solid #e5e5e5;
+    border-radius: 9px; padding: 9px 14px; font-size: 13px; font-weight: 600; color: #333; cursor: pointer;
+  }
+  .btn-sales-history-toggle:hover { border-color: #ccc; }
+  .btn-sales-history-toggle svg { width: 15px; height: 15px; stroke: #e8192c; fill: none; stroke-width: 2; }
+  .history-count { background: #fff0f2; color: #e8192c; font-size: 11px; font-weight: 700; border-radius: 20px; padding: 1px 7px; }
+
+  .history-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(17,17,17,0.45);
+    z-index: 200; justify-content: flex-end;
+  }
+  .history-overlay.open { display: flex; }
+  .history-panel { width: 380px; max-width: 90vw; background: #fff; height: 100%; padding: 22px 22px 0; overflow-y: auto; box-shadow: -8px 0 24px rgba(0,0,0,0.12); }
+  .history-panel-header { display: flex; align-items: center; justify-content: space-between; }
+  .history-panel-header h3 { display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 800; color: #111; }
+  .history-panel-header svg { width: 18px; height: 18px; stroke: #e8192c; fill: none; stroke-width: 1.8; }
+  .history-close { background: none; border: none; cursor: pointer; color: #999; }
+  .history-close svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; }
+  .history-subtitle { font-size: 12px; color: #999; margin: 6px 0 16px; line-height: 1.5; }
+  .history-list { display: flex; flex-direction: column; gap: 8px; padding-bottom: 20px; }
+  .history-item { border: 1px solid #f0f0f0; border-radius: 10px; padding: 12px 14px; position: relative; }
+  .history-item.is-top { border-color: #fecaca; background: #fff8f8; }
+  .history-item .top-tag { position: absolute; top: -8px; right: 10px; background: #e8192c; color: #fff; font-size: 10px; font-weight: 700; padding: 1px 8px; border-radius: 20px; }
+  .history-item-row { display: flex; justify-content: space-between; align-items: baseline; }
+  .history-invoice { font-family: monospace; font-weight: 700; font-size: 13px; color: #111; }
+  .history-total { font-weight: 800; font-size: 14px; color: #16a34a; }
+  .history-meta { font-size: 11px; color: #999; margin-top: 4px; }
+  .history-empty { text-align: center; color: #bbb; font-size: 13px; padding: 40px 0; }
+
   .pos-layout { display: grid; grid-template-columns: 1fr 340px; gap: 0; flex: 1; height: calc(100vh - 65px); }
 
-  /* LEFT - Products */
   .products-panel { padding: 20px 24px; overflow-y: auto; }
   .filters { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
   .filter-btn { padding: 7px 16px; border-radius: 100px; border: 1px solid #e0e0e0; background: #fff; font-size: 13px; font-weight: 500; color: #555; cursor: pointer; transition: all 0.15s; }
@@ -58,7 +87,6 @@
   .product-stock { font-size: 11px; color: #aaa; }
   .product-card.out-of-stock { opacity: 0.5; cursor: not-allowed; }
 
-  /* RIGHT - Cart */
   .cart-panel { background: #fff; border-left: 1px solid #eee; display: flex; flex-direction: column; }
   .cart-header { padding: 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
   .cart-header h3 { font-size: 16px; font-weight: 700; color: #111; display: flex; align-items: center; gap: 8px; }
@@ -163,6 +191,11 @@
         <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <input type="text" id="search-input" placeholder="Search product by name...">
       </div>
+      <button type="button" id="btn-sales-history" class="btn-sales-history-toggle">
+        <svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M18.7 8l-5.1 5.2-3-3L7 13.5"/></svg>
+        Ver últimas ventas
+        <span class="history-count" id="history-count">0</span>
+      </button>
       <span class="topbar-date">{{ now()->isoFormat('dddd, D [of] MMMM [of] YYYY') }}</span>
     </div>
   </div>
@@ -260,9 +293,26 @@
   </div>
 </div>
 
+<div class="history-overlay" id="history-overlay">
+  <div class="history-panel">
+    <div class="history-panel-header">
+      <h3>
+        <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="4" rx="1"/><rect x="4" y="10" width="16" height="4" rx="1"/><rect x="4" y="16" width="16" height="4" rx="1"/></svg>
+        Últimas ventas (Pila — LIFO)
+      </h3>
+      <button type="button" id="close-history" class="history-close">
+        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <p class="history-subtitle">La venta más reciente se muestra primero — cada venta registrada se apila (push) y se desapila (pop) en este orden.</p>
+    <div class="history-list" id="history-list"></div>
+  </div>
+</div>
+
 <form id="sale-form" method="POST" action="{{ route('sales.store') }}" style="display:none">
   @csrf
   <input type="hidden" name="customer_id" id="form-customer">
+  <input type="hidden" name="order_id" value="{{ request('order_id') }}">
   <div id="form-products"></div>
 </form>
 
@@ -316,20 +366,29 @@ class LinkedList {
   }
 
   updateQty(id, delta) {
-    let current = this.head;
-    while (current) {
-      if (current.data.id === id) {
-        const newQty = current.data.quantity + delta;
-        if (newQty <= 0) {
-          this.remove(id);
-          return;
+  let cur = this.head;
+  let prev = null;
+  while (cur) {
+    if (cur.data.id === id) {
+      const newQty = cur.data.quantity + delta;
+
+      if (newQty <= 0) {
+        if (prev === null) {
+          this.head = cur.next;
+        } else {
+          prev.next = cur.next;
         }
-        if (newQty > current.data.stock) return;
-        current.data.quantity = newQty;
+        this.size--;
         return;
       }
-      current = current.next;
+
+      if (newQty > cur.data.stock) return;
+      cur.data.quantity = newQty;
+      return;
     }
+    prev = cur;
+    cur = cur.next;
+  }
   }
 
   toArray() {
@@ -360,11 +419,11 @@ class Stack {
   }
 
   pop() {
-    if (this.isEmpty()) return null;
-    const item = this.items[this.top];
-    delete this.items[this.top];
-    this.top--;
-    return item;
+  if (this.top === -1) return null;
+  const item = this.items[this.top];
+  delete this.items[this.top];
+  this.top--;
+  return item;
   }
 
   peek() {
@@ -382,6 +441,85 @@ class Stack {
 
 const actionHistory = new Stack();
 const cart = new LinkedList();
+</script>
+<script id="order-items-data" type="application/json">{!! json_encode($orderItems->map(fn($item) => [
+  'id' => $item->product_id,
+  'name' => $item->product->name,
+  'price' => $item->price,
+  'stock' => $item->product->stock,
+  'quantity' => $item->quantity,
+]) ?? []) !!}</script>
+<script id="attending-order-id-data" type="application/json">{!! json_encode(request('order_id')) !!}</script>
+<script>
+const orderItemsData = JSON.parse(document.getElementById('order-items-data').textContent || '[]');
+orderItemsData.forEach(item => {
+  cart.insert({
+    id: item.id,
+    name: item.name,
+    price: item.price,
+    stock: item.stock,
+    quantity: item.quantity,
+  });
+});
+if (orderItemsData.length > 0) renderCart();
+
+const attendingOrderId = JSON.parse(document.getElementById('attending-order-id-data').textContent || 'null');
+
+const salesHistoryStack = new Stack();
+</script>
+<script id="recent-sales-data" type="application/json">{!! json_encode($recentSales ?? []) !!}</script>
+<script>
+const serverRecentSales = JSON.parse(document.getElementById('recent-sales-data').textContent || '[]');
+serverRecentSales.forEach(sale => salesHistoryStack.push(sale));
+updateHistoryCount();
+
+function updateHistoryCount() {
+  const el = document.getElementById('history-count');
+  if (el) el.textContent = salesHistoryStack.size();
+}
+
+function getSalesHistoryLIFO() {
+  const drained = [];
+  while (!salesHistoryStack.isEmpty()) {
+    drained.push(salesHistoryStack.pop());
+  }
+  for (let i = drained.length - 1; i >= 0; i--) {
+    salesHistoryStack.push(drained[i]);
+  }
+  return drained; 
+}
+
+function renderSalesHistory() {
+  const list = document.getElementById('history-list');
+  const sales = getSalesHistoryLIFO();
+
+  if (sales.length === 0) {
+    list.innerHTML = '<div class="history-empty">No sales registered yet today</div>';
+    return;
+  }
+
+  list.innerHTML = sales.map((sale, i) => `
+    <div class="history-item ${i === 0 ? 'is-top' : ''}">
+      ${i === 0 ? '<span class="top-tag">TOP — last popped</span>' : ''}
+      <div class="history-item-row">
+        <span class="history-invoice">${sale.invoice_number}</span>
+        <span class="history-total">S/ ${parseFloat(sale.total).toFixed(2)}</span>
+      </div>
+      <div class="history-meta">${sale.items} item(s) · ${sale.time}</div>
+    </div>
+  `).join('');
+}
+
+document.getElementById('btn-sales-history').addEventListener('click', () => {
+  renderSalesHistory();
+  document.getElementById('history-overlay').classList.add('open');
+});
+document.getElementById('close-history').addEventListener('click', () => {
+  document.getElementById('history-overlay').classList.remove('open');
+});
+document.getElementById('history-overlay').addEventListener('click', (e) => {
+  if (e.target.id === 'history-overlay') e.target.classList.remove('open');
+});
 
 function addToCart(el) {
   const product = {

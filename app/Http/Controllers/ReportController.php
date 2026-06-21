@@ -15,20 +15,32 @@ class ReportController extends Controller
     {
         $startDate = $request->start_date ?? now()->startOfMonth()->format('Y-m-d');
         $endDate   = $request->end_date ?? now()->format('Y-m-d');
-        
-        $totalSales = Sale::whereBetween('created_at', [$startDate, $endDate])->sum('total');
-        $salesCount = Sale::whereBetween('created_at', [$startDate, $endDate])->count();
 
-        $totalPurchases = PurchaseOrder::whereBetween('created_at', [$startDate, $endDate])->sum('total');
+        $rangeStart = \Carbon\Carbon::parse($startDate)->startOfDay();
+        $rangeEnd   = \Carbon\Carbon::parse($endDate)->endOfDay();
+
+        $totalSales = Sale::whereBetween('created_at', [$rangeStart, $rangeEnd])->sum('total');
+        $salesCount = Sale::whereBetween('created_at', [$rangeStart, $rangeEnd])->count();
+
+        $totalPurchases = PurchaseOrder::whereBetween('created_at', [$rangeStart, $rangeEnd])->sum('total');
 
         $inventoryValue = Product::selectRaw('SUM(stock * price) as value')->value('value') ?? 0;
 
-        $salesByCategory = Category::withCount(['products as sales_count' => function($q) {
-            $q->join('sale_details', 'products.id', '=', 'sale_details.product_id');
-        }])->get();
+        $salesByCategory = Category::all()->map(function ($category) use ($rangeStart, $rangeEnd) {
+            $quantitySold = \App\Models\SaleDetail::join('products', 'sale_details.product_id', '=', 'products.id')
+                ->join('sales', 'sale_details.sale_id', '=', 'sales.id')
+                ->where('products.category_id', $category->id)
+                ->whereBetween('sales.created_at', [$rangeStart, $rangeEnd])
+                ->sum('sale_details.quantity');
+
+            return (object) [
+                'name'        => $category->name,
+                'sales_count' => $quantitySold,
+            ];
+        });
 
         $recentSales = Sale::with(['customer', 'cashier', 'details'])
-            ->whereBetween('created_at', [$startDate, $endDate])
+            ->whereBetween('created_at', [$rangeStart, $rangeEnd])
             ->latest()
             ->take(10)
             ->get();
