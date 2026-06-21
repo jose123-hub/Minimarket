@@ -33,8 +33,7 @@
   .topbar-title p { font-size: 13px; color: #999; margin-top: 2px; }
   .topbar-date { font-size: 13px; color: #888; }
 
-  .content { padding: 24px 28px; display: grid; grid-template-columns: 320px 1fr; gap: 24px; align-items: start; }
-
+  .content { padding: 24px 28px; display: grid; grid-template-columns: 420px 1fr; gap: 24px; align-items: start; }
   .form-card { background: #fff; border-radius: 12px; border: 1px solid #eee; padding: 24px; position: sticky; top: 80px; }
   .form-card-title { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 700; color: #e8192c; margin-bottom: 20px; }
   .form-card-title svg { width: 16px; height: 16px; stroke: #e8192c; fill: none; stroke-width: 2.5; }
@@ -49,6 +48,12 @@
   .input-prefix input { padding-left: 28px; }
 
   .date-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .date-row input[type="date"] { 
+  width: 100%; 
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  }
 
   .checkbox-label { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #555; cursor: pointer; margin-bottom: 20px; }
   .checkbox-label input[type="checkbox"] { accent-color: #e8192c; width: 16px; height: 16px; }
@@ -103,7 +108,7 @@
     <a href="/admin/purchases" class="nav-item"><svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>Purchases</a>
     <a href="/admin/promotions" class="nav-item active"><svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>Promotions</a>
     <a href="#" class="nav-item"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Loyalty</a>
-    <a href="#" class="nav-item"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Reports</a>
+    <a href="/admin/reports" class="nav-item"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Reports</a>
     <a href="/admin/categories" class="nav-item"><svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>Categories</a>
   </nav>
   <div class="sidebar-user">
@@ -151,7 +156,7 @@
             <select name="product_id">
               <option value="">— Select product —</option>
               @foreach($products as $product)
-                <option value="{{ $product->id }}">{{ $product->nombre }}</option>
+                <option value="{{ $product->id }}">{{ $product->name }}</option>
               @endforeach
             </select>
           </div>
@@ -165,13 +170,18 @@
           </div>
 
           <div class="form-group">
-            <label>Date Range</label>
-            <div class="date-row">
-              <input type="date" name="start_date" value="{{ date('Y-m-d') }}">
-              <input type="date" name="end_date" value="{{ date('Y-m-d', strtotime('+15 days')) }}">
-            </div>
+  <label>Date Range</label>
+  <div class="date-row">
+    <div>
+      <label style="font-size:11px; color:#bbb; display:block; margin-bottom:4px;">Start</label>
+      <input type="date" name="start_date" value="{{ date('Y-m-d') }}" style="width:100%">
+        </div>
+          <div>
+           <label style="font-size:11px; color:#bbb; display:block; margin-bottom:4px;">End</label>
+           <input type="date" name="end_date" value="{{ date('Y-m-d', strtotime('+15 days')) }}" style="width:100%">
           </div>
-
+         </div>
+        </div>
           <label class="checkbox-label">
             <input type="checkbox" name="activate_now" checked>
             Activate immediately
@@ -206,7 +216,7 @@
       <div class="promo-card">
         <div class="promo-badge">-{{ $d->value }}%</div>
         <div class="promo-info">
-          <div class="promo-name">{{ $pd->product->nombre }}</div>
+          <div class="promo-name">{{ $pd->product->name }}</div>
           <div class="promo-meta">
             <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
             {{ \Carbon\Carbon::parse($d->start_date)->format('Y-m-d') }} → {{ \Carbon\Carbon::parse($d->end_date)->format('Y-m-d') }}

@@ -249,6 +249,10 @@
         <button class="btn-checkout" id="btn-checkout" onclick="submitSale()" disabled>
           Register Sale
         </button>
+        <button class="btn-clear" id="btn-undo" onclick="undo()" disabled
+        style="margin-bottom:8px; color:#e8192c; border-color:#fecaca;">
+           ↩ Undo
+        </button>
         <button class="btn-clear" onclick="clearCart()">Clear cart</button>
       </div>
     </div>
@@ -344,6 +348,39 @@ class LinkedList {
   }
 }
 
+class Stack {
+  constructor() {
+    this.items = {};
+    this.top = -1;
+  }
+
+  push(action) {
+    this.top++;
+    this.items[this.top] = action;
+  }
+
+  pop() {
+    if (this.isEmpty()) return null;
+    const item = this.items[this.top];
+    delete this.items[this.top];
+    this.top--;
+    return item;
+  }
+
+  peek() {
+    return this.items[this.top];
+  }
+
+  isEmpty() {
+    return this.top === -1;
+  }
+
+  size() {
+    return this.top + 1;
+  }
+}
+
+const actionHistory = new Stack();
 const cart = new LinkedList();
 
 function addToCart(el) {
@@ -353,18 +390,62 @@ function addToCart(el) {
     price: parseFloat(el.dataset.price),
     stock: parseInt(el.dataset.stock),
   };
+  actionHistory.push({
+    type: 'add',
+    product: { ...product }
+  });
+
   cart.insert(product);
   renderCart();
+  updateUndoBtn();
 }
 
 function changeQty(id, delta) {
+  actionHistory.push({ type: 'qty', id, delta });
   cart.updateQty(id, delta);
   renderCart();
+  updateUndoBtn();
 }
 
 function removeItem(id) {
+  const items = cart.toArray();
+  const product = items.find(p => p.id === id);
+  if (product) {
+    actionHistory.push({ type: 'remove', product: { ...product } });
+  }
   cart.remove(id);
   renderCart();
+  updateUndoBtn();
+}
+
+function undo() {
+  if (actionHistory.isEmpty()) return;
+
+  const last = actionHistory.pop();
+
+  if (last.type === 'add') {
+    cart.remove(last.product.id);
+  } else if (last.type === 'qty') {
+    cart.updateQty(last.id, -last.delta);
+  } else if (last.type === 'remove') {
+    cart.insert(last.product);
+    const items = cart.toArray();
+    const p = items.find(i => i.id === last.product.id);
+    if (p) p.quantity = last.product.quantity;
+  }
+
+  renderCart();
+  updateUndoBtn();
+}
+
+function updateUndoBtn() {
+  const btn = document.getElementById('btn-undo');
+  if (btn) {
+    btn.disabled = actionHistory.isEmpty();
+    btn.textContent = actionHistory.isEmpty()
+      ? 'Undo'
+      : `Undo (${actionHistory.size()})`;
+  }
 }
 
 function clearCart() {

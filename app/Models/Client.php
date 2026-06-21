@@ -29,11 +29,11 @@ class Client extends Model
 
     public function starHistory()
     {
-        return $this->hasMany(StarHistory::class, 'id_cliente');
+        return $this->hasMany(StarHistory::class, 'client_id', 'id_cliente');
     }
 
     public function rewardRedemptions()
     {
-        return $this->hasMany(RewardRedemption::class, 'id_cliente');
+        return $this->hasMany(RewardRedemption::class, 'client_id', 'id_cliente');
     }
 }

@@ -23,19 +23,28 @@ class SaleController extends Controller
     public function create()
     {
         $products = Product::with('category')->get();
-        $customers = User::where('role', 'customer')->get();
+        $customers = User::whereHas('roleInfo', fn($q) => $q->where('name', 'client'))->get();
         $categories = \App\Models\Category::all();
         return view('cashier.sales.create', compact('products', 'customers', 'categories'));
     }
 
     public function store(Request $request)
     {
+        $opening = \App\Models\CashOpening::where('user_id', Auth::id())
+            ->where('status', 'open')
+            ->first();
+
+        if (!$opening) {
+            return redirect()->route('cashier.cash')->with('error', 'You must open the cash register before registering a sale.');
+        }
+
         DB::beginTransaction();
         try {
             $sale = Sale::create([
-                'customer_id' => $request->customer_id,
-                'cashier_id'  => Auth::id(),
-                'total'       => 0
+                'customer_id'     => $request->customer_id,
+                'cashier_id'      => Auth::id(),
+                'cash_opening_id' => $opening->id,
+                'total'           => 0
             ]);
 
             $total = 0;

@@ -30,7 +30,7 @@ class DiscountController extends Controller
         $status = $request->has('activate_now') ? 'active' : 'inactive';
 
         $discount = Discount::create([
-            'name'       => 'Discount ' . $request->value . '% — ' . Product::find($request->product_id)->nombre,
+            'name'       => 'Discount ' . $request->value . '% — ' . Product::find($request->product_id)->name,
             'type'       => 'percentage',
             'value'      => $request->value,
             'start_date' => $request->start_date,

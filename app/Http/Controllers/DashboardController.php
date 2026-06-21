@@ -63,10 +63,25 @@ class DashboardController extends Controller
         ->take(6)
         ->get();
 
+    $pendingOrders = Sale::with(['customer', 'details'])
+        ->where('status', 'pending')
+        ->latest()
+        ->get()
+        ->map(function($sale) {
+            return [
+                'id'            => $sale->id,
+                'customer_name' => $sale->customer?->name ?? 'Guest',
+                'total'         => $sale->total,
+                'items_count'   => $sale->details->count(),
+                'time'          => $sale->created_at->format('h:i A'),
+            ];
+        });
+
     return view('cashier.dashboard', compact(
         'totalToday',
         'transactionsToday',
-        'recentSales'
+        'recentSales',
+        'pendingOrders'
     ));
     }
 }

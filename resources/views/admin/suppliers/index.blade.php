@@ -126,12 +126,13 @@
     <a href="#" class="nav-item">
       <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Loyalty
     </a>
-    <a href="#" class="nav-item">
+    <a href="/admin/reports" class="nav-item">
       <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Reports
     </a>
     <a href="/admin/categories" class="nav-item">
       <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>Categories
     </a>
+
   </nav>
   <div class="sidebar-user">
     <div class="user-avatar">{{ strtoupper(substr(Auth::user()->name, 0, 1)) }}</div>
