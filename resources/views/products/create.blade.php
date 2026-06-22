@@ -6,8 +6,18 @@
     </x-slot>
 
     <div class="py-8 max-w-xl mx-auto px-4">
-        <form action="/admin/products" method="POST" class="space-y-4">
+        <form action="/admin/products" method="POST" class="space-y-4" enctype="multipart/form-data">
             @csrf
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Image</label>
+                <div class="flex items-center gap-3 mt-1">
+                    <img src="" alt="" id="image-preview" class="w-14 h-14 rounded object-cover border border-gray-200" style="display:none;">
+                    <input type="file" name="image" id="image" accept="image/png,image/jpeg,image/webp"
+                           class="block w-full border border-gray-300 rounded px-3 py-2">
+                </div>
+                <p class="text-xs text-gray-400 mt-1">JPG, PNG or WEBP — max 2MB.</p>
+            </div>
 
             <div>
                 <label class="block text-sm font-medium text-gray-700">Category</label>
@@ -55,4 +65,15 @@
             </div>
         </form>
     </div>
+
+    <script>
+        document.getElementById('image').addEventListener('change', function (e) {
+            const preview = document.getElementById('image-preview');
+            const file = e.target.files[0];
+            if (file) {
+                preview.src = URL.createObjectURL(file);
+                preview.style.display = 'block';
+            }
+        });
+    </script>
 </x-app-layout>

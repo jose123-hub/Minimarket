@@ -3,7 +3,29 @@
     subtitle="Product and stock management"
     active="inventory"
 >
-    <div class="toolbar">
+    <style>
+  .custom-select { position: relative; }
+  .custom-select-trigger {
+    width: 100%; display: flex; align-items: center; justify-content: space-between;
+    border: 1px solid #e5e5e5; background: #fafafa; border-radius: 9px;
+    padding: 10px 12px; font-size: 13px; color: #111; cursor: pointer; text-align: left;
+  }
+  .custom-select-trigger:focus { outline: none; border-color: #e8192c; }
+  .custom-select-trigger.placeholder span { color: #999; }
+  .custom-select-panel {
+    display: none; position: absolute; top: calc(100% + 6px); left: 0; right: 0;
+    max-height: 220px; overflow-y: auto; background: #fff; border: 1px solid #e5e5e5;
+    border-radius: 9px; box-shadow: 0 10px 28px rgba(0,0,0,0.10); z-index: 50;
+  }
+  .custom-select-panel.open { display: block; }
+  .custom-select-option { padding: 9px 12px; font-size: 13px; color: #333; cursor: pointer; }
+  .custom-select-option:hover { background: #fff5f5; }
+  .custom-select-option.is-sub { padding-left: 26px; color: #666; }
+  .custom-select-option.is-selected { background: #fff0f2; color: #e8192c; font-weight: 600; }
+  .custom-select-empty { padding: 14px 12px; font-size: 12px; color: #aaa; text-align: center; }
+</style>
+
+<div class="toolbar">
       <div class="search-box">
         <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <input type="text" id="productSearch" placeholder="Search product...">
@@ -63,7 +85,15 @@
             @endphp
             <tr data-name="{{ strtolower($product->name) }}" data-category="{{ $product->category->name ?? '' }}">
               <td class="prod-code">P{{ str_pad($product->id, 3, '0', STR_PAD_LEFT) }}</td>
-              <td class="prod-name">{{ $product->name }}</td>
+              <td class="prod-name" style="display:flex; align-items:center; gap:10px;">
+                @if($product->image)
+                  <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}"
+                       style="width:34px; height:34px; border-radius:7px; object-fit:cover; border:1px solid #eee;">
+                @else
+                  <div style="width:34px; height:34px; border-radius:7px; background:#f5f5f5; display:flex; align-items:center; justify-content:center; color:#bbb; font-size:11px;">N/A</div>
+                @endif
+                {{ $product->name }}
+              </td>
               <td>{{ $product->category->name ?? '—' }}</td>
               <td>S/ {{ number_format($product->price, 2) }}</td>
               <td>{{ $product->stock }}</td>
@@ -91,7 +121,7 @@
         </tbody>
       </table>
     </div>
-
+    <script id="categories-data" type="application/json">{!! json_encode($categoriesForJs->toArray(), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}</script>
     <script>
       const searchInput = document.getElementById('productSearch');
       const categoryFilter = document.getElementById('categoryFilter');
@@ -143,7 +173,7 @@
         </div>
         <p class="modal-subtitle">Completa los datos del producto para registrarlo en el inventario.</p>
 
-        <form action="/admin/products" method="POST">
+        <form action="/admin/products" method="POST" enctype="multipart/form-data">
           @csrf
 
           <div class="form-group">
@@ -153,13 +183,26 @@
           </div>
 
           <div class="form-group">
-            <label for="category_id">Categoría</label>
-            <select id="category_id" name="category_id" required>
-              <option value="" disabled selected>Selecciona una categoría</option>
-              @foreach($categories as $category)
-                <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>{{ $category->parent_id ? '— ' . $category->name : $category->name }}</option>
-              @endforeach
-            </select>
+            <label for="image">Imagen del producto (opcional)</label>
+            <div style="display:flex; align-items:center; gap:12px;">
+              <img id="image-preview" src="" alt=""
+                   style="width:56px; height:56px; border-radius:8px; object-fit:cover; border:1px solid #e5e5e5; display:none;">
+              <input type="file" id="image" name="image" accept="image/png,image/jpeg,image/webp" style="flex:1;">
+            </div>
+            <small style="color:#999; font-size:11px;">JPG, PNG o WEBP — máx. 2MB</small>
+            @error('image') <div class="field-error">{{ $message }}</div> @enderror
+          </div>
+
+          <div class="form-group">
+            <label for="category-trigger">Categoría</label>
+            <div class="custom-select" id="category-select-wrapper">
+              <button type="button" class="custom-select-trigger" id="category-trigger">
+                <span id="category-trigger-label">Selecciona una categoría</span>
+                <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:#999;fill:none;stroke-width:2;"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <input type="hidden" id="category_id" name="category_id" value="{{ old('category_id') }}">
+              <div class="custom-select-panel" id="category-panel"></div>
+            </div>
             @error('category_id') <div class="field-error">{{ $message }}</div> @enderror
           </div>
 
@@ -220,6 +263,62 @@
               modal.classList.remove('open');
           }
       });
+
+      document.getElementById('image').addEventListener('change', function(e) {
+          const preview = document.getElementById('image-preview');
+          const file = e.target.files[0];
+          if (file) {
+              preview.src = URL.createObjectURL(file);
+              preview.style.display = 'block';
+          } else {
+              preview.style.display = 'none';
+          }
+      });
+
+      // === Dropdown propio de categorias (panel con scroll fijo, no select nativo) ===
+      const categoryTrigger = document.getElementById('category-trigger');
+      const categoryTriggerLabel = document.getElementById('category-trigger-label');
+      const categoryPanel = document.getElementById('category-panel');
+      const categoryHiddenInput = document.getElementById('category_id');
+
+      function renderCategoryOptions(categories, selectedId = null) {
+        if (!categories.length) {
+          categoryPanel.innerHTML = '<div class="custom-select-empty">No categories yet</div>';
+          return;
+        }
+
+        categoryPanel.innerHTML = categories.map(c => `
+          <div class="custom-select-option ${c.parent_id ? 'is-sub' : ''} ${String(c.id) === String(selectedId) ? 'is-selected' : ''}"
+               data-id="${c.id}" data-label="${(c.parent_id ? '— ' : '') + c.name.replace(/"/g, '&quot;')}">
+            ${c.parent_id ? '— ' : ''}${c.name}
+          </div>
+        `).join('');
+
+        categoryPanel.querySelectorAll('.custom-select-option').forEach(opt => {
+          opt.addEventListener('click', () => {
+            categoryHiddenInput.value = opt.dataset.id;
+            categoryTriggerLabel.textContent = opt.dataset.label;
+            categoryTrigger.classList.remove('placeholder');
+            categoryPanel.querySelectorAll('.custom-select-option').forEach(o => o.classList.remove('is-selected'));
+            opt.classList.add('is-selected');
+            categoryPanel.classList.remove('open');
+          });
+        });
+      }
+
+      categoryTrigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        categoryPanel.classList.toggle('open');
+      });
+      document.addEventListener('click', (e) => {
+        if (!document.getElementById('category-select-wrapper').contains(e.target)) {
+          categoryPanel.classList.remove('open');
+        }
+      });
+
+      const initialCategoriesForDropdown = JSON.parse(document.getElementById('categories-data').textContent);
+      const oldCategoryId = "{{ old('category_id') }}";
+      renderCategoryOptions(initialCategoriesForDropdown, oldCategoryId);
     </script>
 
     <div class="modal-overlay" id="categoriesModal">
@@ -525,13 +624,8 @@
             flatCategories.map(c => `<option value="${escapeHtml(c.name)}">${escapeHtml(c.name)}</option>`).join('');
           categoryFilter.value = current;
 
-          const productCategorySelect = document.getElementById('category_id');
-          if (productCategorySelect) {
-            const currentSelected = productCategorySelect.value;
-            productCategorySelect.innerHTML = '<option value="" disabled>Selecciona una categoría</option>' +
-              flatCategories.map(c => `<option value="${c.id}">${escapeHtml(c.parent_id ? '— ' + c.name : c.name)}</option>`).join('');
-            productCategorySelect.value = currentSelected;
-          }
+          const currentSelected = categoryHiddenInput.value;
+          renderCategoryOptions(flatCategories, currentSelected);
         } catch (err) {
           categoriesListError.textContent = 'Could not reach the server.';
           categoriesListError.style.display = 'block';

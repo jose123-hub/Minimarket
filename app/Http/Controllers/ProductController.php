@@ -13,8 +13,15 @@ class ProductController extends Controller
     {
         $products = Product::with('category')->get();
         $categories = Category::orderByRaw('COALESCE(parent_id, id), parent_id IS NOT NULL, name')->get();
+        $categoriesForJs = $categories->map(function ($c) {
+            return [
+                'id' => $c->id,
+                'name' => $c->name,
+                'parent_id' => $c->parent_id,
+            ];
+        });
 
-        return view('products.index', compact('products', 'categories'));
+        return view('products.index', compact('products', 'categories', 'categoriesForJs'));
     }
 
     public function create()
@@ -31,6 +38,7 @@ class ProductController extends Controller
         'name'        => 'required|string|max:255',
         'price'       => 'required|numeric|min:0',
         'stock'       => 'required|integer|min:0',
+        'image'       => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
     ]);
 
     $imagePath = null;
@@ -72,6 +80,7 @@ class ProductController extends Controller
         'name'        => 'required|string|max:255',
         'price'       => 'required|numeric|min:0',
         'stock'       => 'required|integer|min:0',
+        'image'       => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
     ]);
 
     $imagePath = $product->image;
