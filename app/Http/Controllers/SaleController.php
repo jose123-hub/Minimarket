@@ -23,7 +23,7 @@ class SaleController extends Controller
     public function create(Request $request)
     {
     $products   = Product::with('category')->get();
-    $customers  = User::where('role', 'customer')->get();
+    $customers  = User::whereHas('roleInfo', fn($q) => $q->where('name', 'client'))->get();
     $categories = \App\Models\Category::all();
     $orderItems = collect();
 
@@ -34,7 +34,21 @@ class SaleController extends Controller
         }
     }
 
-    return view('cashier.sales.create', compact('products', 'customers', 'categories', 'orderItems'));
+    $recentSales = Sale::with('details')
+        ->where('cashier_id', Auth::id())
+        ->whereDate('created_at', now())
+        ->oldest()
+        ->take(20)
+        ->get()
+        ->map(fn ($sale) => [
+            'id'             => $sale->id,
+            'invoice_number' => $sale->invoice_number ?? ('B-' . str_pad($sale->id, 5, '0', STR_PAD_LEFT)),
+            'total'          => $sale->total,
+            'items'          => $sale->details->count(),
+            'time'           => $sale->created_at->format('h:i A'),
+        ]);
+
+    return view('cashier.sales.create', compact('products', 'customers', 'categories', 'orderItems', 'recentSales'));
     }
 
     public function store(Request $request)
@@ -47,24 +61,34 @@ class SaleController extends Controller
         'products.*.quantity'   => 'required|integer|min:1',
     ]);
 
+    $opening = \App\Models\CashOpening::where('user_id', Auth::id())
+        ->where('status', 'open')
+        ->first();
+
+    if (!$opening) {
+        return redirect()->route('cashier.cash')->with('error', 'You must open the cash register before registering a sale.');
+    }
+
     DB::beginTransaction();
     try {
         if ($request->has('order_id') && $request->order_id) {
             $sale = Sale::findOrFail($request->order_id);
             $sale->update([
-                'cashier_id'     => Auth::id(),
-                'status'         => 'completed',
-                'payment_method' => $request->payment_method ?? 'cash',
+                'cashier_id'      => Auth::id(),
+                'cash_opening_id' => $opening->id,
+                'status'          => 'completed',
+                'payment_method'  => $request->payment_method ?? 'cash',
             ]);
             $sale->details()->delete();
         } else {
             $sale = Sale::create([
-                'customer_id'    => $request->customer_id,
-                'cashier_id'     => Auth::id(),
-                'total'          => 0,
-                'status'         => 'completed',
-                'payment_method' => $request->payment_method ?? 'cash',
-                'voucher_type'   => 'receipt',
+                'customer_id'     => $request->customer_id,
+                'cashier_id'      => Auth::id(),
+                'cash_opening_id' => $opening->id,
+                'total'           => 0,
+                'status'          => 'completed',
+                'payment_method'  => $request->payment_method ?? 'cash',
+                'voucher_type'    => 'receipt',
             ]);
         }
 
