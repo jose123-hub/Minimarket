@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-admin-layout title="Sales History">
 
     <h1>Sales History</h1>
 
@@ -30,4 +30,4 @@
 
     </table>
 
-</x-app-layout>
+</x-admin-layout>

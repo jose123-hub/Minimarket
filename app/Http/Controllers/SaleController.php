@@ -39,6 +39,14 @@ class SaleController extends Controller
 
     public function store(Request $request)
     {
+    $request->validate([
+        'customer_id'            => 'required_without:order_id|exists:users,id',
+        'order_id'               => 'nullable|exists:sales,id',
+        'products'               => 'required|array|min:1',
+        'products.*.product_id' => 'required|integer|exists:products,id',
+        'products.*.quantity'   => 'required|integer|min:1',
+    ]);
+
     DB::beginTransaction();
     try {
         if ($request->has('order_id') && $request->order_id) {
@@ -64,6 +72,11 @@ class SaleController extends Controller
 
         foreach ($request->products as $item) {
             $product  = Product::findOrFail($item['product_id']);
+
+            if ($item['quantity'] > $product->stock) {
+                throw new \Exception("Not enough stock for \"{$product->name}\". Available: {$product->stock}, requested: {$item['quantity']}.");
+            }
+
             $subtotal = $product->price * $item['quantity'];
 
             SaleDetail::create([

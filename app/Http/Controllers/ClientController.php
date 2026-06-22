@@ -23,12 +23,23 @@ class ClientController extends Controller
 
     public function store(Request $request)
     {
+        $request->validate([
+            'products'               => 'required|array|min:1',
+            'products.*.product_id' => 'required|integer|exists:products,id',
+            'products.*.quantity'   => 'required|integer|min:1',
+        ]);
+
         DB::beginTransaction();
         try {
             $total = 0;
 
             foreach ($request->products as $item) {
                 $product  = Product::findOrFail($item['product_id']);
+
+                if ($item['quantity'] > $product->stock) {
+                    throw new \Exception("Not enough stock for \"{$product->name}\". Available: {$product->stock}, requested: {$item['quantity']}.");
+                }
+
                 $total += $product->price * $item['quantity'];
             }
 
