@@ -90,6 +90,11 @@
         Export
       </button>
 
+      <button class="btn" id="sortByPriceBtn" type="button">
+        <svg viewBox="0 0 24 24"><line x1="12" y1="20" x2="12" y2="4"/><polyline points="6 10 12 4 18 10"/></svg>
+        Sort by price (Quick Sort)
+      </button>
+
       <button class="btn" id="openCategoriesModal" type="button">
         <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
         Manage categories
@@ -100,6 +105,8 @@
         Add product
       </button>
     </div>
+
+    <p id="sort-status" style="font-size:12px; color:#999; margin: -6px 0 14px 2px;">Showing products in default order</p>
 
     <div class="table-card">
       <table id="productsTable">
@@ -114,65 +121,70 @@
             <th style="text-align:right">Actions</th>
           </tr>
         </thead>
-        <tbody>
-          @forelse($products as $product)
-            @php
-              $stock = $product->stock;
-              $minStock = $product->min_stock ?? 5;
-              if ($stock <= 0) {
-                  $statusClass = 'out';
-                  $statusLabel = 'Out of stock';
-              } elseif ($stock < $minStock) {
-                  $statusClass = 'low';
-                  $statusLabel = 'Low stock';
-              } else {
-                  $statusClass = 'ok';
-                  $statusLabel = 'Available';
-              }
-            @endphp
-            <tr data-name="{{ strtolower($product->name) }}" data-category="{{ $product->category->name ?? '' }}">
-              <td class="prod-code">P{{ str_pad($product->id, 3, '0', STR_PAD_LEFT) }}</td>
-              <td class="prod-name" style="display:flex; align-items:center; gap:10px;">
-                @if($product->image)
-                  <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}"
-                       style="width:34px; height:34px; border-radius:7px; object-fit:cover; border:1px solid #eee;">
-                @else
-                  <div style="width:34px; height:34px; border-radius:7px; background:#f5f5f5; display:flex; align-items:center; justify-content:center; color:#bbb; font-size:11px;">N/A</div>
-                @endif
-                {{ $product->name }}
-              </td>
-              <td>{{ $product->category->name ?? '—' }}</td>
-              <td>S/ {{ number_format($product->price, 2) }}</td>
-              <td>{{ $product->stock }}</td>
-              <td><span class="badge {{ $statusClass }}">{{ $statusLabel }}</span></td>
-              <td>
-                <div class="actions" style="justify-content:flex-end">
-                  <a href="/admin/products/{{ $product->id }}/edit" class="icon-btn">
-                    <svg viewBox="0 0 24 24"><path d="M17 3a2.85 2.83 0 114 4L7.5 20.5 2 22l1.5-5.5z"/></svg>
-                  </a>
-                  <form action="/admin/products/{{ $product->id }}" method="POST" onsubmit="return confirm('¿Deleted this product?');">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="icon-btn danger">
-                      <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
-                    </button>
-                  </form>
-                </div>
-              </td>
-            </tr>
-          @empty
-            <tr class="empty-row">
-              <td colspan="7">There are no products registered yet.</td>
-            </tr>
-          @endforelse
-        </tbody>
+        <tbody id="products-table-body"></tbody>
       </table>
     </div>
     <script id="categories-data" type="application/json">{!! json_encode($categoriesForJs->toArray(), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}</script>
+    <script id="products-data" type="application/json">{!! json_encode($products->map(function ($p) {
+        return [
+            'id'             => $p->id,
+            'code'           => 'P' . str_pad($p->id, 3, '0', STR_PAD_LEFT),
+            'name'           => $p->name,
+            'image_url'      => $p->image ? asset('storage/' . $p->image) : null,
+            'category'       => $p->category->name ?? '—',
+            'price'          => (float) $p->price,
+            'stock'          => $p->stock,
+            'status_class'   => $p->stock <= 0 ? 'out' : ($p->stock < ($p->min_stock ?? 5) ? 'low' : 'ok'),
+            'status_label'   => $p->stock <= 0 ? 'Out of stock' : ($p->stock < ($p->min_stock ?? 5) ? 'Low stock' : 'Available'),
+        ];
+    })->values(), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}</script>
     <script>
+      const originalProducts = JSON.parse(document.getElementById('products-data').textContent || '[]');
+      const tbody = document.getElementById('products-table-body');
       const searchInput = document.getElementById('productSearch');
       const categoryFilter = document.getElementById('categoryFilter');
-      const rows = document.querySelectorAll('#productsTable tbody tr[data-name]');
+      let rows = [];
+
+      function productRowHtml(p) {
+        const thumb = p.image_url
+          ? `<img src="${p.image_url}" alt="${p.name}" style="width:34px; height:34px; border-radius:7px; object-fit:cover; border:1px solid #eee;">`
+          : `<div style="width:34px; height:34px; border-radius:7px; background:#f5f5f5; display:flex; align-items:center; justify-content:center; color:#bbb; font-size:11px;">N/A</div>`;
+
+        return `
+          <tr data-name="${p.name.toLowerCase()}" data-category="${p.category}">
+            <td class="prod-code">${p.code}</td>
+            <td class="prod-name" style="display:flex; align-items:center; gap:10px;">${thumb}${p.name}</td>
+            <td>${p.category}</td>
+            <td>S/ ${p.price.toFixed(2)}</td>
+            <td>${p.stock}</td>
+            <td><span class="badge ${p.status_class}">${p.status_label}</span></td>
+            <td>
+              <div class="actions" style="justify-content:flex-end">
+                <a href="/admin/products/${p.id}/edit" class="icon-btn">
+                  <svg viewBox="0 0 24 24"><path d="M17 3a2.85 2.83 0 114 4L7.5 20.5 2 22l1.5-5.5z"/></svg>
+                </a>
+                <form action="/admin/products/${p.id}" method="POST" onsubmit="return confirm('¿Deleted this product?');">
+                  <input type="hidden" name="_token" value="${document.querySelector('meta[name=csrf-token]')?.content ?? ''}">
+                  <input type="hidden" name="_method" value="DELETE">
+                  <button type="submit" class="icon-btn danger">
+                    <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+                  </button>
+                </form>
+              </div>
+            </td>
+          </tr>`;
+      }
+
+      function renderProducts(products) {
+        if (!products.length) {
+          tbody.innerHTML = '<tr class="empty-row"><td colspan="7">There are no products registered yet.</td></tr>';
+          rows = [];
+          return;
+        }
+        tbody.innerHTML = products.map(productRowHtml).join('');
+        rows = Array.from(document.querySelectorAll('#productsTable tbody tr[data-name]'));
+        applyFilters();
+      }
 
       function applyFilters() {
         const term = searchInput.value.toLowerCase();
@@ -188,7 +200,7 @@
       categoryFilter.addEventListener('change', applyFilters);
 
       document.getElementById('exportBtn').addEventListener('click', () => {
-        const visibleRows = Array.from(rows).filter(r => r.style.display !== 'none');
+        const visibleRows = rows.filter(r => r.style.display !== 'none');
         let csv = 'Codigo,Producto,Categoria,Precio,Stock,Estado\n';
         visibleRows.forEach(row => {
           const cells = row.querySelectorAll('td');
@@ -203,6 +215,69 @@
         a.click();
         URL.revokeObjectURL(url);
       });
+
+      let quickComparisons = 0;
+      let quickSwaps = 0;
+
+      function quickSort(items) {
+        const arr = items.slice(); 
+        quickSortInPlace(arr, 0, arr.length - 1);
+        return arr;
+      }
+
+      function quickSortInPlace(arr, low, high) {
+        if (low < high) {
+          const pivotIndex = partition(arr, low, high);
+          quickSortInPlace(arr, low, pivotIndex - 1);
+          quickSortInPlace(arr, pivotIndex + 1, high);
+        }
+      }
+
+      function partition(arr, low, high) {
+        const pivot = arr[high].price;
+        let i = low - 1;
+
+        for (let j = low; j < high; j++) {
+          quickComparisons++;
+          if (arr[j].price <= pivot) {
+            i++;
+            swap(arr, i, j);
+          }
+        }
+        swap(arr, i + 1, high);
+        return i + 1;
+      }
+
+      function swap(arr, a, b) {
+        if (a === b) return;
+        const tmp = arr[a];
+        arr[a] = arr[b];
+        arr[b] = tmp;
+        quickSwaps++;
+      }
+
+      const sortBtn = document.getElementById('sortByPriceBtn');
+      const sortStatus = document.getElementById('sort-status');
+      let isPriceSorted = false;
+
+      sortBtn.addEventListener('click', () => {
+        if (!isPriceSorted) {
+          quickComparisons = 0;
+          quickSwaps = 0;
+          const sorted = quickSort(originalProducts);
+          renderProducts(sorted);
+          sortStatus.textContent = `Sorted by price (lowest first) — Quick Sort: ${quickComparisons} comparisons, ${quickSwaps} swaps over ${originalProducts.length} products`;
+          sortBtn.textContent = 'Reset to default order';
+          isPriceSorted = true;
+        } else {
+          renderProducts(originalProducts);
+          sortStatus.textContent = 'Showing products in default order';
+          sortBtn.textContent = 'Sort by price (Quick Sort)';
+          isPriceSorted = false;
+        }
+      });
+
+      renderProducts(originalProducts);
     </script>
 
     <div class="modal-overlay{{ $errors->any() ? ' open' : '' }}" id="createModal">

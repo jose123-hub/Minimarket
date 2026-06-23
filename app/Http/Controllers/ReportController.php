@@ -59,10 +59,22 @@ class ReportController extends Controller
         $salesByCategoryLabelsJson = json_encode($salesByCategory->pluck('name'));
         $salesByCategoryCountsJson = json_encode($salesByCategory->pluck('sales_count'));
 
+        $salesDetailJson = json_encode($recentSales->map(function ($sale) {
+            return [
+                'invoice' => $sale->invoice_number ?? ('B-' . str_pad($sale->id, 5, '0', STR_PAD_LEFT)),
+                'time'    => $sale->created_at->format('h:i A'),
+                'items'   => $sale->details->count() . ' items',
+                'method'  => ucfirst($sale->payment_method ?? 'Cash'),
+                'cashier' => $sale->cashier?->name ?? '-',
+                'total'   => (float) $sale->total,
+            ];
+        })->values());
+
         return view('admin.reports.index', compact(
             'totalSales', 'salesCount', 'totalPurchases', 'inventoryValue',
             'salesByCategory', 'recentSales', 'weeklySales', 'startDate', 'endDate',
-            'weeklySalesJson', 'salesByCategoryLabelsJson', 'salesByCategoryCountsJson'
+            'weeklySalesJson', 'salesByCategoryLabelsJson', 'salesByCategoryCountsJson',
+            'salesDetailJson'
         ));
     }
 }

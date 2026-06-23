@@ -184,8 +184,16 @@
     </div>
 
     <div class="table-card">
-      <div class="table-header">
-        <h3>Sales detail for period</h3>
+      <div class="table-header" style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+        <div>
+          <h3>Sales detail for period</h3>
+          <p id="sort-status" style="font-size:12px; color:#999; margin-top:2px;">Showing sales in default order (most recent first)</p>
+        </div>
+        @if($recentSales->count() > 0)
+        <button type="button" id="sortByTotalBtn" class="tab-btn" style="background:#e8192c; color:#fff;">
+          Sort by total (Merge Sort)
+        </button>
+        @endif
       </div>
       @if($recentSales->count() > 0)
       <table>
@@ -199,7 +207,7 @@
             <th style="text-align:right">Total</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody id="sales-detail-body">
           @foreach($recentSales as $sale)
           <tr>
             <td><span class="invoice">{{ $sale->invoice_number ?? 'B-' . str_pad($sale->id, 5, '0', STR_PAD_LEFT) }}</span></td>
@@ -286,6 +294,82 @@ new Chart(barCtx, {
     }
   }
 });
+</script>
+<script id="sales-detail-data" type="application/json">{!! $salesDetailJson !!}</script>
+<script>
+  const originalSalesDetail = JSON.parse(document.getElementById('sales-detail-data').textContent || '[]');
+  let mergeComparisons = 0;
+  let mergeOperations = 0;
+
+  function mergeSort(items) {
+    if (items.length <= 1) return items;
+
+    const middle = Math.floor(items.length / 2);
+    const left = mergeSort(items.slice(0, middle));
+    const right = mergeSort(items.slice(middle));
+
+    return merge(left, right);
+  }
+
+  function merge(left, right) {
+    const result = [];
+    let i = 0, j = 0;
+
+    while (i < left.length && j < right.length) {
+      mergeComparisons++;
+      if (left[i].total >= right[j].total) {
+        result.push(left[i]);
+        i++;
+      } else {
+        result.push(right[j]);
+        j++;
+      }
+      mergeOperations++;
+    }
+
+    while (i < left.length) { result.push(left[i]); i++; mergeOperations++; }
+    while (j < right.length) { result.push(right[j]); j++; mergeOperations++; }
+
+    return result;
+  }
+
+  function renderSalesDetail(sales) {
+    const tbody = document.getElementById('sales-detail-body');
+    tbody.innerHTML = sales.map(s => `
+      <tr>
+        <td><span class="invoice">${s.invoice}</span></td>
+        <td>${s.time}</td>
+        <td>${s.items}</td>
+        <td><span class="method-badge">${s.method}</span></td>
+        <td>${s.cashier}</td>
+        <td style="text-align:right"><span class="total-amount">S/ ${s.total.toFixed(2)}</span></td>
+      </tr>
+    `).join('');
+  }
+
+  const sortBtn = document.getElementById('sortByTotalBtn');
+  if (sortBtn) {
+    let isSorted = false;
+
+    sortBtn.addEventListener('click', () => {
+      const status = document.getElementById('sort-status');
+
+      if (!isSorted) {
+        mergeComparisons = 0;
+        mergeOperations = 0;
+        const sorted = mergeSort(originalSalesDetail);
+        renderSalesDetail(sorted);
+        status.textContent = `Sorted by total (highest first) — Merge Sort: ${mergeComparisons} comparisons, ${mergeOperations} merge operations over ${originalSalesDetail.length} sales`;
+        sortBtn.textContent = 'Reset to default order';
+        isSorted = true;
+      } else {
+        renderSalesDetail(originalSalesDetail);
+        status.textContent = 'Showing sales in default order (most recent first)';
+        sortBtn.textContent = 'Sort by total (Merge Sort)';
+        isSorted = false;
+      }
+    });
+  }
 </script>
 
 </body>
