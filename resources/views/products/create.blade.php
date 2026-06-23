@@ -10,7 +10,7 @@
             @csrf
 
             <div>
-                <label class="block text-sm font-medium text-gray-700">Image</label>
+                <label class="block text-sm font-medium text-gray-700">Image (optional)</label>
                 <div class="flex items-center gap-3 mt-1">
                     <img src="" alt="" id="image-preview" class="w-14 h-14 rounded object-cover border border-gray-200" style="display:none;">
                     <input type="file" name="image" id="image" accept="image/png,image/jpeg,image/webp"

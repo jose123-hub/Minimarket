@@ -36,7 +36,6 @@
 
   .content { padding: 24px 28px; }
 
-  /* TOOLBAR */
   .toolbar { background: #fff; border-radius: 12px; border: 1px solid #eee; padding: 16px 20px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
   .tab-btn { padding: 8px 18px; border-radius: 8px; border: none; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s; background: #f5f5f5; color: #555; }
   .tab-btn.active { background: #e8192c; color: #fff; }
@@ -50,9 +49,8 @@
   .btn-download:hover { border-color: #e8192c; color: #e8192c; }
   .btn-download svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 1.8; }
   .btn-pdf { color: #e8192c; border-color: #fecaca; }
-  .btn-excel { color: #16a34a; border-color: #bbf7d0; }
+  .btn-excel { color: #16a34a; border-color: #bbf7d0;}
 
-  /* METRICS */
   .metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px; }
   .metric-card { background: #fff; border-radius: 12px; border: 1px solid #eee; padding: 20px; }
   .metric-label { font-size: 13px; color: #999; margin-bottom: 8px; }
@@ -60,7 +58,6 @@
   .metric-change { font-size: 12px; color: #22c55e; font-weight: 500; }
   .metric-change.negative { color: #e8192c; }
 
-  /* CHARTS */
   .charts-row { display: grid; grid-template-columns: 1fr 340px; gap: 16px; margin-bottom: 20px; }
   .chart-card { background: #fff; border-radius: 12px; border: 1px solid #eee; padding: 22px; }
   .chart-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
@@ -68,7 +65,6 @@
   .chart-header p { font-size: 12px; color: #999; margin-top: 2px; }
   .chart-wrap { height: 220px; }
 
-  /* TABLE */
   .table-card { background: #fff; border-radius: 12px; border: 1px solid #eee; padding: 22px; }
   .table-header { margin-bottom: 16px; }
   .table-header h3 { font-size: 15px; font-weight: 700; color: #111; }
@@ -91,14 +87,12 @@
   </div>
   <nav class="sidebar-nav">
     <a href="/dashboard" class="nav-item"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard</a>
-    <a href="#" class="nav-item"><svg viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>Sales (POS)</a>
     <a href="/admin/products" class="nav-item"><svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>Inventory</a>
     <a href="/admin/suppliers" class="nav-item"><svg viewBox="0 0 24 24"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>Suppliers</a>
     <a href="/admin/purchases" class="nav-item"><svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>Purchases</a>
     <a href="/admin/promotions" class="nav-item"><svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>Promotions</a>
     <a href="#" class="nav-item"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Loyalty</a>
     <a href="/admin/reports" class="nav-item active"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Reports</a>
-    <a href="/admin/categories" class="nav-item"><svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>Categories</a>
   </nav>
   <div class="sidebar-user">
     <div class="user-avatar">{{ strtoupper(substr(Auth::user()->name, 0, 1)) }}</div>

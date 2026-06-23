@@ -38,10 +38,6 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::get('/purchases/{purchase}/receive', [PurchaseController::class, 'receiveForm'])->name('admin.purchases.receive.form');
     Route::post('/purchases/{purchase}/receive', [PurchaseController::class, 'receive'])->name('admin.purchases.receive');
     Route::resource('products', ProductController::class);
-    Route::get(
-            '/sales',
-            [SaleController::class, 'index']
-        )->name('admin.sales');
     Route::get('/promotions', [DiscountController::class, 'index'])->name('admin.promotions');
     Route::post('/promotions', [DiscountController::class, 'store'])->name('admin.promotions.store');
     Route::put('/promotions/{discount}', [DiscountController::class, 'update'])->name('admin.promotions.update');

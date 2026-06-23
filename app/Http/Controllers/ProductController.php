@@ -12,12 +12,15 @@ class ProductController extends Controller
     public function index()
     {
         $products = Product::with('category')->get();
-        $categories = Category::orderByRaw('COALESCE(parent_id, id), parent_id IS NOT NULL, name')->get();
+        $categories = Category::withCount('children')
+            ->orderByRaw('COALESCE(parent_id, id), parent_id IS NOT NULL, name')
+            ->get();
         $categoriesForJs = $categories->map(function ($c) {
             return [
                 'id' => $c->id,
                 'name' => $c->name,
                 'parent_id' => $c->parent_id,
+                'has_children' => $c->children_count > 0,
             ];
         });
 
@@ -34,11 +37,24 @@ class ProductController extends Controller
     public function store(Request $request)
     {
     $request->validate([
-        'category_id' => 'required|exists:categories,id',
-        'name'        => 'required|string|max:255',
-        'price'       => 'required|numeric|min:0',
-        'stock'       => 'required|integer|min:0',
-        'image'       => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+        'category_id'  => [
+            'required',
+            'exists:categories,id',
+            function ($attribute, $value, $fail) {
+                $category = Category::withCount('children')->find($value);
+                if ($category && !$category->parent_id && $category->children_count > 0) {
+                    $fail('Please choose a specific subcategory instead of a parent category.');
+                }
+            },
+        ],
+        'supplier_id'  => 'nullable|exists:suppliers,id',
+        'name'         => 'required|string|max:255',
+        'description'  => 'nullable|string',
+        'price'        => 'required|numeric|min:0',
+        'cost'         => 'nullable|numeric|min:0',
+        'stock'        => 'required|integer|min:0',
+        'min_stock'    => 'nullable|integer|min:0',
+        'image'        => 'required|image|mimes:jpg,jpeg,png,webp|max:2048',
     ]);
 
     $imagePath = null;
@@ -68,7 +84,9 @@ class ProductController extends Controller
  
     public function edit(Product $product)
     {
-    $categories = Category::all();
+    $categories = Category::withCount('children')
+        ->orderByRaw('COALESCE(parent_id, id), parent_id IS NOT NULL, name')
+        ->get();
     $suppliers  = \App\Models\Supplier::where('status', 'active')->get();
     return view('products.edit', compact('product', 'categories', 'suppliers'));
     }
@@ -76,11 +94,24 @@ class ProductController extends Controller
     public function update(Request $request, Product $product)
     {
     $request->validate([
-        'category_id' => 'required|exists:categories,id',
-        'name'        => 'required|string|max:255',
-        'price'       => 'required|numeric|min:0',
-        'stock'       => 'required|integer|min:0',
-        'image'       => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+        'category_id'  => [
+            'required',
+            'exists:categories,id',
+            function ($attribute, $value, $fail) {
+                $category = Category::withCount('children')->find($value);
+                if ($category && !$category->parent_id && $category->children_count > 0) {
+                    $fail('Please choose a specific subcategory instead of a parent category.');
+                }
+            },
+        ],
+        'supplier_id'  => 'nullable|exists:suppliers,id',
+        'name'         => 'required|string|max:255',
+        'description'  => 'nullable|string',
+        'price'        => 'required|numeric|min:0',
+        'cost'         => 'nullable|numeric|min:0',
+        'stock'        => 'required|integer|min:0',
+        'min_stock'    => 'nullable|integer|min:0',
+        'image'        => 'required|image|mimes:jpg,jpeg,png,webp|max:2048',
     ]);
 
     $imagePath = $product->image;
@@ -108,6 +139,10 @@ class ProductController extends Controller
  
     public function destroy(Product $product)
     {
+        if ($product->image) {
+            Storage::disk('public')->delete($product->image);
+        }
+
         $product->delete();
         return redirect('/admin/products')->with('success', 'product removed.');
     }

@@ -21,9 +21,56 @@
   .custom-select-option { padding: 9px 12px; font-size: 13px; color: #333; cursor: pointer; }
   .custom-select-option:hover { background: #fff5f5; }
   .custom-select-option.is-sub { padding-left: 26px; color: #666; }
+  .custom-select-option.is-disabled { color: #ccc; cursor: not-allowed; background: #fafafa; }
+  .custom-select-option.is-disabled:hover { background: #fafafa; }
   .custom-select-option.is-selected { background: #fff0f2; color: #e8192c; font-weight: 600; }
   .custom-select-empty { padding: 14px 12px; font-size: 12px; color: #aaa; text-align: center; }
 </style>
+
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+    <div class="logo-text"><strong>Express</strong><span>Minimarket POS</span></div>
+  </div>
+  <nav class="sidebar-nav">
+  <a href="/dashboard" class="nav-item {{ request()->is('dashboard') ? 'active' : '' }}">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+    Dashboard
+  </a>
+  <a href="/admin/products" class="nav-item {{ request()->is('admin/products*') ? 'active' : '' }}">
+    <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
+    Inventory
+  </a>
+  <a href="/admin/suppliers" class="nav-item {{ request()->is('admin/suppliers*') ? 'active' : '' }}">
+    <svg viewBox="0 0 24 24"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+    Suppliers
+  </a>
+  <a href="/admin/purchases" class="nav-item {{ request()->is('admin/purchases*') ? 'active' : '' }}">
+    <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+    Purchases
+  </a>
+  <a href="/admin/promotions" class="nav-item {{ request()->is('admin/promotions*') ? 'active' : '' }}">
+    <svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+    Promotions
+  </a>
+  <a href="#" class="nav-item {{ request()->is('admin/loyalty*') ? 'active' : '' }}">
+    <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+    Loyalty
+  </a>
+  <a href="/admin/reports" class="nav-item {{ request()->is('admin/reports*') ? 'active' : '' }}">
+    <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    Reports
+  </a>
+</nav>
+  <div class="sidebar-user">
+    <div class="user-avatar">{{ strtoupper(substr(Auth::user()->name, 0, 1)) }}</div>
+    <div class="user-info"><strong>{{ Auth::user()->name }}</strong><span>{{ ucfirst(Auth::user()->role) }}</span></div>
+    <form method="POST" action="{{ route('logout') }}" style="margin-left:auto">
+      @csrf
+      <button type="submit" class="logout-btn"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
+    </form>
+  </div>
+</aside>
 
 <div class="toolbar">
       <div class="search-box">
@@ -165,39 +212,39 @@
             <div class="modal-icon">
               <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
             </div>
-            <h2>Agregar nuevo producto</h2>
+            <h2>Add new product</h2>
           </div>
           <button type="button" class="modal-close" id="closeCreateModal">
             <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
         </div>
-        <p class="modal-subtitle">Completa los datos del producto para registrarlo en el inventario.</p>
+        <p class="modal-subtitle">Complete the product details to register it in the inventory.</p>
 
         <form action="/admin/products" method="POST" enctype="multipart/form-data">
           @csrf
 
           <div class="form-group">
-            <label for="name">Nombre del producto</label>
+            <label for="name">Product name</label>
             <input type="text" id="name" name="name" placeholder="Ej. Coca Cola 500ml" value="{{ old('name') }}" required>
             @error('name') <div class="field-error">{{ $message }}</div> @enderror
           </div>
 
           <div class="form-group">
-            <label for="image">Imagen del producto (opcional)</label>
+            <label for="image">Product image (optional)</label>
             <div style="display:flex; align-items:center; gap:12px;">
               <img id="image-preview" src="" alt=""
                    style="width:56px; height:56px; border-radius:8px; object-fit:cover; border:1px solid #e5e5e5; display:none;">
               <input type="file" id="image" name="image" accept="image/png,image/jpeg,image/webp" style="flex:1;">
             </div>
-            <small style="color:#999; font-size:11px;">JPG, PNG o WEBP — máx. 2MB</small>
+            <small style="color:#999; font-size:11px;">JPG, PNG or WEBP — max. 2MB</small>
             @error('image') <div class="field-error">{{ $message }}</div> @enderror
           </div>
 
           <div class="form-group">
-            <label for="category-trigger">Categoría</label>
+            <label for="category-trigger">Category</label>
             <div class="custom-select" id="category-select-wrapper">
               <button type="button" class="custom-select-trigger" id="category-trigger">
-                <span id="category-trigger-label">Selecciona una categoría</span>
+                <span id="category-trigger-label">Select a category</span>
                 <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:#999;fill:none;stroke-width:2;"><polyline points="6 9 12 15 18 9"/></svg>
               </button>
               <input type="hidden" id="category_id" name="category_id" value="{{ old('category_id') }}">
@@ -208,12 +255,12 @@
 
           <div class="form-row">
             <div class="form-group">
-              <label for="price">Precio venta (S/)</label>
+              <label for="price">Sale price (S/)</label>
               <input type="number" step="0.01" min="0" id="price" name="price" placeholder="0.00" value="{{ old('price') }}" required>
               @error('price') <div class="field-error">{{ $message }}</div> @enderror
             </div>
             <div class="form-group">
-              <label for="cost">Costo (S/)</label>
+              <label for="cost">Cost (S/)</label>
               <input type="number" step="0.01" min="0" id="cost" name="cost" placeholder="0.00" value="{{ old('cost') }}">
               @error('cost') <div class="field-error">{{ $message }}</div> @enderror
             </div>
@@ -221,30 +268,30 @@
 
           <div class="form-row">
             <div class="form-group">
-              <label for="stock">Stock inicial</label>
+              <label for="stock">Stock initial</label>
               <input type="number" min="0" id="stock" name="stock" placeholder="0" value="{{ old('stock', 0) }}" required>
               @error('stock') <div class="field-error">{{ $message }}</div> @enderror
             </div>
             <div class="form-group">
-              <label for="min_stock">Stock mínimo</label>
+              <label for="min_stock">Minimum stock</label>
               <input type="number" min="0" id="min_stock" name="min_stock" placeholder="5" value="{{ old('min_stock', 5) }}">
               @error('min_stock') <div class="field-error">{{ $message }}</div> @enderror
             </div>
           </div>
 
           <div class="form-group">
-            <label for="description">Descripción (opcional)</label>
+            <label for="description">Description (optional)</label>
             <textarea id="description" name="description" rows="2">{{ old('description') }}</textarea>
           </div>
 
           <div class="modal-actions">
             <button type="button" class="btn" id="cancelCreateModal">
               <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-              Cancelar
+              Cancel
             </button>
             <button type="submit" class="btn btn-primary">
               <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-              Guardar producto
+              Save product
             </button>
           </div>
         </form>
@@ -275,7 +322,6 @@
           }
       });
 
-      // === Dropdown propio de categorias (panel con scroll fijo, no select nativo) ===
       const categoryTrigger = document.getElementById('category-trigger');
       const categoryTriggerLabel = document.getElementById('category-trigger-label');
       const categoryPanel = document.getElementById('category-panel');
@@ -287,14 +333,31 @@
           return;
         }
 
-        categoryPanel.innerHTML = categories.map(c => `
-          <div class="custom-select-option ${c.parent_id ? 'is-sub' : ''} ${String(c.id) === String(selectedId) ? 'is-selected' : ''}"
-               data-id="${c.id}" data-label="${(c.parent_id ? '— ' : '') + c.name.replace(/"/g, '&quot;')}">
-            ${c.parent_id ? '— ' : ''}${c.name}
-          </div>
-        `).join('');
+        categoryPanel.innerHTML = categories.map(c => {
+          const isDisabled = !c.parent_id && c.has_children;
+          const classes = [
+            'custom-select-option',
+            c.parent_id ? 'is-sub' : '',
+            String(c.id) === String(selectedId) ? 'is-selected' : '',
+            isDisabled ? 'is-disabled' : '',
+          ].filter(Boolean).join(' ');
+
+          const label = isDisabled
+            ? `${c.name} <span style="font-size:11px; color:#bbb;">(choose a subcategory)</span>`
+            : `${c.parent_id ? '— ' : ''}${c.name}`;
+
+          return `
+            <div class="${classes}"
+                 data-id="${c.id}" data-label="${(c.parent_id ? '— ' : '') + c.name.replace(/"/g, '&quot;')}"
+                 ${isDisabled ? 'data-disabled="true"' : ''}>
+              ${label}
+            </div>
+          `;
+        }).join('');
 
         categoryPanel.querySelectorAll('.custom-select-option').forEach(opt => {
+          if (opt.dataset.disabled) return;
+
           opt.addEventListener('click', () => {
             categoryHiddenInput.value = opt.dataset.id;
             categoryTriggerLabel.textContent = opt.dataset.label;
