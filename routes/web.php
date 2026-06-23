@@ -13,6 +13,7 @@ use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\CashController;
 use App\Http\Controllers\DiscountController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\RewardController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -42,6 +43,11 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::post('/promotions', [DiscountController::class, 'store'])->name('admin.promotions.store');
     Route::put('/promotions/{discount}', [DiscountController::class, 'update'])->name('admin.promotions.update');
     Route::get('/reports', [ReportController::class, 'index'])->name('admin.reports');
+    Route::get('/reports', [ReportController::class, 'index'])->name('admin.reports');
+    Route::get('/rewards', [RewardController::class, 'index'])->name('admin.rewards');
+    Route::post('/rewards', [RewardController::class, 'store'])->name('admin.rewards.store');
+    Route::put('/rewards/{reward}', [RewardController::class, 'update'])->name('admin.rewards.update');
+    Route::delete('/rewards/{reward}', [RewardController::class, 'destroy'])->name('admin.rewards.destroy');
 });
 
 Route::middleware(['auth', 'cashier'])->prefix('cashier')->group(function () {
