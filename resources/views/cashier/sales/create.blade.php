@@ -71,6 +71,20 @@
 
   .products-panel { padding: 20px 24px; overflow-y: auto; }
   .filters { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+
+  .price-search-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 18px; flex-wrap: wrap; }
+  .price-search-bar input[type="number"] {
+    width: 100px; border: 1px solid #e5e5e5; border-radius: 8px; padding: 8px 10px; font-size: 13px;
+  }
+  .price-search-sep { color: #bbb; font-size: 13px; }
+  .price-search-bar button {
+    border: 1px solid #e5e5e5; background: #fff; border-radius: 8px; padding: 8px 14px;
+    font-size: 13px; font-weight: 600; color: #333; cursor: pointer;
+  }
+  .price-search-bar button#bst-search-btn { background: #111; color: #fff; border-color: #111; }
+  .price-search-bar button#bst-search-btn:hover { background: #e8192c; border-color: #e8192c; }
+  .price-search-bar button:hover:not(#bst-search-btn) { border-color: #ccc; }
+  #bst-status { font-size: 12px; color: #999; }
   .filter-btn { padding: 7px 16px; border-radius: 100px; border: 1px solid #e0e0e0; background: #fff; font-size: 13px; font-weight: 500; color: #555; cursor: pointer; transition: all 0.15s; }
   .filter-btn:hover { border-color: #e8192c; color: #e8192c; }
   .filter-btn.active { background: #e8192c; color: #fff; border-color: #e8192c; }
@@ -160,9 +174,17 @@
       <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
       Inventory
     </a>
+    <a href="/cashier/cash" class="nav-item">
+      <svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+      Cash Register
+    </a>
     <a href="/cashier/loyalty" class="nav-item">
       <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
       Loyalty
+    </a>
+    <a href="/cashier/returns" class="nav-item">
+      <svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+      Returns
     </a>
   </nav>
   <div class="sidebar-user">
@@ -215,6 +237,15 @@
         @foreach($categories as $cat)
           <button class="filter-btn" onclick="filterCategory('{{ $cat->id }}', this)">{{ $cat->name }}</button>
         @endforeach
+      </div>
+
+      <div class="price-search-bar">
+        <input type="number" id="bst-min" placeholder="Min price" step="0.01" min="0">
+        <span class="price-search-sep">—</span>
+        <input type="number" id="bst-max" placeholder="Max price" step="0.01" min="0">
+        <button type="button" id="bst-search-btn">Search range (BST)</button>
+        <button type="button" id="bst-clear-btn">Clear</button>
+        <span id="bst-status"></span>
       </div>
 
       <div class="products-grid" id="products-grid">
@@ -315,6 +346,71 @@
   <input type="hidden" name="order_id" value="{{ request('order_id') }}">
   <div id="form-products"></div>
 </form>
+
+<script id="products-price-data" type="application/json">{!! json_encode($products->map(fn($p) => ['id' => $p->id, 'name' => $p->name, 'price' => (float) $p->price]), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}</script>
+
+<script>
+class BSTNode {
+  constructor(product) {
+    this.product = product;
+    this.left = null;
+    this.right = null;
+  }
+}
+
+class PriceBST {
+  constructor() {
+    this.root = null;
+    this.comparisons = 0;
+  }
+
+  insert(product) {
+    this.root = this.insertNode(this.root, product);
+  }
+
+  insertNode(node, product) {
+    if (node === null) {
+      return new BSTNode(product);
+    }
+    if (product.price < node.product.price) {
+      node.left = this.insertNode(node.left, product);
+    } else {
+      node.right = this.insertNode(node.right, product);
+    }
+    return node;
+  }
+
+  rangeSearch(min, max) {
+    this.comparisons = 0;
+    const result = [];
+    this.rangeSearchNode(this.root, min, max, result);
+    return result;
+  }
+
+  rangeSearchNode(node, min, max, result) {
+    if (node === null) return;
+
+    this.comparisons++;
+    if (min < node.product.price) {
+      this.rangeSearchNode(node.left, min, max, result);
+    }
+
+    this.comparisons++;
+    if (node.product.price >= min && node.product.price <= max) {
+      result.push(node.product);
+    }
+
+    this.comparisons++;
+    if (max > node.product.price) {
+      this.rangeSearchNode(node.right, min, max, result);
+    }
+  }
+}
+
+const productsForBST = JSON.parse(document.getElementById('products-price-data').textContent || '[]');
+const priceBST = new PriceBST();
+productsForBST.forEach(p => priceBST.insert(p));
+</script>
 
 <script>
 class Node {
@@ -680,6 +776,41 @@ function filterCategory(catId, btn) {
     card.style.display = (catId === 'all' || card.dataset.category === catId) ? '' : 'none';
   });
 }
+
+document.getElementById('bst-search-btn').addEventListener('click', () => {
+  const minInput = document.getElementById('bst-min').value;
+  const maxInput = document.getElementById('bst-max').value;
+  const status = document.getElementById('bst-status');
+
+  const min = minInput === '' ? 0 : parseFloat(minInput);
+  const max = maxInput === '' ? Infinity : parseFloat(maxInput);
+
+  if (isNaN(min) || isNaN(max) || min > max) {
+    status.textContent = 'Enter a valid price range.';
+    return;
+  }
+
+  const results = priceBST.rangeSearch(min, max);
+  const matchingIds = new Set(results.map(p => String(p.id)));
+
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.product-card').forEach(card => {
+    card.style.display = matchingIds.has(card.dataset.id) ? '' : 'none';
+  });
+
+  const maxLabel = maxInput === '' ? '∞' : `S/ ${max.toFixed(2)}`;
+  status.textContent = `BST: ${results.length} product(s) between S/ ${min.toFixed(2)} and ${maxLabel} — ${priceBST.comparisons} node comparisons (out of ${productsForBST.length} products total)`;
+});
+
+document.getElementById('bst-clear-btn').addEventListener('click', () => {
+  document.getElementById('bst-min').value = '';
+  document.getElementById('bst-max').value = '';
+  document.getElementById('bst-status').textContent = '';
+  document.querySelectorAll('.product-card').forEach(card => { card.style.display = ''; });
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  const allBtn = document.querySelector('.filter-btn');
+  if (allBtn) allBtn.classList.add('active');
+});
 </script>
 
 </body>
