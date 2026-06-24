@@ -59,20 +59,6 @@ class ReportController extends Controller
         ->latest()
         ->take(10)
         ->get();
-    
-    $salesDetailJson = json_encode(
-    $recentSales->map(function ($sale) {
-        return [
-            'id' => $sale->id,
-            'invoice' => 'INV-' . str_pad($sale->id, 5, '0', STR_PAD_LEFT),
-            'time' => $sale->created_at->format('d/m/Y H:i'),
-            'method' => $sale->payment_method ?? 'Cash',
-            'total' => (float) $sale->total,
-            'total_formatted' => 'S/ ' . number_format($sale->total, 2),
-        ];
-      })->values(),
-      JSON_UNESCAPED_UNICODE
-    );
 
     $averageTicket = $salesCount > 0 ? $totalSales / $salesCount : 0;
 
@@ -126,7 +112,7 @@ class ReportController extends Controller
         ->sum('total');
 
     return [
-        'name' => $supplier->name,
+        'name' => $supplier->company_name,
         'total' => (float) $total,
      ];
     })->filter(fn ($item) => $item['total'] > 0)->values();
@@ -378,7 +364,7 @@ public function exportExcel(Request $request)
                 foreach ($purchases as $purchase) {
                     fputcsv($file, [
                         'PO-' . str_pad($purchase->id, 5, '0', STR_PAD_LEFT),
-                        $purchase->supplier?->name ?? '-',
+                        $purchase->supplier?->company_name ?? '-',
                         ucfirst($purchase->status),
                         $purchase->created_at->format('d/m/Y'),
                         number_format($purchase->total, 2),

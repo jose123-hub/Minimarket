@@ -36,4 +36,8 @@ class Client extends Model
     {
         return $this->hasMany(RewardRedemption::class, 'client_id', 'id_cliente');
     }
+    public function getNameAttribute(): string
+    {
+        return trim("{$this->first_name} {$this->last_name}");
+    }
 }

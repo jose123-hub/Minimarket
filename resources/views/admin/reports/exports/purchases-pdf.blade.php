@@ -66,7 +66,7 @@
         @forelse($purchases as $purchase)
             <tr>
                 <td>PO-{{ str_pad($purchase->id, 5, '0', STR_PAD_LEFT) }}</td>
-                <td>{{ $purchase->supplier?->name ?? '-' }}</td>
+                <td>{{ $purchase->supplier?->company_name ?? '-' }}</td>
                 <td>{{ ucfirst($purchase->status) }}</td>
                 <td>{{ $purchase->created_at->format('d/m/Y') }}</td>
                 <td class="right">S/ {{ number_format($purchase->total, 2) }}</td>
