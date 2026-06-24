@@ -14,6 +14,8 @@ use App\Http\Controllers\CashController;
 use App\Http\Controllers\DiscountController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RewardController;
+use App\Http\Controllers\ReturnController;
+use App\Http\Controllers\Admin\ReturnApprovalController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -43,11 +45,15 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::post('/promotions', [DiscountController::class, 'store'])->name('admin.promotions.store');
     Route::put('/promotions/{discount}', [DiscountController::class, 'update'])->name('admin.promotions.update');
     Route::get('/reports', [ReportController::class, 'index'])->name('admin.reports');
-    Route::get('/reports', [ReportController::class, 'index'])->name('admin.reports');
     Route::get('/rewards', [RewardController::class, 'index'])->name('admin.rewards');
     Route::post('/rewards', [RewardController::class, 'store'])->name('admin.rewards.store');
     Route::put('/rewards/{reward}', [RewardController::class, 'update'])->name('admin.rewards.update');
     Route::delete('/rewards/{reward}', [RewardController::class, 'destroy'])->name('admin.rewards.destroy');
+    Route::get('/loyalty', [\App\Http\Controllers\Admin\LoyaltyOverviewController::class, 'index'])->name('admin.loyalty');
+    Route::get('/loyalty/{client}', [\App\Http\Controllers\Admin\LoyaltyOverviewController::class, 'show'])->name('admin.loyalty.show');
+    Route::get('/returns', [\App\Http\Controllers\Admin\ReturnApprovalController::class, 'index'])->name('admin.returns');
+    Route::post('/returns/{return}/approve', [\App\Http\Controllers\Admin\ReturnApprovalController::class, 'approve'])->name('admin.returns.approve');
+    Route::post('/returns/{return}/reject', [\App\Http\Controllers\Admin\ReturnApprovalController::class, 'reject'])->name('admin.returns.reject');
 });
 
 Route::middleware(['auth', 'cashier'])->prefix('cashier')->group(function () {
@@ -63,6 +69,10 @@ Route::middleware(['auth', 'cashier'])->prefix('cashier')->group(function () {
     Route::get('/cash', [CashController::class, 'index'])->name('cashier.cash');
     Route::post('/cash/open', [CashController::class, 'open'])->name('cashier.cash.open');
     Route::post('/cash/close', [CashController::class, 'close'])->name('cashier.cash.close');
+    Route::get('/returns', [\App\Http\Controllers\ReturnController::class, 'index'])->name('cashier.returns');
+    Route::get('/returns/create', [\App\Http\Controllers\ReturnController::class, 'create'])->name('cashier.returns.create');
+    Route::get('/returns/sale-lookup/{sale}', [\App\Http\Controllers\ReturnController::class, 'saleLookup'])->name('cashier.returns.lookup');
+    Route::post('/returns', [\App\Http\Controllers\ReturnController::class, 'store'])->name('cashier.returns.store');
 });
 
 Route::middleware(['auth'])->prefix('client')->group(function () {
