@@ -11,7 +11,7 @@ class ProductController extends Controller
 {
     public function index()
     {
-        $products = Product::with('category')->get();
+        $products = Product::with('category.parent')->get();
         $categories = Category::withCount('children')
             ->orderByRaw('COALESCE(parent_id, id), parent_id IS NOT NULL, name')
             ->get();
@@ -23,8 +23,9 @@ class ProductController extends Controller
                 'has_children' => $c->children_count > 0,
             ];
         });
+        $suppliers = \App\Models\Supplier::where('status', 'active')->get();
 
-        return view('products.index', compact('products', 'categories', 'categoriesForJs'));
+        return view('products.index', compact('products', 'categories', 'categoriesForJs', 'suppliers'));
     }
 
     public function create()
@@ -111,7 +112,7 @@ class ProductController extends Controller
         'cost'         => 'nullable|numeric|min:0',
         'stock'        => 'required|integer|min:0',
         'min_stock'    => 'nullable|integer|min:0',
-        'image'        => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+        'image'        => 'required|image|mimes:jpg,jpeg,png,webp|max:2048',
     ]);
 
     $imagePath = $product->image;

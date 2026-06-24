@@ -80,8 +80,18 @@
 
       <select class="filter-select" id="categoryFilter">
         <option value="">All</option>
-        @foreach($products->pluck('category')->filter()->unique('id') as $cat)
-          <option value="{{ $cat->name }}">{{ $cat->name }}</option>
+        @foreach($categories->where('parent_id', null) as $parent)
+          @php $children = $categories->where('parent_id', $parent->id); @endphp
+          @if($children->count() > 0)
+            <optgroup label="{{ $parent->name }}">
+              <option value="{{ $parent->name }}">All {{ $parent->name }}</option>
+              @foreach($children as $child)
+                <option value="{{ $child->name }}">{{ $child->name }}</option>
+              @endforeach
+            </optgroup>
+          @else
+            <option value="{{ $parent->name }}">{{ $parent->name }}</option>
+          @endif
         @endforeach
       </select>
 
@@ -130,10 +140,15 @@
             'id'             => $p->id,
             'code'           => 'P' . str_pad($p->id, 3, '0', STR_PAD_LEFT),
             'name'           => $p->name,
+            'description'    => $p->description,
             'image_url'      => $p->image ? asset('storage/' . $p->image) : null,
             'category'       => $p->category->name ?? '—',
+            'category_parent_name' => $p->category->parent->name ?? null,
+            'category_id'    => $p->category_id,
             'price'          => (float) $p->price,
+            'cost'           => (float) ($p->cost ?? 0),
             'stock'          => $p->stock,
+            'min_stock'      => $p->min_stock ?? 5,
             'status_class'   => $p->stock <= 0 ? 'out' : ($p->stock < ($p->min_stock ?? 5) ? 'low' : 'ok'),
             'status_label'   => $p->stock <= 0 ? 'Out of stock' : ($p->stock < ($p->min_stock ?? 5) ? 'Low stock' : 'Available'),
         ];
@@ -145,13 +160,21 @@
       const categoryFilter = document.getElementById('categoryFilter');
       let rows = [];
 
+      function escapeHtmlAttr(str) {
+        return str
+          .replace(/&/g, '&amp;')
+          .replace(/"/g, '&quot;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;');
+      }
+
       function productRowHtml(p) {
         const thumb = p.image_url
           ? `<img src="${p.image_url}" alt="${p.name}" style="width:34px; height:34px; border-radius:7px; object-fit:cover; border:1px solid #eee;">`
           : `<div style="width:34px; height:34px; border-radius:7px; background:#f5f5f5; display:flex; align-items:center; justify-content:center; color:#bbb; font-size:11px;">N/A</div>`;
 
         return `
-          <tr data-name="${p.name.toLowerCase()}" data-category="${p.category}">
+          <tr data-name="${p.name.toLowerCase()}" data-category="${p.category}" data-category-parent="${p.category_parent_name ?? ''}">
             <td class="prod-code">${p.code}</td>
             <td class="prod-name" style="display:flex; align-items:center; gap:10px;">${thumb}${p.name}</td>
             <td>${p.category}</td>
@@ -160,9 +183,9 @@
             <td><span class="badge ${p.status_class}">${p.status_label}</span></td>
             <td>
               <div class="actions" style="justify-content:flex-end">
-                <a href="/admin/products/${p.id}/edit" class="icon-btn">
+                <button type="button" class="icon-btn" data-product="${escapeHtmlAttr(JSON.stringify(p))}" onclick="openEditProduct(JSON.parse(this.dataset.product))">
                   <svg viewBox="0 0 24 24"><path d="M17 3a2.85 2.83 0 114 4L7.5 20.5 2 22l1.5-5.5z"/></svg>
-                </a>
+                </button>
                 <form action="/admin/products/${p.id}" method="POST" onsubmit="return confirm('¿Deleted this product?');">
                   <input type="hidden" name="_token" value="${document.querySelector('meta[name=csrf-token]')?.content ?? ''}">
                   <input type="hidden" name="_method" value="DELETE">
@@ -191,7 +214,7 @@
         const cat = categoryFilter.value;
         rows.forEach(row => {
           const matchesName = row.dataset.name.includes(term);
-          const matchesCategory = !cat || row.dataset.category === cat;
+          const matchesCategory = !cat || row.dataset.category === cat || row.dataset.categoryParent === cat;
           row.style.display = (matchesName && matchesCategory) ? '' : 'none';
         });
       }
@@ -287,16 +310,17 @@
             <div class="modal-icon">
               <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
             </div>
-            <h2>Add new product</h2>
+            <h2 id="product-modal-title">Add new product</h2>
           </div>
           <button type="button" class="modal-close" id="closeCreateModal">
             <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
         </div>
-        <p class="modal-subtitle">Complete the product details to register it in the inventory.</p>
+        <p class="modal-subtitle" id="product-modal-subtitle">Complete the product details to register it in the inventory.</p>
 
-        <form action="/admin/products" method="POST" enctype="multipart/form-data">
+        <form id="productForm" action="/admin/products" method="POST" enctype="multipart/form-data">
           @csrf
+          <input type="hidden" name="_method" id="product-method-field" value="PUT" disabled>
 
           <div class="form-group">
             <label for="name">Product name</label>
@@ -311,7 +335,7 @@
                    style="width:56px; height:56px; border-radius:8px; object-fit:cover; border:1px solid #e5e5e5; display:none;">
               <input type="file" id="image" name="image" accept="image/png,image/jpeg,image/webp" style="flex:1;">
             </div>
-            <small style="color:#999; font-size:11px;">JPG, PNG or WEBP — max. 2MB</small>
+            <small style="color:#999; font-size:11px;" id="image-hint">JPG, PNG or WEBP — max. 2MB</small>
             @error('image') <div class="field-error">{{ $message }}</div> @enderror
           </div>
 
@@ -355,6 +379,17 @@
           </div>
 
           <div class="form-group">
+            <label for="supplier_id">Supplier (optional)</label>
+            <select id="supplier_id" name="supplier_id">
+              <option value="">— None —</option>
+              @foreach($suppliers as $supplier)
+                <option value="{{ $supplier->id }}" {{ old('supplier_id') == $supplier->id ? 'selected' : '' }}>{{ $supplier->company_name }}</option>
+              @endforeach
+            </select>
+            @error('supplier_id') <div class="field-error">{{ $message }}</div> @enderror
+          </div>
+
+          <div class="form-group">
             <label for="description">Description (optional)</label>
             <textarea id="description" name="description" rows="2">{{ old('description') }}</textarea>
           </div>
@@ -366,7 +401,7 @@
             </button>
             <button type="submit" class="btn btn-primary">
               <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-              Save product
+              <span id="product-submit-text">Save product</span>
             </button>
           </div>
         </form>
@@ -375,8 +410,15 @@
 
     <script>
       const modal = document.getElementById('createModal');
+      const productForm = document.getElementById('productForm');
+      const productMethodField = document.getElementById('product-method-field');
+      const imagePreview = document.getElementById('image-preview');
+      const imageHint = document.getElementById('image-hint');
 
-      document.getElementById('openCreateModal').addEventListener('click', () => modal.classList.add('open'));
+      document.getElementById('openCreateModal').addEventListener('click', () => {
+        resetProductModalToCreate();
+        modal.classList.add('open');
+      });
       document.getElementById('closeCreateModal').addEventListener('click', () => modal.classList.remove('open'));
       document.getElementById('cancelCreateModal').addEventListener('click', () => modal.classList.remove('open'));
 
@@ -387,13 +429,12 @@
       });
 
       document.getElementById('image').addEventListener('change', function(e) {
-          const preview = document.getElementById('image-preview');
           const file = e.target.files[0];
           if (file) {
-              preview.src = URL.createObjectURL(file);
-              preview.style.display = 'block';
-          } else {
-              preview.style.display = 'none';
+              imagePreview.src = URL.createObjectURL(file);
+              imagePreview.style.display = 'block';
+          } else if (!imagePreview.dataset.existing) {
+              imagePreview.style.display = 'none';
           }
       });
 
@@ -409,7 +450,7 @@
         }
 
         categoryPanel.innerHTML = categories.map(c => {
-          const isDisabled = !c.parent_id && c.has_children;
+          const isDisabled = !c.parent_id && c.has_children && String(c.id) !== String(selectedId);
           const classes = [
             'custom-select-option',
             c.parent_id ? 'is-sub' : '',
@@ -442,6 +483,15 @@
             categoryPanel.classList.remove('open');
           });
         });
+
+        const selected = categories.find(c => String(c.id) === String(selectedId));
+        if (selected) {
+          categoryTriggerLabel.textContent = (selected.parent_id ? '— ' : '') + selected.name;
+          categoryTrigger.classList.remove('placeholder');
+        } else {
+          categoryTriggerLabel.textContent = 'Select a category';
+          categoryTrigger.classList.add('placeholder');
+        }
       }
 
       categoryTrigger.addEventListener('click', (e) => {
@@ -454,9 +504,56 @@
         }
       });
 
-      const initialCategoriesForDropdown = JSON.parse(document.getElementById('categories-data').textContent);
+      let currentCategoriesForDropdown = JSON.parse(document.getElementById('categories-data').textContent);
       const oldCategoryId = "{{ old('category_id') }}";
-      renderCategoryOptions(initialCategoriesForDropdown, oldCategoryId);
+      renderCategoryOptions(currentCategoriesForDropdown, oldCategoryId || null);
+
+      function resetProductModalToCreate() {
+        document.getElementById('product-modal-title').textContent = 'Add new product';
+        document.getElementById('product-modal-subtitle').textContent = 'Complete the product details to register it in the inventory.';
+        document.getElementById('product-submit-text').textContent = 'Save product';
+        imageHint.textContent = 'JPG, PNG or WEBP — max. 2MB';
+        productForm.action = '/admin/products';
+        productMethodField.disabled = true;
+        document.getElementById('image').required = false;
+
+        productForm.reset();
+        imagePreview.style.display = 'none';
+        imagePreview.removeAttribute('data-existing');
+        categoryHiddenInput.value = '';
+        renderCategoryOptions(currentCategoriesForDropdown, null);
+      }
+
+      function openEditProduct(product) {
+        document.getElementById('product-modal-title').textContent = 'Edit product';
+        document.getElementById('product-modal-subtitle').textContent = 'Update the product details below.';
+        document.getElementById('product-submit-text').textContent = 'Save changes';
+        imageHint.textContent = 'Leave empty to keep the current image. JPG, PNG or WEBP — max. 2MB';
+        productForm.action = '/admin/products/' + product.id;
+        productMethodField.disabled = false;
+
+        document.getElementById('name').value = product.name ?? '';
+        document.getElementById('description').value = product.description ?? '';
+        document.getElementById('price').value = product.price ?? '';
+        document.getElementById('cost').value = product.cost ?? '';
+        document.getElementById('stock').value = product.stock ?? 0;
+        document.getElementById('min_stock').value = product.min_stock ?? 5;
+        document.getElementById('supplier_id').value = product.supplier_id ?? '';
+
+        if (product.image_url) {
+          imagePreview.src = product.image_url;
+          imagePreview.style.display = 'block';
+          imagePreview.dataset.existing = '1';
+        } else {
+          imagePreview.style.display = 'none';
+          imagePreview.removeAttribute('data-existing');
+        }
+
+        categoryHiddenInput.value = product.category_id ?? '';
+        renderCategoryOptions(currentCategoriesForDropdown, product.category_id ?? null);
+
+        modal.classList.add('open');
+      }
     </script>
 
     <div class="modal-overlay" id="categoriesModal">
@@ -758,9 +855,21 @@
           const flatCategories = flattenCategoryTree(tree);
 
           const current = categoryFilter.value;
-          categoryFilter.innerHTML = '<option value="">All</option>' +
-            flatCategories.map(c => `<option value="${escapeHtml(c.name)}">${escapeHtml(c.name)}</option>`).join('');
+          categoryFilter.innerHTML = '<option value="">All</option>' + tree.map(parent => {
+            if (parent.children && parent.children.length > 0) {
+              const childOptions = parent.children
+                .map(child => `<option value="${escapeHtml(child.name)}">${escapeHtml(child.name)}</option>`)
+                .join('');
+              return `<optgroup label="${escapeHtml(parent.name)}">
+                <option value="${escapeHtml(parent.name)}">All ${escapeHtml(parent.name)}</option>
+                ${childOptions}
+              </optgroup>`;
+            }
+            return `<option value="${escapeHtml(parent.name)}">${escapeHtml(parent.name)}</option>`;
+          }).join('');
           categoryFilter.value = current;
+
+          currentCategoriesForDropdown = flatCategories;
 
           const currentSelected = categoryHiddenInput.value;
           renderCategoryOptions(flatCategories, currentSelected);
@@ -772,8 +881,10 @@
       function flattenCategoryTree(tree) {
         const flat = [];
         tree.forEach(parent => {
-          flat.push(parent);
-          (parent.children || []).forEach(child => flat.push(child));
+          flat.push({ ...parent, has_children: (parent.children_count ?? 0) > 0 });
+          (parent.children || []).forEach(child => {
+            flat.push({ ...child, has_children: (child.children_count ?? 0) > 0 });
+          });
         });
         return flat;
       }

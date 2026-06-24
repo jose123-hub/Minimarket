@@ -9,10 +9,10 @@ class CategoryController extends Controller
 {
     public function index(Request $request)
     {
-        $categories = Category::withCount('products')
+        $categories = Category::withCount(['products', 'children'])
             ->whereNull('parent_id')
             ->with(['children' => function ($query) {
-                $query->withCount('products')->orderBy('name');
+                $query->withCount(['products', 'children'])->orderBy('name');
             }])
             ->orderBy('name')
             ->get();

@@ -54,6 +54,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::get('/returns', [\App\Http\Controllers\Admin\ReturnApprovalController::class, 'index'])->name('admin.returns');
     Route::post('/returns/{return}/approve', [\App\Http\Controllers\Admin\ReturnApprovalController::class, 'approve'])->name('admin.returns.approve');
     Route::post('/returns/{return}/reject', [\App\Http\Controllers\Admin\ReturnApprovalController::class, 'reject'])->name('admin.returns.reject');
+    Route::get('/reports/pdf', [ReportController::class, 'exportPdf'])->name('admin.reports.pdf');
+    Route::get('/reports/excel', [ReportController::class, 'exportExcel'])->name('admin.reports.excel');
 });
 
 Route::middleware(['auth', 'cashier'])->prefix('cashier')->group(function () {
