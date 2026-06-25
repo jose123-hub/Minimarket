@@ -11,41 +11,32 @@ use Illuminate\Support\Facades\Auth;
 class DashboardController extends Controller
 {
     public function index()
-{
+    {
+    $totalSales = 0; 
     $totalProducts = Product::count();
 
-    $totalCategories = Category::count();
+    $totalCategories = Category::whereNull('parent_id')->count();
+    $totalSubcategories = Category::whereNotNull('parent_id')->count();
 
     $totalUsers = User::count();
 
-    $totalSales = Sale::count();
+    $lowStock = Product::with('category')
+        ->where('stock', '<', 10)
+        ->get();
 
-    $totalRevenue = Sale::sum('total');
-
-    $recentSales = Sale::with([
-        'customer',
-        'cashier'
-    ])
-    ->latest()
-    ->take(5)
-    ->get();
-
-    $recentProducts = Product::latest()
+    $recentProducts = Product::with('category')
+        ->latest()
         ->take(5)
         ->get();
 
-    $lowStock = Product::where('stock', '<=', 10)
-        ->get();
-
     return view('dashboard', compact(
+        'totalSales',
         'totalProducts',
         'totalCategories',
+        'totalSubcategories',
         'totalUsers',
-        'totalSales',
-        'totalRevenue',
-        'recentSales',
-        'recentProducts',
-        'lowStock'
+        'lowStock',
+        'recentProducts'
     ));
     }
     public function cashierDashboard()

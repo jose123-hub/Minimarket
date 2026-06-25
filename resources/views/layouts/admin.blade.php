@@ -129,6 +129,11 @@
   .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: #e8192c; background: #fff; }
   .field-error { color: #dc2626; font-size: 12px; margin-top: 4px; }
   .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 22px; }
+  .toast-message {position: fixed;top: 82px;right: 28px;z-index: 9999;min-width: 280px;max-width: 380px;padding: 14px 18px;border-radius: 12px;font-size: 14px;font-weight: 700;box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);animation: slideInToast 0.25s ease;}
+  .success-toast {background: #dcfce7;color: #166534;border: 1px solid #86efac;}
+  .error-toast {background: #fee2e2;color: #991b1b;border: 1px solid #fecaca;}
+  .toast-message.hide {opacity: 0;transform: translateX(20px);transition: all 0.3s ease;}
+  @keyframes slideInToast {from {opacity: 0;transform: translateX(20px);}to {opacity: 1;transform: translateX(0);}}
 
   @yield('admin-styles');
 </style>
@@ -155,10 +160,6 @@
     <a href="/admin/products" class="nav-item {{ $active === 'inventory' ? 'active' : '' }}">
       <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
       Inventory
-    </a>
-    <a href="/admin/categories" class="nav-item {{ $active === 'categories' ? 'active' : '' }}">
-      <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-      Categories
     </a>
     <a href="/admin/rewards" class="nav-item {{ $active === 'rewards' ? 'active' : '' }}">
       <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
@@ -220,16 +221,41 @@
   <div class="content">
 
     @if(session('success'))
-      <div class="flash-success">{{ session('success') }}</div>
+      <div class="toast-message success-toast">
+        {{ session('success') }}
+      </div>
     @endif
     @if(session('error'))
-      <div class="flash-error">{{ session('error') }}</div>
+      <div class="toast-message error-toast">
+        {{ session('error') }}
+      </div>
+    @endif
+    @if($errors->any())
+      <div class="toast-message error-toast">
+        {{ $errors->first() }}
+      </div>
     @endif
 
     {{ $slot }}
 
   </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const toastMessages = document.querySelectorAll('.toast-message');
+
+    toastMessages.forEach(function (toast) {
+        setTimeout(function () {
+            toast.classList.add('hide');
+
+            setTimeout(function () {
+                toast.remove();
+            }, 300);
+        }, 3000);
+    });
+});
+</script>
 
 </body>
 </html>

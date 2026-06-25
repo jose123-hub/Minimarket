@@ -64,6 +64,11 @@
   .btn-receive svg { width: 13px; height: 13px; stroke: #fff; fill: none; stroke-width: 2; }
   .empty { text-align: center; padding: 48px; color: #aaa; font-size: 14px; }
   .success-msg { background: #f0fff4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 10px 14px; font-size: 13px; color: #16a34a; margin-bottom: 16px; }
+  .toast-message {position: fixed;top: 82px;right: 28px;z-index: 9999;min-width: 280px;max-width: 380px;padding: 14px 18px;border-radius: 12px;font-size: 14px;font-weight: 700;box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);animation: slideInToast 0.25s ease;}
+  .success-toast {background: #dcfce7;color: #166534;border: 1px solid #86efac;}
+  .error-toast {background: #fee2e2;color: #991b1b;border: 1px solid #fecaca;}
+  .toast-message.hide {opacity: 0;transform: translateX(20px);transition: all 0.3s ease;}
+  @keyframes slideInToast {from {opacity: 0;transform: translateX(20px);}to {opacity: 1;transform: translateX(0);}}
 </style>
 </head>
 <body>
@@ -106,7 +111,19 @@
   <div class="content">
 
     @if(session('success'))
-      <div class="success-msg">{{ session('success') }}</div>
+      <div class="toast-message success-toast">
+        {{ session('success') }}
+      </div>
+    @endif
+    @if(session('error'))
+      <div class="toast-message error-toast">
+        {{ session('error') }}
+      </div>
+    @endif
+    @if($errors->any())
+      <div class="toast-message error-toast">
+        {{ $errors->first() }}
+      </div>
     @endif
 
     <div class="toolbar">
@@ -176,6 +193,22 @@ document.getElementById('search-input').addEventListener('input', function() {
   document.querySelectorAll('#purchases-table tr').forEach(row => {
     row.style.display = (row.dataset.name || '').includes(q) ? '' : 'none';
   });
+});
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const toastMessages = document.querySelectorAll('.toast-message');
+
+    toastMessages.forEach(function (toast) {
+        setTimeout(function () {
+            toast.classList.add('hide');
+
+            setTimeout(function () {
+                toast.remove();
+            }, 300);
+        }, 3000);
+    });
 });
 </script>
 

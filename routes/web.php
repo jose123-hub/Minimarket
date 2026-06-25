@@ -40,6 +40,11 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::post('/purchases', [PurchaseController::class, 'store'])->name('admin.purchases.store');
     Route::get('/purchases/{purchase}/receive', [PurchaseController::class, 'receiveForm'])->name('admin.purchases.receive.form');
     Route::post('/purchases/{purchase}/receive', [PurchaseController::class, 'receive'])->name('admin.purchases.receive');
+    Route::get('/purchases/{purchase}', [PurchaseController::class, 'show'])->name('admin.purchases.show');
+    Route::get('/purchases/{purchase}/edit', [PurchaseController::class, 'edit'])->name('admin.purchases.edit');
+    Route::put('/purchases/{purchase}', [PurchaseController::class, 'update'])->name('admin.purchases.update');
+    Route::post('/purchases/{purchase}/cancel', [PurchaseController::class, 'cancel'])->name('admin.purchases.cancel');
+    Route::delete('/purchases/{purchase}', [PurchaseController::class, 'destroy'])->name('admin.purchases.destroy');
     Route::resource('products', ProductController::class);
     Route::get('/promotions', [DiscountController::class, 'index'])->name('admin.promotions');
     Route::post('/promotions', [DiscountController::class, 'store'])->name('admin.promotions.store');

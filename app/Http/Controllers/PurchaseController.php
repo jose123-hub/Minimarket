@@ -21,7 +21,9 @@ class PurchaseController extends Controller
     public function create()
     {
         $suppliers = Supplier::where('status', 'active')->get();
-        $products = Product::with('category')->get();
+        $products = Product::with(['category', 'supplier'])
+           ->orderBy('name')
+           ->get();
         return view('admin.purchases.create', compact('suppliers', 'products'));
     }
 
@@ -39,7 +41,7 @@ class PurchaseController extends Controller
         DB::beginTransaction();
         try {
             $order = PurchaseOrder::create([
-                'order_number'      => 'OC-' . str_pad(rand(1000, 9999), 4, '0', STR_PAD_LEFT),
+                'order_number' => $this->generateOrderNumber(),
                 'order_date'        => now(),
                 'estimated_delivery'=> $request->estimated_delivery,
                 'status'            => 'pending',
@@ -129,9 +131,6 @@ class PurchaseController extends Controller
         }
     }
 
-    /**
-     * Full detail view of a single purchase order.
-     */
     public function show(PurchaseOrder $purchase)
     {
         $purchase->load(['supplier', 'user', 'details.product']);
@@ -218,5 +217,13 @@ class PurchaseController extends Controller
         $purchase->delete();
 
         return redirect('/admin/purchases')->with('success', 'Purchase order deleted.');
+    }
+    private function generateOrderNumber(): string
+    {
+    do {
+        $orderNumber = 'OC-' . now()->format('YmdHis') . rand(10, 99);
+    } while (PurchaseOrder::where('order_number', $orderNumber)->exists());
+
+    return $orderNumber;
     }
 }

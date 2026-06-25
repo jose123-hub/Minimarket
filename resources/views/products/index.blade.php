@@ -102,7 +102,7 @@
 
       <button class="btn" id="sortByPriceBtn" type="button">
         <svg viewBox="0 0 24 24"><line x1="12" y1="20" x2="12" y2="4"/><polyline points="6 10 12 4 18 10"/></svg>
-        Sort by price (Quick Sort)
+        Sort by price
       </button>
 
       <button class="btn" id="openCategoriesModal" type="button">

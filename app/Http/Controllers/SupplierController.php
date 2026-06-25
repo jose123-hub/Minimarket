@@ -25,16 +25,15 @@ class SupplierController extends Controller
             'ruc'          => 'required|unique:suppliers,ruc',
         ]);
 
-        Supplier::create([
-            'company_name' => $request->company_name,
-            'ruc'          => $request->ruc,
-            'contact_name' => $request->contact_name,
-            'phone'        => $request->phone,
-            'email'        => $request->email,
-            'address'      => $request->address,
-            'status'       => $request->status ?? 'active',
-        ]);
-
+        $request->validate([
+              'company_name' => 'required|string|max:255',
+              'ruc'          => 'required|digits:11|unique:suppliers,ruc',
+              'contact_name' => 'nullable|string|max:255',
+              'phone'        => 'nullable|string|max:20',
+              'email'        => 'nullable|email|max:255',
+              'address'      => 'nullable|string|max:255',
+              'status'       => 'required|in:active,inactive',
+           ]);
         return redirect('/admin/suppliers')->with('success', 'Supplier created successfully.');
     }
 
@@ -45,27 +44,47 @@ class SupplierController extends Controller
 
     public function update(Request $request, Supplier $supplier)
     {
-        $request->validate([
-            'company_name' => 'required',
-            'ruc'          => 'required|unique:suppliers,ruc,' . $supplier->id,
-        ]);
+    $request->validate([
+        'company_name' => 'required|string|max:255',
+        'ruc'          => 'required|digits:11|unique:suppliers,ruc,' . $supplier->id,
+        'contact_name' => 'nullable|string|max:255',
+        'phone'        => 'nullable|string|max:20',
+        'email'        => 'nullable|email|max:255',
+        'address'      => 'nullable|string|max:255',
+        'status'       => 'required|in:active,inactive',
+    ]);
 
-        $supplier->update([
-            'company_name' => $request->company_name,
-            'ruc'          => $request->ruc,
-            'contact_name' => $request->contact_name,
-            'phone'        => $request->phone,
-            'email'        => $request->email,
-            'address'      => $request->address,
-            'status'       => $request->status ?? 'active',
-        ]);
+    $supplier->update([
+        'company_name' => $request->company_name,
+        'ruc'          => $request->ruc,
+        'contact_name' => $request->contact_name,
+        'phone'        => $request->phone,
+        'email'        => $request->email,
+        'address'      => $request->address,
+        'status'       => $request->status,
+    ]);
 
-        return redirect('/admin/suppliers')->with('success', 'Supplier updated successfully.');
+    return redirect()
+        ->route('suppliers.index')
+        ->with('success', 'Supplier updated successfully.');
     }
 
     public function destroy(Supplier $supplier)
     {
-        $supplier->delete();
-        return redirect('/admin/suppliers')->with('success', 'Supplier deleted successfully.');
+    $supplier->loadCount(['products', 'purchaseOrders']);
+
+    if ($supplier->products_count > 0 || $supplier->purchase_orders_count > 0) {
+        $supplier->update([
+            'status' => 'inactive',
+        ]);
+
+        return redirect('/admin/suppliers')
+            ->with('success', 'Supplier has related records, so it was marked as inactive.');
+    }
+
+    $supplier->delete();
+
+    return redirect('/admin/suppliers')
+        ->with('success', 'Supplier deleted successfully.');
     }
 }

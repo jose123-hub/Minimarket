@@ -91,6 +91,14 @@
   .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
   .btn-update { flex: 1; padding: 11px; background: #e8192c; color: #fff; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; }
   .btn-cancel-modal { flex: 1; padding: 11px; background: #f5f5f5; color: #555; border: none; border-radius: 8px; font-size: 14px; cursor: pointer; }
+  .product-select {width: 100%;max-width: 100%;height: 42px;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;}
+  .product-select option {max-width: 100%;white-space: normal;}
+  .modal,.modal-content,.promotion-modal,.form-card {max-width: 100%;}.modal-content,.promotion-modal {overflow: visible;}
+  .toast-message {position: fixed;top: 82px;right: 28px;z-index: 9999;min-width: 280px;max-width: 380px;padding: 14px 18px;border-radius: 12px;font-size: 14px;font-weight: 700;box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);animation: slideInToast 0.25s ease;}
+  .success-toast {background: #dcfce7;color: #166534;border: 1px solid #86efac;}
+  .error-toast {background: #fee2e2;color: #991b1b;border: 1px solid #fecaca;}
+  .toast-message.hide {opacity: 0;transform: translateX(20px);transition: all 0.3s ease;}
+  @keyframes slideInToast {from {opacity: 0;transform: translateX(20px);}to {opacity: 1;transform: translateX(0);}}
 </style>
 </head>
 <body>
@@ -132,14 +140,20 @@
 
     <div>
       @if(session('success'))
-        <div class="success-msg">{{ session('success') }}</div>
-      @endif
-      @if(session('error'))
-        <div class="error-msg">{{ session('error') }}</div>
-      @endif
-      @if($errors->any())
-        <div class="error-msg">{{ $errors->first() }}</div>
-      @endif
+    <div class="toast-message success-toast" id="successToast">
+        {{ session('success') }}
+    </div>
+     @endif
+     @if(session('error'))
+    <div class="toast-message error-toast" id="errorToast">
+        {{ session('error') }}
+    </div>
+     @endif
+        @if($errors->any())
+    <div class="toast-message error-toast" id="validationToast">
+        {{ $errors->first() }}
+    </div>
+     @endif
 
       <div class="form-card">
         <div class="form-card-title">
@@ -151,19 +165,28 @@
           @csrf
           <div class="form-group">
             <label>Product</label>
-            <select name="product_id">
-              <option value="">— Select product —</option>
+           <select name="product_id" class="form-control product-select" required>
+            <option value="">Select product</option>
               @foreach($products as $product)
-                <option value="{{ $product->id }}">{{ $product->name }}</option>
-              @endforeach
-            </select>
+            <option value="{{ $product->id }}">
+               {{ $product->name }} — {{ $product->category?->name ?? 'No category' }}
+             </option>
+            @endforeach
+           </select>
           </div>
 
           <div class="form-group">
             <label>Discount (%)</label>
             <div class="input-prefix">
               <span>%</span>
-              <input type="number" name="value" min="1" max="100" placeholder="15">
+              <input type="number"
+             name="value"
+             class="form-control discount-input"
+             min="1"
+             max="100"
+             step="1"
+             required
+             oninput="this.value = this.value.replace(/[^0-9]/g, ''); if (this.value > 100) this.value = 100; if (this.value < 1 && this.value !== '') this.value = 1;">
             </div>
           </div>
 
@@ -300,6 +323,22 @@ function closeEdit() {
 
 document.getElementById('edit-modal').addEventListener('click', function(e) {
   if (e.target === this) closeEdit();
+});
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const toastMessages = document.querySelectorAll('.toast-message');
+
+    toastMessages.forEach(function (toast) {
+        setTimeout(function () {
+            toast.classList.add('hide');
+
+            setTimeout(function () {
+                toast.remove();
+            }, 300);
+        }, 3000);
+    });
 });
 </script>
 

@@ -94,6 +94,11 @@
 
   .alert-success { background: #f0fff4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 10px 14px; font-size: 13px; color: #16a34a; margin-bottom: 16px; }
   .alert-error { background: #fff0f0; border: 1px solid #fcc; border-radius: 8px; padding: 10px 14px; font-size: 13px; color: #c00; margin-bottom: 16px; }
+  .toast-message {position: fixed;top: 82px;right: 28px;z-index: 9999;min-width: 280px;max-width: 380px;padding: 14px 18px;border-radius: 12px;font-size: 14px;font-weight: 700;box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);animation: slideInToast 0.25s ease;}
+  .success-toast {background: #dcfce7;color: #166534;border: 1px solid #86efac;}
+  .error-toast {background: #fee2e2;color: #991b1b;border: 1px solid #fecaca;}
+  .toast-message.hide {opacity: 0;transform: translateX(20px);transition: all 0.3s ease;}
+  @keyframes slideInToast {from {opacity: 0;transform: translateX(20px);}to {opacity: 1;transform: translateX(0);}}
 </style>
 </head>
 <body>
@@ -181,10 +186,19 @@
     <div class="loyalty-panel">
 
       @if(session('success'))
-        <div class="alert-success">{{ session('success') }}</div>
+       <div class="toast-message success-toast">
+        {{ session('success') }}
+       </div>
       @endif
       @if(session('error'))
-        <div class="alert-error">{{ session('error') }}</div>
+       <div class="toast-message error-toast">
+        {{ session('error') }}
+       </div>
+      @endif
+      @if($errors->any())
+       <div class="toast-message error-toast">
+        {{ $errors->first() }}
+       </div>
       @endif
 
       @if(!$selected)
@@ -204,8 +218,8 @@
           </div>
           <div>
             <div class="stars-equiv">
-              <span>Equivalent to</span>
-              <strong>S/ {{ number_format($selected->accumulated_stars / 20, 2) }}</strong>
+              <span>Available balance</span>
+              <strong>{{ $selected->accumulated_stars }} stars</strong>
             </div>
             <div class="profile-badge">
               <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
@@ -216,7 +230,7 @@
         <div class="actions-row">
           <div class="action-card">
             <h3>📈 Earn stars</h3>
-            <p>1 star per S/1.00 spent</p>
+            <<p>1 star per S/5.00 spent</p>
             <form method="POST" action="{{ route('cashier.loyalty.earn') }}">
               @csrf
               <input type="hidden" name="client_id" value="{{ $selected->id_cliente }}">
@@ -227,17 +241,29 @@
             </form>
           </div>
           <div class="action-card">
-            <h3>🎁 Redeem stars</h3>
-            <p>20 stars = S/1.00 discount</p>
-            <form method="POST" action="{{ route('cashier.loyalty.redeem') }}">
-              @csrf
-              <input type="hidden" name="client_id" value="{{ $selected->id_cliente }}">
-              <div class="action-input-row">
-                <input type="number" name="stars" min="1" max="{{ $selected->accumulated_stars }}" placeholder="Stars" class="action-input">
-                <button type="submit" class="btn-redeem">Redeem</button>
-              </div>
-            </form>
-          </div>
+           <h3>🎁 Redeem reward</h3>
+           <p>Select an active reward according to the customer's stars</p>
+          <form method="POST" action="{{ route('cashier.loyalty.redeem') }}">
+           @csrf
+          <input type="hidden" name="client_id" value="{{ $selected->id_cliente }}">
+         <div class="action-input-row">
+       <select name="reward_id" class="action-input" required>
+        <option value="">Select reward</option>
+           @foreach($rewards as $reward)
+          <option value="{{ $reward->id }}"
+                  {{ $selected->accumulated_stars < $reward->stars_required ? 'disabled' : '' }}>
+            {{ $reward->name }}
+            —
+            {{ $reward->stars_required }} stars
+            —
+            Stock: {{ $reward->available_stock }}
+          </option>
+           @endforeach
+          </select>
+            <button type="submit" class="btn-redeem">Redeem</button>
+           </div>
+          </form>
+         </div>
         </div>
 
         <div class="history-card">
@@ -292,6 +318,22 @@ document.getElementById('client-search').addEventListener('input', function() {
     const email = item.querySelector('.client-email').textContent.toLowerCase();
     item.style.display = name.includes(q) || email.includes(q) ? '' : 'none';
   });
+});
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const toastMessages = document.querySelectorAll('.toast-message');
+
+    toastMessages.forEach(function (toast) {
+        setTimeout(function () {
+            toast.classList.add('hide');
+
+            setTimeout(function () {
+                toast.remove();
+            }, 300);
+        }, 3000);
+    });
 });
 </script>
 

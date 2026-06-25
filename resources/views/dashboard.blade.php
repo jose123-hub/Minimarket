@@ -112,13 +112,12 @@
   .stock-qty strong { font-size: 18px; font-weight: 800; color: #e8192c; display: block; text-align: right; }
   .stock-qty span { font-size: 11px; color: #999; }
 
-  .info-banner {
-    background: #fffbeb; border: 1px solid #fde68a; border-radius: 12px;
-    padding: 14px 18px; margin-bottom: 24px; display: flex; align-items: center; gap: 12px;
-  }
+  .info-banner {background: #fffbeb; border: 1px solid #fde68a; border-radius: 12px;padding: 14px 18px; margin-bottom: 24px; display: flex; align-items: center; gap: 12px;}
   .info-banner svg { width: 18px; height: 18px; stroke: #f59e0b; fill: none; stroke-width: 2; flex-shrink: 0; }
   .info-banner p { font-size: 13px; color: #78350f; }
   .info-banner strong { font-weight: 700; }
+  .report-icon {width: 48px;height: 48px;border-radius: 14px;display: flex;align-items: center;justify-content: center;background: #fee2e2;color: #e8192c;}
+  .report-icon svg {width: 24px;height: 24px;stroke: currentColor;fill: none;stroke-width: 1.8;}
 </style>
 </head>
 <body>
@@ -195,12 +194,6 @@
 
   <div class="content">
 
-    <div class="info-banner">
-      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-      <p><strong>Sales are recorded by cashiers.</strong> 
-    Sales, purchases and promotions are reflected here for supervision and reporting only.</p>
-    </div>
-
     <div class="metrics">
       <div class="metric-card">
         <div>
@@ -229,14 +222,22 @@
         </div>
       </div>
       <div class="metric-card">
-        <div>
-          <div class="metric-label">Categories</div>
-          <div class="metric-value">{{ $totalCategories }}</div>
-          <div class="metric-note">Active categories</div>
-        </div>
-        <div class="metric-icon dark">
-          <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-        </div>
+  <div>
+    <div class="metric-label">Main Categories</div>
+    <div class="metric-value">{{ $totalCategories }}</div>
+    <div class="metric-note">{{ $totalSubcategories }} subcategories</div>
+  </div>
+
+  <div class="metric-icon dark">
+    <svg viewBox="0 0 24 24">
+         <line x1="8" y1="6" x2="21" y2="6"/>
+         <line x1="8" y1="12" x2="21" y2="12"/>
+         <line x1="8" y1="18" x2="21" y2="18"/>
+         <line x1="3" y1="6" x2="3.01" y2="6"/>
+         <line x1="3" y1="12" x2="3.01" y2="12"/>
+         <line x1="3" y1="18" x2="3.01" y2="18"/>
+        </svg>
+       </div>
       </div>
       <div class="metric-card">
         <div>
@@ -268,7 +269,16 @@
         Promotions
       </a>
       <a href="/admin/reports" class="quick-btn">
-    Sales Reports
+        <div class="report-icon sales-report-icon">
+      <svg viewBox="0 0 24 24">
+        <path d="M4 19V5a2 2 0 012-2h12a2 2 0 012 2v14"/>
+        <path d="M8 7h8"/>
+        <path d="M8 11h8"/>
+        <path d="M8 15h4"/>
+        <path d="M4 19h16"/>
+       </svg>
+      </div>
+        Sales Reports
        </a>
     </div>
 

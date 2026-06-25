@@ -250,10 +250,16 @@
 
       <div class="products-grid" id="products-grid">
         @foreach($products as $product)
+        @php
+          $activeDiscount = $product->activeDiscount();
+          $finalPrice = $product->finalPrice();
+        @endphp
         <div class="product-card {{ $product->stock <= 0 ? 'out-of-stock' : '' }}"
              data-id="{{ $product->id }}"
              data-name="{{ $product->name }}"
-             data-price="{{ $product->price }}"
+             data-price="{{ $finalPrice }}"
+             data-original-price="{{ $product->price }}"
+             data-discount="{{ $activeDiscount?->value ?? 0 }}"
              data-stock="{{ $product->stock }}"
              data-category="{{ $product->category_id }}"
              @if($product->stock > 0) onclick="addToCart(this)" @endif>
@@ -262,7 +268,21 @@
             <div class="product-category">{{ $product->category?->name }}</div>
             <div class="product-name">{{ $product->name }}</div>
             <div class="product-footer">
-              <span class="product-price">S/ {{ number_format($product->price, 2) }}</span>
+              @if($activeDiscount)
+             <span style="text-decoration: line-through; color:#999; font-size:12px;">
+               S/ {{ number_format($product->price, 2) }}
+             </span>
+               <span class="product-price">
+                 S/ {{ number_format($finalPrice, 2) }}
+               </span>
+                  <span style="font-size:11px; color:#16a34a; font-weight:700;">
+                 -{{ number_format($activeDiscount->value, 0) }}%
+               </span>
+              @else
+               <span class="product-price">
+                S/ {{ number_format($product->price, 2) }}
+               </span>
+              @endif
               <span class="product-stock">{{ $product->stock }} u.</span>
             </div>
           </div>

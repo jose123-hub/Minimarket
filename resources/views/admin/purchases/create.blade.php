@@ -121,8 +121,20 @@
 
   <div class="content">
 
+    @if(session('success'))
+      <div class="toast-message success-toast">
+        {{ session('success') }}
+      </div>
+    @endif
     @if(session('error'))
-      <div class="error-msg">{{ session('error') }}</div>
+      <div class="toast-message error-toast">
+        {{ session('error') }}
+      </div>
+    @endif
+    @if($errors->any())
+      <div class="toast-message error-toast">
+        {{ $errors->first() }}
+      </div>
     @endif
 
     <form id="purchase-form" method="POST" action="{{ route('admin.purchases.store') }}">
@@ -154,14 +166,15 @@
           <h3>Add product</h3>
           <div class="add-row">
             <select id="product-select">
-              <option value="">— Select product —</option>
-              @foreach($products as $product)
-                <option value="{{ $product->id }}"
-                  data-name="{{ $product->name }}"
-                  data-cost="{{ $product->cost ?? 0 }}">
-                  {{ $product->name }} — S/ {{ number_format($product->cost ?? 0, 2) }}
-                </option>
-              @endforeach
+           <option value="">— Select product —</option>
+           @foreach($products as $product)
+             <option value="{{ $product->id }}"
+              data-name="{{ $product->name }}"
+              data-cost="{{ $product->cost ?? 0 }}"
+              data-category="{{ $product->category?->name ?? 'No category' }}">
+              {{ $product->name }} — {{ $product->category?->name ?? 'No category' }} — Cost: S/ {{ number_format($product->cost ?? 0, 2) }}
+             </option>
+             @endforeach
             </select>
             <button type="button" class="btn-add-product" onclick="addProduct()">
               <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -203,7 +216,7 @@
         <a href="/admin/purchases" class="btn-cancel">Cancel</a>
         <button type="submit" class="btn-save" onclick="return prepareForm()">
           <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-          Register purchase & update stock
+          Register purchase order
         </button>
       </div>
 
@@ -279,7 +292,10 @@ function renderTable() {
     total += subtotal;
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td><span class="product-name">${p.name}</span></td>
+      <td>
+      <span class="product-name">${p.name}</span>
+      <div style="font-size:12px; color:#999; margin-top:2px;">${p.category}</div>
+      </td>
       <td><input type="number" class="qty-input" value="${p.quantity}" min="1" onchange="updateQty(${p.id}, this.value)"></td>
       <td><input type="number" class="cost-input" value="${p.cost.toFixed(2)}" min="0" step="0.01" onchange="updateCost(${p.id}, this.value)"></td>
       <td><span class="subtotal">S/ ${subtotal.toFixed(2)}</span></td>

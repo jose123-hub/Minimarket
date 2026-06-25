@@ -101,15 +101,16 @@ class SaleController extends Controller
                 throw new \Exception("Not enough stock for \"{$product->name}\". Available: {$product->stock}, requested: {$item['quantity']}.");
             }
 
-            $subtotal = $product->price * $item['quantity'];
+        $unitPrice = $product->finalPrice();
+        $subtotal = $unitPrice * $item['quantity'];
 
-            SaleDetail::create([
-                'sale_id'    => $sale->id,
-                'product_id' => $product->id,
-                'quantity'   => $item['quantity'],
-                'price'      => $product->price,
-                'subtotal'   => $subtotal,
-            ]);
+        SaleDetail::create([
+          'sale_id'    => $sale->id,
+          'product_id' => $product->id,
+          'quantity'   => $item['quantity'],
+          'price'      => $unitPrice,
+          'subtotal'   => $subtotal,
+        ]);
 
             $product->stock -= $item['quantity'];
             $product->save();
@@ -119,7 +120,7 @@ class SaleController extends Controller
 
         $sale->update(['total' => $total]);
 
-        $starsEarned = (int) floor($total);
+        $starsEarned = (int) floor($total / 5);
         $client = \App\Models\Client::where('user_id', $sale->customer_id)->first();
 
         if ($client && $starsEarned > 0) {
@@ -137,7 +138,7 @@ class SaleController extends Controller
         }
 
         DB::commit();
-        return redirect()->back()->with('success', 'Sale registered successfully. ' . ($starsEarned > 0 ? "+{$starsEarned} stars earned!" : ''));
+        return redirect()->back()->with('success', 'Sale registered successfully. ' . ($starsEarned > 0 ? "+{$starsEarned} stars earned! Every S/5.00 gives 1 star." : ''));
 
     } catch (\Exception $e) {
         DB::rollBack();

@@ -3,7 +3,6 @@
     subtitle="Overview of customer stars and program activity"
     active="loyalty"
 >
-
     <div class="metrics-row" style="display:grid; grid-template-columns: repeat(3, 1fr); gap:16px; margin-bottom:20px;">
       <div class="table-card" style="padding:18px 20px;">
         <div style="font-size:12px; color:#999; font-weight:600;">Stars outstanding</div>

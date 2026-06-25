@@ -95,8 +95,20 @@
 
   <div class="content">
 
+    @if(session('success'))
+      <div class="toast-message success-toast">
+        {{ session('success') }}
+      </div>
+    @endif
     @if(session('error'))
-      <div class="error-msg">{{ session('error') }}</div>
+      <div class="toast-message error-toast">
+        {{ session('error') }}
+      </div>
+    @endif
+    @if($errors->any())
+      <div class="toast-message error-toast">
+        {{ $errors->first() }}
+      </div>
     @endif
 
     <form action="/admin/purchases/{{ $purchase->id }}" method="POST">

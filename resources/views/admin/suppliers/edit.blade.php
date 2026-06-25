@@ -89,9 +89,9 @@
     @endif
 
     <div class="form-card">
-      <form action="/admin/suppliers/{{ $supplier->id }}" method="POST">
-        @csrf
-        @method('PUT')
+      <form action="{{ route('suppliers.update', $supplier) }}" method="POST">
+           @csrf
+           @method('PUT')
         <div class="form-grid">
           <div class="form-group full">
             <label>Company Name <span class="required">*</span></label>

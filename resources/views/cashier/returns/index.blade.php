@@ -48,6 +48,11 @@
   .empty { text-align: center; color: #aaa; font-size: 13px; padding: 30px 0; }
   .flash-success { background: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46; padding: 12px 16px; border-radius: 10px; margin-bottom: 18px; font-size: 13px; }
   .flash-error { background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; padding: 12px 16px; border-radius: 10px; margin-bottom: 18px; font-size: 13px; }
+  .toast-message {position: fixed;top: 82px;right: 28px;z-index: 9999;min-width: 280px;max-width: 380px;padding: 14px 18px;border-radius: 12px;font-size: 14px;font-weight: 700;box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);animation: slideInToast 0.25s ease;}
+  .success-toast {background: #dcfce7;color: #166534;border: 1px solid #86efac;}
+  .error-toast {background: #fee2e2;color: #991b1b;border: 1px solid #fecaca;}
+  .toast-message.hide {opacity: 0;transform: translateX(20px);transition: all 0.3s ease;}
+  @keyframes slideInToast {from {opacity: 0;transform: translateX(20px);}to {opacity: 1;transform: translateX(0);}}
 </style>
 </head>
 <body>
@@ -116,10 +121,19 @@
   <div class="content">
 
     @if(session('success'))
-      <div class="flash-success">{{ session('success') }}</div>
+      <div class="toast-message success-toast">
+        {{ session('success') }}
+      </div>
     @endif
     @if(session('error'))
-      <div class="flash-error">{{ session('error') }}</div>
+      <div class="toast-message error-toast">
+        {{ session('error') }}
+      </div>
+    @endif
+    @if($errors->any())
+      <div class="toast-message error-toast">
+        {{ $errors->first() }}
+      </div>
     @endif
 
     <a href="{{ route('cashier.returns.create') }}" class="new-return-btn">
@@ -164,6 +178,22 @@
 
   </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const toastMessages = document.querySelectorAll('.toast-message');
+
+    toastMessages.forEach(function (toast) {
+        setTimeout(function () {
+            toast.classList.add('hide');
+
+            setTimeout(function () {
+                toast.remove();
+            }, 300);
+        }, 3000);
+    });
+});
+</script>
 
 </body>
 </html>

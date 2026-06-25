@@ -3,6 +3,30 @@
     subtitle="Review and approve return requests from cashiers"
     active="returns"
 >
+<style>
+.reject-return-form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: stretch;
+}
+
+.reject-reason-input {
+    width: 100%;
+    min-height: 58px;
+    max-height: 90px;
+    resize: vertical;
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 9px;
+    font-size: 13px;
+    outline: none;
+}
+
+.reject-reason-input:focus {
+    border-color: #e8192c;
+}
+</style>
     <div class="table-card">
       <table>
         <thead>
@@ -37,6 +61,11 @@
               <td>{{ $return->return_date ? \Carbon\Carbon::parse($return->return_date)->format('d/m/Y h:i A') : '-' }}</td>
               <td>
                 @if($return->status === 'pending')
+                @if($return->status === 'rejected' && $return->rejection_reason)
+                 <div style="font-size:12px; color:#991b1b; margin-top:4px;">
+                   Reason: {{ $return->rejection_reason }}
+                  </div>
+                   @endif
                   <div class="actions" style="justify-content:flex-end">
                     <form action="{{ route('admin.returns.approve', $return) }}" method="POST" onsubmit="return confirm('Approve this return? Stock will be restored automatically.');">
                       @csrf
@@ -44,12 +73,16 @@
                         Approve
                       </button>
                     </form>
-                    <form action="{{ route('admin.returns.reject', $return) }}" method="POST" onsubmit="return confirm('Reject this return request?');">
+                    <form action="{{ route('admin.returns.reject', $return) }}" method="POST" class="reject-return-form">
                       @csrf
-                      <button type="submit" class="btn" style="padding:7px 12px; background:#fef2f2; color:#dc2626; border-color:#fecaca;">
-                        Reject
-                      </button>
-                    </form>
+                      <textarea name="rejection_reason"
+                       class="reject-reason-input"
+                       placeholder="Write rejection reason..."
+                       required></textarea>
+                      <button type="submit" class="btn btn-danger">
+                      Reject
+                    </button>
+                   </form>
                   </div>
                 @else
                   <span style="font-size:12px; color:#bbb;">No actions</span>

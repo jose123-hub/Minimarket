@@ -15,6 +15,7 @@ class SaleReturn extends Model
         'status',
         'sale_id',
         'user_id',
+        'rejection_reason',
     ];
 
     public function sale()

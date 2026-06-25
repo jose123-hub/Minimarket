@@ -14,17 +14,19 @@ class DiscountController extends Controller
         $discounts = ProductDiscount::with(['product', 'discount'])
             ->latest()
             ->get();
-        $products = Product::all();
+        $products = Product::with('category')
+            ->orderBy('name')
+            ->get();
         return view('admin.promotions.index', compact('discounts', 'products'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'product_id' => 'required|exists:products,id',
-            'value'      => 'required|numeric|min:1|max:100',
-            'start_date' => 'required|date',
-            'end_date'   => 'required|date|after:start_date',
+         'product_id' => 'required|exists:products,id',
+         'value' => 'required|integer|min:1|max:100',
+         'start_date' => 'required|date',
+         'end_date' => 'required|date|after:start_date',
         ]);
 
         $status = $request->has('activate_now') ? 'active' : 'inactive';
@@ -48,13 +50,20 @@ class DiscountController extends Controller
 
     public function update(Request $request, Discount $discount)
     {
-        $discount->update([
-            'value'      => $request->value,
-            'start_date' => $request->start_date,
-            'end_date'   => $request->end_date,
-            'status'     => $request->status,
-        ]);
+    $request->validate([
+        'value'      => 'required|integer|min:1|max:100',
+        'start_date' => 'required|date',
+        'end_date'   => 'required|date|after:start_date',
+        'status'     => 'required|in:active,inactive',
+    ]);
 
-        return redirect('/admin/promotions')->with('success', 'Promotion updated successfully.');
+    $discount->update([
+        'value'      => $request->value,
+        'start_date' => $request->start_date,
+        'end_date'   => $request->end_date,
+        'status'     => $request->status,
+    ]);
+
+    return redirect('/admin/promotions')->with('success', 'Promotion updated successfully.');
     }
 }
