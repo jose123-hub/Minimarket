@@ -1,41 +1,5 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Express — Cashier Dashboard</title>
+@push('portal-styles')
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: 'Inter', sans-serif; background: #f5f5f5; display: flex; min-height: 100vh; }
-
-  .sidebar { width: 240px; min-height: 100vh; background: #111; display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; }
-  .sidebar-logo { display: flex; align-items: center; gap: 12px; padding: 24px 20px; border-bottom: 1px solid rgba(255,255,255,0.06); }
-  .logo-icon { width: 38px; height: 38px; background: #e8192c; border-radius: 9px; display: flex; align-items: center; justify-content: center; }
-  .logo-icon svg { width: 20px; height: 20px; fill: #fff; }
-  .logo-text strong { font-size: 15px; font-weight: 700; color: #fff; display: block; }
-  .logo-text span { font-size: 11px; color: #666; }
-  .sidebar-nav { flex: 1; padding: 16px 12px; }
-  .nav-item { display: flex; align-items: center; gap: 12px; padding: 11px 14px; border-radius: 8px; color: #888; font-size: 14px; font-weight: 500; text-decoration: none; margin-bottom: 2px; transition: all 0.15s; }
-  .nav-item:hover { background: rgba(255,255,255,0.06); color: #fff; }
-  .nav-item.active { background: #e8192c; color: #fff; }
-  .nav-item svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.8; flex-shrink: 0; }
-  .sidebar-user { padding: 16px 20px; border-top: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; gap: 12px; }
-  .user-avatar { width: 34px; height: 34px; background: #e8192c; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #fff; flex-shrink: 0; }
-  .user-info strong { font-size: 13px; color: #fff; display: block; }
-  .user-info span { font-size: 11px; color: #666; }
-  .logout-btn { margin-left: auto; background: none; border: none; cursor: pointer; color: #555; }
-  .logout-btn:hover { color: #e8192c; }
-  .logout-btn svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.8; }
-
-  .main { margin-left: 240px; flex: 1; display: flex; flex-direction: column; }
-  .topbar { background: #fff; padding: 16px 28px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #eee; position: sticky; top: 0; z-index: 10; }
-  .topbar-title h1 { font-size: 22px; font-weight: 800; color: #111; }
-  .topbar-title p { font-size: 13px; color: #999; margin-top: 2px; }
-  .topbar-right { display: flex; align-items: center; gap: 20px; }
-  .topbar-date { font-size: 13px; color: #888; }
-
-  .content { padding: 24px 28px; flex: 1; }
-
   .metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px; }
   .metric-card { background: #fff; border-radius: 12px; padding: 20px; border: 1px solid #eee; display: flex; justify-content: space-between; align-items: flex-start; }
   .metric-label { font-size: 13px; color: #999; margin-bottom: 8px; }
@@ -49,94 +13,27 @@
   .new-sale-btn svg { width: 24px; height: 24px; stroke: #fff; fill: none; stroke-width: 2; }
 
   .bottom-row { display: grid; grid-template-columns: 1fr 340px; gap: 16px; }
-  .table-card { background: #fff; border-radius: 12px; padding: 22px; border: 1px solid #eee; }
   .table-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
   .table-header h3 { font-size: 15px; font-weight: 700; color: #111; }
   .ver-todo { font-size: 13px; color: #e8192c; text-decoration: none; font-weight: 500; }
-  table { width: 100%; border-collapse: collapse; }
-  th { font-size: 12px; color: #999; font-weight: 500; text-align: left; padding: 8px 0; border-bottom: 1px solid #f0f0f0; }
-  td { font-size: 13px; color: #333; padding: 10px 0; border-bottom: 1px solid #f9f9f9; }
-  .badge { display: inline-block; background: #f5f5f5; color: #555; font-size: 11px; padding: 3px 8px; border-radius: 6px; }
 
   .quick-card { background: #fff; border-radius: 12px; padding: 22px; border: 1px solid #eee; }
   .quick-card h3 { font-size: 15px; font-weight: 700; color: #111; margin-bottom: 16px; }
   .quick-link { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 8px; border: 1px solid #eee; text-decoration: none; color: #333; font-size: 14px; font-weight: 500; margin-bottom: 10px; transition: all 0.15s; }
   .quick-link:hover { border-color: #e8192c; color: #e8192c; }
   .quick-link svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.8; }
-  .empty { text-align: center; color: #aaa; font-size: 13px; padding: 24px 0; }
   .queue-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f5f5f5; }
   .queue-item:last-child { border-bottom: none; }
   .queue-customer { font-size: 13px; font-weight: 600; color: #111; }
   .queue-meta { font-size: 12px; color: #999; margin-top: 2px; }
 </style>
-</head>
-<body>
+@endpush
 
-<aside class="sidebar">
-  <div class="sidebar-logo">
-    <div class="logo-icon">
-      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-    </div>
-    <div class="logo-text">
-      <strong>Express</strong>
-      <span>Minimarket POS</span>
-    </div>
-  </div>
-
-  <nav class="sidebar-nav">
-    <a href="/cashier/dashboard" class="nav-item active">
-      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-      Dashboard
-    </a>
-    <a href="/cashier/sales/create" class="nav-item">
-      <svg viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
-      Sales (POS)
-    </a>
-    <a href="/cashier/inventory" class="nav-item">
-      <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
-      Inventory
-    </a>
-    <a href="/cashier/cash" class="nav-item">
-      <svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-      Cash Register
-    </a>
-    <a href="/cashier/loyalty" class="nav-item">
-      <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-      Loyalty
-    </a>
-    <a href="/cashier/returns" class="nav-item">
-      <svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
-      Returns
-    </a>
-  </nav>
-
-  <div class="sidebar-user">
-    <div class="user-avatar">{{ strtoupper(substr(Auth::user()->name, 0, 1)) }}</div>
-    <div class="user-info">
-      <strong>{{ Auth::user()->name }}</strong>
-      <span>Cashier</span>
-    </div>
-    <form method="POST" action="{{ route('logout') }}" style="margin-left:auto">
-      @csrf
-      <button type="submit" class="logout-btn">
-        <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-      </button>
-    </form>
-  </div>
-</aside>
-
-<div class="main">
-  <div class="topbar">
-    <div class="topbar-title">
-      <h1>Dashboard</h1>
-      <p>Your activity summary for today</p>
-    </div>
-    <div class="topbar-right">
-      <span class="topbar-date">{{ now()->isoFormat('dddd, D [of] MMMM [of] YYYY') }}</span>
-    </div>
-  </div>
-
-  <div class="content">
+<x-portal-layout
+    title="Dashboard"
+    subtitle="Your activity summary for today"
+    active="dashboard"
+>
 
     <div class="metrics">
       <div class="metric-card">
@@ -169,15 +66,16 @@
       <svg viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
       New Sale
     </a>
+
     <div class="table-card" style="margin-bottom:20px;">
-  <div class="table-header" style="display:flex; justify-content:space-between; align-items:center;">
-    <h3>Pending Orders Queue</h3>
-    <span style="font-size:12px; color:#999;">Sorted by priority</span>
-  </div>
-    <div id="order-queue">
-      <div class="empty">No pending orders</div>
+      <div class="table-header">
+        <h3>Pending Orders Queue</h3>
+        <span style="font-size:12px; color:#999;">Sorted by priority</span>
+      </div>
+      <div id="order-queue">
+        <div class="empty-row">No pending orders</div>
+      </div>
     </div>
-  </div>
 
     <div class="bottom-row">
       <div class="table-card">
@@ -207,7 +105,7 @@
           </tbody>
         </table>
         @else
-        <div class="empty">No sales registered today</div>
+        <div class="empty-row">No sales registered today</div>
         @endif
       </div>
 
@@ -228,139 +126,137 @@
       </div>
     </div>
 
-  </div>
-</div>
-<script>
-class PriorityQueue {
-  constructor() {
-    this.items = {};
-    this.size = 0;
-  }
+    <script>
+    class PriorityQueue {
+      constructor() {
+        this.items = {};
+        this.size = 0;
+      }
 
-  getPriority(total) {
-    if (total >= 30) return 3;
-    if (total >= 10) return 2;
-    return 1;
-  }
+      getPriority(total) {
+        if (total >= 30) return 3;
+        if (total >= 10) return 2;
+        return 1;
+      }
 
-  enqueue(order) {
-    const priority = this.getPriority(order.total);
-    order.priority = priority;
+      enqueue(order) {
+        const priority = this.getPriority(order.total);
+        order.priority = priority;
 
-    if (!this.items[priority]) {
-      this.items[priority] = [];
-    }
-
-    let i = this.size;
-    this.items[priority][this.items[priority].length] = order;
-    this.size++;
-  }
-
-  dequeue() {
-    if (this.isEmpty()) return null;
-
-    for (let p = 3; p >= 1; p--) {
-      if (this.items[p] && this.items[p].length > 0) {
-        const order = this.items[p][0];
-        for (let i = 0; i < this.items[p].length - 1; i++) {
-          this.items[p][i] = this.items[p][i + 1];
+        if (!this.items[priority]) {
+          this.items[priority] = [];
         }
-        this.items[p].length--;
-        this.size--;
-        return order;
+
+        let i = this.size;
+        this.items[priority][this.items[priority].length] = order;
+        this.size++;
       }
-    }
-    return null;
-  }
 
-  peek() {
-    for (let p = 3; p >= 1; p--) {
-      if (this.items[p] && this.items[p].length > 0) {
-        return this.items[p][0];
-      }
-    }
-    return null;
-  }
+      dequeue() {
+        if (this.isEmpty()) return null;
 
-  isEmpty() {
-    return this.size === 0;
-  }
-
-  toArray() {
-    const result = {};
-    let i = 0;
-    for (let p = 3; p >= 1; p--) {
-      if (this.items[p]) {
-        for (let j = 0; j < this.items[p].length; j++) {
-          result[i] = this.items[p][j];
-          i++;
+        for (let p = 3; p >= 1; p--) {
+          if (this.items[p] && this.items[p].length > 0) {
+            const order = this.items[p][0];
+            for (let i = 0; i < this.items[p].length - 1; i++) {
+              this.items[p][i] = this.items[p][i + 1];
+            }
+            this.items[p].length--;
+            this.size--;
+            return order;
+          }
         }
+        return null;
+      }
+
+      peek() {
+        for (let p = 3; p >= 1; p--) {
+          if (this.items[p] && this.items[p].length > 0) {
+            return this.items[p][0];
+          }
+        }
+        return null;
+      }
+
+      isEmpty() {
+        return this.size === 0;
+      }
+
+      toArray() {
+        const result = {};
+        let i = 0;
+        for (let p = 3; p >= 1; p--) {
+          if (this.items[p]) {
+            for (let j = 0; j < this.items[p].length; j++) {
+              result[i] = this.items[p][j];
+              i++;
+            }
+          }
+        }
+        return Object.values(result);
       }
     }
-    return Object.values(result);
-  }
-}
 
-const orderQueue = new PriorityQueue();
-</script>
-<script id="pending-orders-data" type="application/json">{!! json_encode($pendingOrders ?? []) !!}</script>
-<script>
-const pendingOrders = JSON.parse(document.getElementById('pending-orders-data').textContent || '[]');
+    const orderQueue = new PriorityQueue();
+    </script>
+    <script id="pending-orders-data" type="application/json">{!! json_encode($pendingOrders ?? []) !!}</script>
+    <script>
+    const pendingOrders = JSON.parse(document.getElementById('pending-orders-data').textContent || '[]');
 
-pendingOrders.forEach(order => {
-  orderQueue.enqueue({
-    id: order.id,
-    customer: order.customer_name,
-    total: parseFloat(order.total),
-    items: order.items_count,
-    time: order.time,
-  });
-});
+    pendingOrders.forEach(order => {
+      orderQueue.enqueue({
+        id: order.id,
+        customer: order.customer_name,
+        total: parseFloat(order.total),
+        items: order.items_count,
+        time: order.time,
+      });
+    });
 
-function renderQueue() {
-  const container = document.getElementById('order-queue');
-  if (!container) return;
+    function renderQueue() {
+      const container = document.getElementById('order-queue');
+      if (!container) return;
 
-  const orders = orderQueue.toArray();
-  container.innerHTML = '';
+      const orders = orderQueue.toArray();
+      container.innerHTML = '';
 
-  if (orders.length === 0) {
-    container.innerHTML = '<div class="empty">No pending orders</div>';
-    return;
-  }
+      if (orders.length === 0) {
+        container.innerHTML = '<div class="empty-row">No pending orders</div>';
+        return;
+      }
 
-  const priorityLabels = { 3: 'High', 2: 'Medium', 1: 'Low' };
-  const priorityColors = { 3: '#e8192c', 2: '#f59e0b', 1: '#22c55e' };
+      const priorityLabels = { 3: 'High', 2: 'Medium', 1: 'Low' };
+      const priorityColors = { 3: '#e8192c', 2: '#f59e0b', 1: '#22c55e' };
 
-  orders.forEach(order => {
-    const div = document.createElement('div');
-    div.className = 'queue-item';
-    div.innerHTML = `
-      <div class="queue-item-info">
-        <div class="queue-customer">${order.customer}</div>
-        <div class="queue-meta">${order.items} items · ${order.time}</div>
-      </div>
-      <div style="display:flex; align-items:center; gap:10px;">
-        <span style="font-size:11px; font-weight:700; color:${priorityColors[order.priority]}">
-          ${priorityLabels[order.priority]}
-        </span>
-        <span style="font-weight:700; color:#111">S/ ${order.total.toFixed(2)}</span>
-        <button onclick="attendOrder(${order.id})" style="padding:6px 12px; background:#e8192c; color:#fff; border:none; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer;">
-          Attend
-        </button>
-      </div>
-    `;
-    container.appendChild(div);
-  });
-}
+      orders.forEach(order => {
+        const div = document.createElement('div');
+        div.className = 'queue-item';
+        div.innerHTML = `
+          <div class="queue-item-info">
+            <div class="queue-customer">${order.customer}</div>
+            <div class="queue-meta">${order.items} items · ${order.time}</div>
+          </div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span style="font-size:11px; font-weight:700; color:${priorityColors[order.priority]}">
+              ${priorityLabels[order.priority]}
+            </span>
+            <span style="font-weight:700; color:#111">S/ ${order.total.toFixed(2)}</span>
+            <button onclick="attendOrder(${order.id})" style="padding:6px 12px; background:#e8192c; color:#fff; border:none; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer;">
+              Attend
+            </button>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
 
-function attendOrder(id) {
-  orderQueue.dequeue();
-  renderQueue();
-  window.location.href = `/cashier/sales/create?order_id=${id}`;
-}
+    function attendOrder(id) {
+      orderQueue.dequeue();
+      renderQueue();
+      window.location.href = `/cashier/sales/create?order_id=${id}`;
+    }
 
-renderQueue();
-</script>
-</body>
-</html>
+    renderQueue();
+    </script>
+
+</x-portal-layout>

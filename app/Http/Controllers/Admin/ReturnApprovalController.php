@@ -32,10 +32,8 @@ class ReturnApprovalController extends Controller
             $return->load(['sale', 'details']);
 
             foreach ($return->details as $detail) {
-                $quantity = $detail->quantity_returned ?? $detail->quantity ?? 0;
-
-                if ($quantity > 0) {
-                    $detail->product()->increment('stock', $quantity);
+                if ($detail->quantity > 0) {
+                    $detail->product()->increment('stock', $detail->quantity);
                 }
             }
 
@@ -45,15 +43,9 @@ class ReturnApprovalController extends Controller
             $sale = $return->sale;
 
             if ($sale && $sale->customer_id) {
-                $client = Client::where('id_cliente', $sale->customer_id)
+                $client = Client::where('user_id', $sale->customer_id)
                     ->lockForUpdate()
                     ->first();
-
-                if (! $client) {
-                    $client = Client::where('user_id', $sale->customer_id)
-                        ->lockForUpdate()
-                        ->first();
-                }
 
                 if ($client) {
                     $starsToRemove = (int) floor($return->amount_returned / 5);

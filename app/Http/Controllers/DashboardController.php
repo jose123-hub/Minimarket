@@ -12,7 +12,8 @@ class DashboardController extends Controller
 {
     public function index()
     {
-    $totalSales = 0; 
+    $totalSales = Sale::whereDate('created_at', today())
+    ->sum('total');
     $totalProducts = Product::count();
 
     $totalCategories = Category::whereNull('parent_id')->count();

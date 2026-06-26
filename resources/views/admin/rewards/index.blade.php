@@ -1,4 +1,4 @@
-<x-admin-layout
+<x-portal-layout
     title="Rewards"
     subtitle="Loyalty rewards catalog management"
     active="rewards"
@@ -216,4 +216,4 @@
       rewardModal.addEventListener('click', (e) => { if (e.target === rewardModal) rewardModal.classList.remove('open'); });
     </script>
 
-</x-admin-layout>
+</x-portal-layout>

@@ -1,4 +1,4 @@
-<x-admin-layout
+<x-portal-layout
     title="Returns"
     subtitle="Review and approve return requests from cashiers"
     active="returns"
@@ -98,4 +98,4 @@
       </table>
     </div>
 
-</x-admin-layout>
+</x-portal-layout>

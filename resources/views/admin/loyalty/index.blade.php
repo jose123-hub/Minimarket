@@ -1,4 +1,4 @@
-<x-admin-layout
+<x-portal-layout
     title="Loyalty"
     subtitle="Overview of customer stars and program activity"
     active="loyalty"
@@ -72,4 +72,4 @@
       </table>
     </div>
 
-</x-admin-layout>
+</x-portal-layout>

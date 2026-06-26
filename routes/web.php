@@ -29,7 +29,7 @@ Route::post('/contact', [ContactController::class, 'send'])
     ->name('contact.send');
 
 Route::get('/dashboard', [DashboardController::class, 'index'])
-    ->middleware(['auth', 'verified', 'admin'])
+    ->middleware(['auth', 'admin'])
     ->name('dashboard');
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
