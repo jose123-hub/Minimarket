@@ -1,16 +1,22 @@
 <x-portal-layout
     title="Online Orders"
-    subtitle="Manage customer web orders"
-    active="online-orders"
+    subtitle="Prepare and deliver paid web orders"
+    active="cashier-online-orders"
 >
     <div class="toolbar" style="justify-content:space-between;">
         <div>
-            <strong style="font-size:14px; color:#111;">Web orders</strong>
+            <strong style="font-size:14px; color:#111;">Pending web orders</strong>
             <p style="font-size:12px; color:#999; margin-top:2px;">
-                Orders generated from the customer store
+                Orders paid online and waiting for store attention
             </p>
         </div>
     </div>
+
+    @if(session('success'))
+        <div style="background:#ecfdf5; color:#15803d; border:1px solid #bbf7d0; padding:12px 14px; border-radius:10px; margin-bottom:16px; font-size:13px; font-weight:700;">
+            {{ session('success') }}
+        </div>
+    @endif
 
     <div class="table-card">
         <table>
@@ -23,7 +29,7 @@
                     <th>Status</th>
                     <th>Total</th>
                     <th>Date</th>
-                    <th style="text-align:right;">Actions</th>
+                    <th style="text-align:right;">Action</th>
                 </tr>
             </thead>
 
@@ -67,8 +73,6 @@
                                     'pending' => 'low',
                                     'preparing' => 'low',
                                     'ready' => 'ok',
-                                    'delivered' => 'ok',
-                                    'cancelled' => 'out',
                                     default => 'low',
                                 };
                             @endphp
@@ -88,7 +92,7 @@
 
                         <td>
                             <div class="actions" style="justify-content:flex-end;">
-                                <a href="{{ route('admin.online-orders.show', $order) }}"
+                                <a href="{{ route('cashier.online-orders.show', $order) }}"
                                    class="icon-btn"
                                    title="View order">
                                     <svg viewBox="0 0 24 24">
@@ -101,7 +105,7 @@
                     </tr>
                 @empty
                     <tr class="empty-row">
-                        <td colspan="8">No online orders found.</td>
+                        <td colspan="8">No pending online orders found.</td>
                     </tr>
                 @endforelse
             </tbody>

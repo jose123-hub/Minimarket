@@ -812,9 +812,26 @@
     </div>
 
     <div class="cart-summary" id="cart-summary" style="display:none">
-      <div class="summary-row"><span>Subtotal</span><span id="subtotal">S/ 0.00</span></div>
-      <div class="summary-stars"><span>Stars to earn</span><span id="stars-earn">+0 ⭐</span></div>
-      <div class="summary-total"><span>Total</span><span id="total">S/ 0.00</span></div>
+      <div class="summary-row">
+    <span>Subtotal</span>
+    <span id="subtotal">S/ 0.00</span>
+    </div>
+    <div class="summary-row">
+     <span>Online discount 10%</span>
+     <span id="online-discount">-S/ 0.00</span>
+    </div>
+    <div class="summary-row">
+     <span>Rewards credit</span>
+     <span id="store-credit-used">-S/ 0.00</span>
+    </div>
+    <div class="summary-stars">
+     <span>Stars to earn</span>
+     <span id="stars-earn">+0 ⭐</span>
+    </div>
+    <div class="summary-total">
+     <span>Total</span>
+     <span id="total">S/ 0.00</span>
+    </div>
       <button class="btn-order" onclick="submitOrder()">Place order</button>
     </div>
   </div>
@@ -980,6 +997,28 @@ let selectedDeliveryType = 'delivery';
 
 const CART_STORAGE_KEY = 'express_client_cart';
 
+const ONLINE_DISCOUNT_RATE = 0.10;
+const STORE_CREDIT_BALANCE = parseFloat('{{ $client->store_credit_balance ?? 0 }}');
+const STAR_PROGRESS_AMOUNT = parseFloat('{{ $client->star_progress_amount ?? 0 }}');
+
+function getCartSubtotal() {
+  return cart.toArray().reduce((sum, item) => {
+    return sum + (item.price * item.quantity);
+  }, 0);
+}
+
+function getOnlineDiscount() {
+  return getCartSubtotal() * ONLINE_DISCOUNT_RATE;
+}
+
+function getTotalAfterOnlineDiscount() {
+  return getCartSubtotal() - getOnlineDiscount();
+}
+
+function getStoreCreditUsed() {
+  return Math.min(STORE_CREDIT_BALANCE, getTotalAfterOnlineDiscount());
+}
+
 function saveCart() {
   localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart.toArray()));
 }
@@ -1092,15 +1131,23 @@ function renderCart() {
     container.appendChild(div);
   });
 
-  document.getElementById('subtotal').textContent = `S/ ${total.toFixed(2)}`;
-  document.getElementById('total').textContent = `S/ ${total.toFixed(2)}`;
-  document.getElementById('stars-earn').textContent = `+${Math.floor(total / 5)} ⭐`;
+  const subtotal = total;
+  const onlineDiscount = subtotal * ONLINE_DISCOUNT_RATE;
+  const totalAfterDiscount = subtotal - onlineDiscount;
+  const storeCreditUsed = Math.min(STORE_CREDIT_BALANCE, totalAfterDiscount);
+  const finalTotal = totalAfterDiscount - storeCreditUsed;
+
+  const estimatedStars = Math.floor((STAR_PROGRESS_AMOUNT + finalTotal) / 5);
+
+  document.getElementById('subtotal').textContent = `S/ ${subtotal.toFixed(2)}`;
+  document.getElementById('online-discount').textContent = `-S/ ${onlineDiscount.toFixed(2)}`;
+  document.getElementById('store-credit-used').textContent = `-S/ ${storeCreditUsed.toFixed(2)}`;
+  document.getElementById('total').textContent = `S/ ${finalTotal.toFixed(2)}`;
+  document.getElementById('stars-earn').textContent = `+${estimatedStars} ⭐`;
 }
 
 function getCartTotal() {
-  return cart.toArray().reduce((sum, item) => {
-    return sum + (item.price * item.quantity);
-  }, 0);
+  return getTotalAfterOnlineDiscount() - getStoreCreditUsed();
 }
 
 function openCheckoutModal() {

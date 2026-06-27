@@ -19,6 +19,7 @@ use App\Http\Controllers\Admin\ReturnApprovalController;
 use App\Http\Controllers\ClientPortalController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\OnlineOrderController;
+use App\Http\Controllers\CashierOnlineOrderController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -72,10 +73,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
 Route::middleware(['auth', 'cashier'])->prefix('cashier')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'cashierDashboard'])->name('cashier.dashboard');
     Route::get('/inventory', [ProductController::class, 'cashierInventory'])->name('cashier.inventory');
-    Route::get('/sales/create', [SaleController::class, 'create'])
-        ->name('sales.create');
-    Route::post('/sales', [SaleController::class, 'store'])
-        ->name('sales.store');
+    Route::get('/sales/create', [SaleController::class, 'create'])->name('sales.create');
+    Route::post('/sales', [SaleController::class, 'store'])->name('sales.store');
     Route::get('/loyalty', [\App\Http\Controllers\LoyaltyController::class, 'index'])->name('cashier.loyalty');
     Route::post('/loyalty/earn', [\App\Http\Controllers\LoyaltyController::class, 'earn'])->name('cashier.loyalty.earn');
     Route::post('/loyalty/redeem', [\App\Http\Controllers\LoyaltyController::class, 'redeem'])->name('cashier.loyalty.redeem');
@@ -86,6 +85,9 @@ Route::middleware(['auth', 'cashier'])->prefix('cashier')->group(function () {
     Route::get('/returns/create', [\App\Http\Controllers\ReturnController::class, 'create'])->name('cashier.returns.create');
     Route::get('/returns/sale-lookup/{sale}', [\App\Http\Controllers\ReturnController::class, 'saleLookup'])->name('cashier.returns.lookup');
     Route::post('/returns', [\App\Http\Controllers\ReturnController::class, 'store'])->name('cashier.returns.store');
+    Route::get('/online-orders', [CashierOnlineOrderController::class, 'index'])->name('cashier.online-orders.index');
+    Route::get('/online-orders/{sale}', [CashierOnlineOrderController::class, 'show'])->name('cashier.online-orders.show');
+    Route::patch('/online-orders/{sale}/status', [CashierOnlineOrderController::class, 'updateStatus'])->name('cashier.online-orders.update-status');
 });
 
 Route::middleware(['auth'])->prefix('client')->group(function () {

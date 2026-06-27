@@ -1,7 +1,7 @@
 <x-portal-layout
     title="Order {{ $sale->receipt_number ?? 'WEB-' . str_pad($sale->id, 6, '0', STR_PAD_LEFT) }}"
-    subtitle="Review and update this online order"
-    active="online-orders"
+    subtitle="Prepare and update this customer order"
+    active="cashier-online-orders"
 >
     @push('portal-styles')
         <style>
@@ -36,10 +36,6 @@
                 line-height: 1.5;
             }
 
-            .info-line:last-child {
-                margin-bottom: 0;
-            }
-
             .summary-panel {
                 display: flex;
                 justify-content: flex-end;
@@ -56,14 +52,6 @@
                 font-size: 14px;
                 color: #555;
                 margin-bottom: 8px;
-            }
-
-            .summary-stars {
-                display: flex;
-                justify-content: space-between;
-                font-size: 14px;
-                color: #d97706;
-                margin-bottom: 10px;
             }
 
             .summary-total {
@@ -88,24 +76,30 @@
         <div>
             <strong style="font-size:14px; color:#111;">Order detail</strong>
             <p style="font-size:12px; color:#999; margin-top:2px;">
-                Customer, delivery, payment and products
+                Review products, delivery information and payment
             </p>
         </div>
 
-        <a href="{{ route('admin.online-orders.index') }}" class="btn">
+        <a href="{{ route('cashier.online-orders.index') }}" class="btn">
             Back
         </a>
     </div>
+
+    @if(session('success'))
+        <div style="background:#ecfdf5; color:#15803d; border:1px solid #bbf7d0; padding:12px 14px; border-radius:10px; margin-bottom:16px; font-size:13px; font-weight:700;">
+            {{ session('success') }}
+        </div>
+    @endif
 
     <div class="order-layout">
         <div>
             <div class="table-card">
                 <div style="padding:18px 18px 0;">
                     <h3 style="font-size:15px; font-weight:800; color:#111;">
-                        Products
+                        Products to prepare
                     </h3>
                     <p style="font-size:12px; color:#999; margin-top:2px;">
-                        Items included in this order
+                        Check each item before delivery or pickup
                     </p>
                 </div>
 
@@ -150,11 +144,6 @@
                             <div class="summary-line">
                                 <span>Subtotal</span>
                                 <span>S/ {{ number_format($sale->total, 2) }}</span>
-                            </div>
-
-                            <div class="summary-stars">
-                                <span>Stars earned</span>
-                                <span>+{{ floor($sale->total / 5) }} ⭐</span>
                             </div>
 
                             <div class="summary-total">
@@ -250,7 +239,7 @@
             <div class="table-card info-box">
                 <h3>Order status</h3>
 
-                <form method="POST" action="{{ route('admin.online-orders.update-status', $sale) }}">
+                <form method="POST" action="{{ route('cashier.online-orders.update-status', $sale) }}">
                     @csrf
                     @method('PATCH')
 
@@ -258,10 +247,6 @@
                         <label for="order_status">Status</label>
 
                         <select id="order_status" name="order_status" required>
-                            <option value="pending" {{ $sale->order_status === 'pending' ? 'selected' : '' }}>
-                                Pending
-                            </option>
-
                             <option value="preparing" {{ $sale->order_status === 'preparing' ? 'selected' : '' }}>
                                 Preparing
                             </option>
@@ -272,10 +257,6 @@
 
                             <option value="delivered" {{ $sale->order_status === 'delivered' ? 'selected' : '' }}>
                                 Delivered
-                            </option>
-
-                            <option value="cancelled" {{ $sale->order_status === 'cancelled' ? 'selected' : '' }}>
-                                Cancelled
                             </option>
                         </select>
                     </div>

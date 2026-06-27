@@ -19,6 +19,8 @@ class Sale extends Model
     'total',
     'discount',
     'tax',
+    'stars_earned',
+    'store_credit_used',
 
     'status',
     'order_status',

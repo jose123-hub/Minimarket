@@ -81,32 +81,57 @@ class ClientController extends Controller
         $items = [];
 
         foreach ($request->products as $item) {
-            $product = Product::where('id', $item['product_id'])
-                ->lockForUpdate()
-                ->firstOrFail();
+    $product = Product::where('id', $item['product_id'])
+        ->lockForUpdate()
+        ->firstOrFail();
 
-            $quantity = (int) $item['quantity'];
+    $quantity = (int) $item['quantity'];
 
-            if ($product->stock < $quantity) {
-                throw ValidationException::withMessages([
-                    'stock' => 'Not enough stock for ' . $product->name,
-                ]);
-            }
+    if ($product->stock < $quantity) {
+        throw ValidationException::withMessages([
+            'stock' => 'Not enough stock for ' . $product->name,
+        ]);
+    }
 
-            $price = method_exists($product, 'finalPrice')
-                ? $product->finalPrice()
-                : $product->price;
+    $price = method_exists($product, 'finalPrice')
+        ? $product->finalPrice()
+        : $product->price;
 
-            $subtotal = $price * $quantity;
-            $total += $subtotal;
+    $subtotalItem = $price * $quantity;
+    $total += $subtotalItem;
 
-            $items[] = [
-                'product' => $product,
-                'quantity' => $quantity,
-                'price' => $price,
-                'subtotal' => $subtotal,
-            ];
-        }
+    $items[] = [
+        'product' => $product,
+        'quantity' => $quantity,
+        'price' => $price,
+        'subtotal' => $subtotalItem,
+      ];
+    }
+
+        $subtotal = $total;
+
+        $onlineDiscount = round($subtotal * 0.10, 2);
+
+        $totalAfterOnlineDiscount = round($subtotal - $onlineDiscount, 2);
+
+        $client = Client::where('user_id', $user->id)
+            ->lockForUpdate()
+            ->firstOrFail();
+
+        $availableCredit = (float) ($client->store_credit_balance ?? 0);
+
+        $storeCreditUsed = min($availableCredit, $totalAfterOnlineDiscount);
+
+        $total = round($totalAfterOnlineDiscount - $storeCreditUsed, 2);
+        
+        $previousProgressCents = (int) round(($client->star_progress_amount ?? 0) * 100);
+        $totalCents = (int) round($total * 100);
+
+        $starBaseCents = $previousProgressCents + $totalCents;
+
+        $starsEarned = intdiv($starBaseCents, 500);
+        $newProgressCents = $starBaseCents % 500;
+        $newProgressAmount = $newProgressCents / 100;
 
         $sale = Sale::create([
             'customer_id' => $user->id,
@@ -114,7 +139,9 @@ class ClientController extends Controller
             'cash_opening_id' => null,
 
             'total' => $total,
-            'discount' => 0,
+            'stars_earned' => $starsEarned,
+            'discount' => $onlineDiscount,
+            'store_credit_used' => $storeCreditUsed,
             'tax' => 0,
 
             'status' => 'completed',
@@ -150,10 +177,13 @@ class ClientController extends Controller
 
             $item['product']->decrement('stock', $item['quantity']);
         }
-
-        $starsEarned = floor($total / 5);
-
+        
         $client->increment('accumulated_stars', $starsEarned);
+
+        $client->update([
+           'star_progress_amount' => $newProgressAmount,
+           'store_credit_balance' => round($availableCredit - $storeCreditUsed, 2),
+        ]);
 
         return $sale;
     });

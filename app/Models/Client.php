@@ -19,7 +19,9 @@ class Client extends Model
         'address',
         'type',
         'accumulated_stars',
+        'star_progress_amount',
         'user_id',
+        'store_credit_balance',
     ];
 
     public function user()

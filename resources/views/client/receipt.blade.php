@@ -271,20 +271,29 @@
 
             <div class="receipt-summary">
                 <div class="summary-box">
-                    <div class="summary-line">
-                        <span>Subtotal</span>
-                        <span>S/ {{ number_format($sale->total, 2) }}</span>
-                    </div>
-
-                    <div class="summary-line">
-                        <span>Stars earned</span>
-                        <span>+{{ floor($sale->total / 5) }} ⭐</span>
-                    </div>
-
-                    <div class="summary-total">
-                        <span>Total</span>
-                        <span>S/ {{ number_format($sale->total, 2) }}</span>
-                    </div>
+                  @php
+                   $subtotalBeforeDiscount = $sale->total + ($sale->discount ?? 0) + ($sale->store_credit_used ?? 0);
+                  @endphp
+                <div class="summary-line">
+                 <span>Subtotal</span>
+                 <span>S/ {{ number_format($subtotalBeforeDiscount, 2) }}</span>
+                </div>
+                <div class="summary-line">
+                 <span>Online discount 10%</span>
+                 <span>-S/ {{ number_format($sale->discount ?? 0, 2) }}</span>
+                </div>
+                <div class="summary-line">
+                 <span>Rewards credit</span>
+                 <span>-S/ {{ number_format($sale->store_credit_used ?? 0, 2) }}</span>
+                </div>
+                <div class="summary-line">
+                 <span>Stars earned</span>
+                 <span>+{{ $sale->stars_earned ?? 0 }} ⭐</span>
+                </div>
+                 <div class="summary-total">
+                  <span>Total paid</span>
+                  <span>S/ {{ number_format($sale->total, 2) }}</span>
+                 </div>
                 </div>
             </div>
 
