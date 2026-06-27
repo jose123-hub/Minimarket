@@ -16,6 +16,9 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RewardController;
 use App\Http\Controllers\ReturnController;
 use App\Http\Controllers\Admin\ReturnApprovalController;
+use App\Http\Controllers\ClientPortalController;
+use App\Http\Controllers\ClientController;
+use App\Http\Controllers\OnlineOrderController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -61,6 +64,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::post('/returns/{return}/reject', [\App\Http\Controllers\Admin\ReturnApprovalController::class, 'reject'])->name('admin.returns.reject');
     Route::get('/reports/pdf', [ReportController::class, 'exportPdf'])->name('admin.reports.pdf');
     Route::get('/reports/excel', [ReportController::class, 'exportExcel'])->name('admin.reports.excel');
+    Route::get('/online-orders', [OnlineOrderController::class, 'index'])->name('admin.online-orders.index');
+    Route::get('/online-orders/{sale}', [OnlineOrderController::class, 'show'])->name('admin.online-orders.show');
+    Route::patch('/online-orders/{sale}/status', [OnlineOrderController::class, 'updateStatus'])->name('admin.online-orders.update-status');
 });
 
 Route::middleware(['auth', 'cashier'])->prefix('cashier')->group(function () {
@@ -83,8 +89,12 @@ Route::middleware(['auth', 'cashier'])->prefix('cashier')->group(function () {
 });
 
 Route::middleware(['auth'])->prefix('client')->group(function () {
-    Route::get('/catalog', [\App\Http\Controllers\ClientController::class, 'catalog'])->name('client.catalog');
-    Route::post('/orders', [\App\Http\Controllers\ClientController::class, 'store'])->name('client.orders.store');
+    Route::get('/catalog', [ClientController::class, 'catalog'])->name('catalog');
+    Route::post('/orders', [ClientController::class, 'store'])->name('orders.store');
+    Route::get('/orders', [ClientPortalController::class, 'orders'])->name('orders');
+    Route::get('/stars', [ClientPortalController::class, 'stars'])->name('stars');
+    Route::get('/profile', [ClientPortalController::class, 'profile'])->name('profile');
+    Route::get('/orders/{sale}/receipt', [ClientPortalController::class, 'receipt'])->name('orders.receipt');
 });
 
 Route::middleware(['auth'])->group(function () {

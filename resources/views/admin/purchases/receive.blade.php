@@ -20,7 +20,6 @@
     subtitle="Confirm how many units actually arrived for each product"
     active="purchases"
 >
-
     <div class="order-meta">
       <div><strong>Supplier</strong><span>{{ $purchase->supplier->company_name }}</span></div>
       <div><strong>Order date</strong><span>{{ \Carbon\Carbon::parse($purchase->order_date)->format('d/m/Y') }}</span></div>
