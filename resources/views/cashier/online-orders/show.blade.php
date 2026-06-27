@@ -141,15 +141,25 @@
                 <div style="padding:0 18px 18px;">
                     <div class="summary-panel">
                         <div class="summary-box">
-                            <div class="summary-line">
-                                <span>Subtotal</span>
-                                <span>S/ {{ number_format($sale->total, 2) }}</span>
-                            </div>
-
-                            <div class="summary-total">
-                                <span>Total</span>
-                                <span>S/ {{ number_format($sale->total, 2) }}</span>
-                            </div>
+                            @php
+                             $subtotalBeforeDiscount = $sale->total + ($sale->discount ?? 0) + ($sale->store_credit_used ?? 0);
+                            @endphp
+                      <div class="summary-line">
+                      <span>Subtotal</span>
+                        <span>S/ {{ number_format($subtotalBeforeDiscount, 2) }}</span>
+                       </div>
+                       <div class="summary-line">
+                        <span>Online discount</span>
+                        <span>-S/ {{ number_format($sale->discount ?? 0, 2) }}</span>
+                       </div>
+                        <div class="summary-line">
+                          <span>Rewards credit</span>
+                          <span>-S/ {{ number_format($sale->store_credit_used ?? 0, 2) }}</span>
+                         </div>
+                          <div class="summary-total">
+                           <span>Total paid</span>
+                           <span>S/ {{ number_format($sale->total, 2) }}</span>
+                          </div>
                         </div>
                     </div>
                 </div>
@@ -226,14 +236,25 @@
                 </div>
 
                 <div class="info-line">
-                    <strong>Method:</strong>
-                    Card
-                </div>
+            <strong>Method:</strong>
+            @if($sale->payment_method === 'store_credit')
+             Rewards credit
+            @else
+         Card
+        @endif
+      </div>
 
-                <div class="info-line">
-                    <strong>Card:</strong>
-                    **** {{ $sale->card_last_four ?? '----' }}
-                </div>
+        @if($sale->payment_method === 'card')
+        <div class="info-line">
+        <strong>Card:</strong>
+        **** {{ $sale->card_last_four ?? '----' }}
+            </div>
+              @else
+              <div class="info-line">
+               <strong>Credit used:</strong>
+                 S/ {{ number_format($sale->store_credit_used ?? 0, 2) }}
+               </div>
+              @endif
             </div>
 
             <div class="table-card info-box">

@@ -97,6 +97,7 @@ Route::middleware(['auth'])->prefix('client')->group(function () {
     Route::get('/stars', [ClientPortalController::class, 'stars'])->name('stars');
     Route::get('/profile', [ClientPortalController::class, 'profile'])->name('profile');
     Route::get('/orders/{sale}/receipt', [ClientPortalController::class, 'receipt'])->name('orders.receipt');
+    Route::post('/rewards/{reward}/redeem', [ClientPortalController::class, 'redeemReward'])->name('client.rewards.redeem');
 });
 
 Route::middleware(['auth'])->group(function () {

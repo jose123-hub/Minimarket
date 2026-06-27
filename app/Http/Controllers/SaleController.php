@@ -10,6 +10,7 @@ use App\Models\Client;
 use App\Models\StarHistory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\DB;
 
 class SaleController extends Controller
@@ -22,9 +23,14 @@ class SaleController extends Controller
 
     public function create(Request $request)
     {
-    $products   = Product::with('category')->get();
-    $customers  = User::whereHas('roleInfo', fn($q) => $q->where('name', 'client'))->get();
-    $categories = \App\Models\Category::all();
+    $products = Product::with('category.parent')->get();
+    $customers = User::whereHas('roleInfo', fn($q) => $q->where('name', 'client'))->orderBy('name')->get();
+    $clientsByUserId = Client::whereIn('user_id', $customers->pluck('id'))->get()->keyBy('user_id');
+    $mainCategories = \App\Models\Category::with(['children' => function ($query) {$query->orderBy('name');
+    }])
+      ->whereNull('parent_id')
+      ->orderBy('name')
+      ->get();
     $orderItems = collect();
 
     if ($request->has('order_id')) {
@@ -47,18 +53,29 @@ class SaleController extends Controller
             'items'          => $sale->details->count(),
             'time'           => $sale->created_at->format('h:i A'),
         ]);
+    
+    $receiptSale = null;
 
-    return view('cashier.sales.create', compact('products', 'customers', 'categories', 'orderItems', 'recentSales'));
+    if (session('receipt_sale_id')) {
+    $receiptSale = Sale::with(['details.product', 'customer'])
+        ->where('cashier_id', Auth::id())
+        ->find(session('receipt_sale_id'));
+    }
+
+    return view('cashier.sales.create', compact('products', 'customers', 'mainCategories', 'orderItems', 'receiptSale', 'clientsByUserId', 'recentSales'));
     }
 
     public function store(Request $request)
     {
     $request->validate([
-        'customer_id'            => 'required_without:order_id|exists:users,id',
-        'order_id'               => 'nullable|exists:sales,id',
-        'products'               => 'required|array|min:1',
+        'customer_id' => 'required|exists:users,id',
+        'payment_method' => 'required|in:cash,card,yape,plin',
+        'payment_reference' => 'nullable|string|max:50',
+        'promo_code' => 'nullable|string|max:20',
+        'cash_received' => 'nullable|numeric|min:0',
+        'products' => 'required|array|min:1',
         'products.*.product_id' => 'required|integer|exists:products,id',
-        'products.*.quantity'   => 'required|integer|min:1',
+        'products.*.quantity' => 'required|integer|min:1',
     ]);
 
     $opening = \App\Models\CashOpening::where('user_id', Auth::id())
@@ -66,83 +83,213 @@ class SaleController extends Controller
         ->first();
 
     if (!$opening) {
-        return redirect()->route('cashier.cash')->with('error', 'You must open the cash register before registering a sale.');
+        return redirect()
+            ->route('cashier.cash')
+            ->with('error', 'You must open the cash register before registering a sale.');
     }
 
     DB::beginTransaction();
+
     try {
-        if ($request->has('order_id') && $request->order_id) {
-            $sale = Sale::findOrFail($request->order_id);
-            $sale->update([
-                'cashier_id'      => Auth::id(),
-                'cash_opening_id' => $opening->id,
-                'status'          => 'completed',
-                'payment_method'  => $request->payment_method ?? 'cash',
-            ]);
-            $sale->details()->delete();
-        } else {
-            $sale = Sale::create([
-                'customer_id'     => $request->customer_id,
-                'cashier_id'      => Auth::id(),
-                'cash_opening_id' => $opening->id,
-                'total'           => 0,
-                'status'          => 'completed',
-                'payment_method'  => $request->payment_method ?? 'cash',
-                'voucher_type'    => 'receipt',
-            ]);
-        }
+        $customer = User::findOrFail($request->customer_id);
+        $isGenericCustomer = strtolower($customer->email) === 'cliente@example.com';
 
-        $total = 0;
+        $sale = Sale::create([
+            'customer_id' => $customer->id,
+            'cashier_id' => Auth::id(),
+            'cash_opening_id' => $opening->id,
 
-        foreach ($request->products as $item) {
-            $product  = Product::findOrFail($item['product_id']);
+            'total' => 0,
+            'stars_earned' => 0,
+            'discount' => 0,
+            'store_credit_used' => 0,
+            'tax' => 0,
 
-            if ($item['quantity'] > $product->stock) {
-                throw new \Exception("Not enough stock for \"{$product->name}\". Available: {$product->stock}, requested: {$item['quantity']}.");
-            }
+            'status' => 'completed',
+            'order_status' => null,
 
-        $unitPrice = $product->finalPrice();
-        $subtotal = $unitPrice * $item['quantity'];
+            'payment_method' => $request->payment_method,
+            'payment_reference' => null,
+            'promo_code' => null,
+            'cash_received' => null,
+            'cash_change' => null,
 
-        SaleDetail::create([
-          'sale_id'    => $sale->id,
-          'product_id' => $product->id,
-          'quantity'   => $item['quantity'],
-          'price'      => $unitPrice,
-          'subtotal'   => $subtotal,
+            'payment_status' => 'paid',
+            'card_last_four' => null,
+
+            'voucher_type' => 'receipt',
         ]);
 
-            $product->stock -= $item['quantity'];
-            $product->save();
+        $subtotal = 0;
 
-            $total += $subtotal;
-        }
+        foreach ($request->products as $item) {
+            $product = Product::where('id', $item['product_id'])
+                ->lockForUpdate()
+                ->firstOrFail();
 
-        $sale->update(['total' => $total]);
+            $quantity = (int) $item['quantity'];
 
-        $starsEarned = (int) floor($total / 5);
-        $client = \App\Models\Client::where('user_id', $sale->customer_id)->first();
+            if ($quantity > $product->stock) {
+                throw new \Exception("Not enough stock for {$product->name}.");
+            }
 
-        if ($client && $starsEarned > 0) {
-            $client->accumulated_stars += $starsEarned;
-            $client->save();
+            $unitPrice = method_exists($product, 'finalPrice')
+                ? $product->finalPrice()
+                : $product->price;
 
-            \App\Models\StarHistory::create([
-                'movement_type' => 'earned',
-                'amount'        => $starsEarned,
-                'reason'        => 'Purchase — Sale #' . $sale->id,
-                'date'          => now(),
-                'client_id'     => $client->id_cliente,
-                'sale_id'       => $sale->id,
+            $lineSubtotal = round($unitPrice * $quantity, 2);
+            $subtotal += $lineSubtotal;
+
+            SaleDetail::create([
+                'sale_id' => $sale->id,
+                'product_id' => $product->id,
+                'quantity' => $quantity,
+                'price' => $unitPrice,
+                'subtotal' => $lineSubtotal,
             ]);
+
+            $product->decrement('stock', $quantity);
         }
+
+        $subtotal = round($subtotal, 2);
+
+        $promoCode = $request->filled('promo_code')
+            ? strtoupper(trim($request->promo_code))
+            : null;
+
+        $promoDiscount = 0;
+
+        $validPromoCodes = [
+            'YAPE10' => [
+                'method' => 'yape',
+                'percent' => 10,
+            ],
+            'PLIN5' => [
+                'method' => 'plin',
+                'percent' => 5,
+            ],
+        ];
+
+        if ($promoCode) {
+            if (!isset($validPromoCodes[$promoCode])) {
+                throw ValidationException::withMessages([
+                    'promo_code' => 'Invalid promotional code.',
+                ]);
+            }
+
+            $promo = $validPromoCodes[$promoCode];
+
+            if ($promo['method'] !== $request->payment_method) {
+                throw ValidationException::withMessages([
+                    'promo_code' => 'This promotional code is not valid for the selected payment method.',
+                ]);
+            }
+
+            $promoDiscount = round($subtotal * ($promo['percent'] / 100), 2);
+        }
+
+        $total = round($subtotal - $promoDiscount, 2);
+
+        $paymentReference = null;
+        $cashReceived = null;
+        $cashChange = null;
+
+        if ($request->payment_method === 'cash') {
+            $cashReceived = (float) $request->cash_received;
+
+            if ($cashReceived <= 0) {
+                throw ValidationException::withMessages([
+                    'payment' => 'Cash received is required.',
+                ]);
+            }
+
+            if ($cashReceived < $total) {
+                throw ValidationException::withMessages([
+                    'payment' => 'Cash received is less than the sale total.',
+                ]);
+            }
+
+            $cashChange = round($cashReceived - $total, 2);
+        } else {
+            if (!$request->filled('payment_reference')) {
+                throw ValidationException::withMessages([
+                    'payment' => 'Payment operation code or voucher is required.',
+                ]);
+            }
+
+            $paymentReference = trim($request->payment_reference);
+        }
+
+        $starsEarned = 0;
+        $newProgressAmount = 0;
+
+        if (!$isGenericCustomer) {
+            $client = Client::where('user_id', $customer->id)
+                ->lockForUpdate()
+                ->first();
+
+            if ($client) {
+                $previousProgressCents = (int) round(((float) ($client->star_progress_amount ?? 0)) * 100);
+                $totalCents = (int) round($total * 100);
+
+                $starBaseCents = $previousProgressCents + $totalCents;
+
+                $starsEarned = intdiv($starBaseCents, 500);
+                $newProgressCents = $starBaseCents % 500;
+                $newProgressAmount = $newProgressCents / 100;
+
+                $client->update([
+                    'accumulated_stars' => $client->accumulated_stars + $starsEarned,
+                    'star_progress_amount' => $newProgressAmount,
+                ]);
+
+                if ($starsEarned > 0) {
+                    StarHistory::create([
+                        'movement_type' => 'earned',
+                        'amount' => $starsEarned,
+                        'reason' => 'Cashier sale - Sale #' . $sale->id,
+                        'date' => now(),
+                        'client_id' => $client->id_cliente,
+                        'sale_id' => $sale->id,
+                    ]);
+                }
+            }
+        }
+
+        $sale->update([
+            'invoice_number' => 'B-' . str_pad($sale->id, 6, '0', STR_PAD_LEFT),
+            'total' => $total,
+            'discount' => $promoDiscount,
+            'stars_earned' => $starsEarned,
+            'payment_reference' => $paymentReference,
+            'promo_code' => $promoCode,
+            'cash_received' => $cashReceived,
+            'cash_change' => $cashChange,
+        ]);
 
         DB::commit();
-        return redirect()->back()->with('success', 'Sale registered successfully. ' . ($starsEarned > 0 ? "+{$starsEarned} stars earned! Every S/5.00 gives 1 star." : ''));
+
+        $message = 'Sale registered successfully.';
+
+        if ($isGenericCustomer) {
+            $message .= ' Generic customer does not earn stars.';
+        } else {
+            $message .= ' +' . $starsEarned . ' stars earned.';
+            $message .= ' Progress: S/ ' . number_format($newProgressAmount, 2) . ' / S/ 5.00.';
+        }
+
+        return redirect()
+            ->route('sales.create')
+            ->with('success', $message)
+            ->with('receipt_sale_id', $sale->id);
 
     } catch (\Exception $e) {
         DB::rollBack();
-        return redirect()->back()->with('error', 'Error registering sale: ' . $e->getMessage());
-    }
+
+        return redirect()
+            ->back()
+            ->withInput()
+            ->with('error', 'Error registering sale: ' . $e->getMessage());
+      }
     }
 }

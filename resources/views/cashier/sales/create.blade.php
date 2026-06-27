@@ -30,13 +30,98 @@
   .history-meta { font-size: 11px; color: #999; margin-top: 4px; }
   .history-empty { text-align: center; color: #bbb; font-size: 13px; padding: 40px 0; }
 
-  .pos-toolbar { display: flex; align-items: center; justify-content: flex-end; gap: 12px; margin: -6px 0 16px; }
-  .pos-toolbar .search-box { width: 280px; flex: none; }
+  .pos-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: -6px 0 16px; }
+  .pos-toolbar .search-box { width: 360px; flex: none; max-width: 100%; }
 
   .pos-layout { display: grid; grid-template-columns: 1fr 340px; gap: 0; margin: 0 -28px -24px; height: calc(100vh - 65px - 76px); }
 
   .products-panel { padding: 20px 24px; overflow-y: auto; }
-  .filters { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+  .category-area {
+    width: 100%;
+    min-width: 0;
+    margin-bottom: 18px;
+  }
+
+  .category-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    max-width: 100%;
+    padding-bottom: 8px;
+    scrollbar-width: thin;
+  }
+
+  .main-category-row {
+    margin-bottom: 8px;
+  }
+
+  .subcategory-row {
+    display: none;
+    scroll-behavior: smooth;
+  }
+
+  .subcategory-row.show {
+    display: flex;
+  }
+
+  .filter-btn,
+  .subcategory-btn {
+    white-space: nowrap;
+    flex: 0 0 auto;
+    padding: 8px 17px;
+    border-radius: 999px;
+    border: 1px solid #e0e0e0;
+    background: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    color: #555;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .filter-btn:hover,
+  .subcategory-btn:hover {
+    border-color: #e8192c;
+    color: #e8192c;
+  }
+
+  .filter-btn.active,
+  .subcategory-btn.active {
+    background: #e8192c;
+    color: #fff;
+    border-color: #e8192c;
+  }
+
+  .category-row::-webkit-scrollbar {
+    height: 5px;
+  }
+
+  .category-row::-webkit-scrollbar-thumb {
+    background: #ddd;
+    border-radius: 999px;
+  }
+
+  .category-row::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .stars-preview-row {
+    color: #d97706;
+    font-weight: 900;
+    margin-top: 8px;
+  }
+
+  .stars-preview-row strong {
+    color: #d97706;
+  }
+
+  .stars-progress-text {
+    font-size: 11px;
+    color: #999;
+    margin-bottom: 10px;
+  }
 
   .price-search-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 18px; flex-wrap: wrap; }
   .price-search-bar input[type="number"] {
@@ -58,7 +143,104 @@
   .products-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
   .product-card { background: #fff; border-radius: 12px; border: 1px solid #eee; overflow: hidden; cursor: pointer; transition: all 0.15s; }
   .product-card:hover { border-color: #e8192c; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(232,25,44,0.1); }
-  .product-img { height: 140px; background: #f5f5f5; display: flex; align-items: center; justify-content: center; font-size: 48px; font-weight: 800; color: #ddd; }
+  .product-img {
+    height: 140px;
+    background: #f5f5f5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+    font-weight: 800;
+    color: #ddd;
+    overflow: hidden;
+  }
+
+  .product-img-real {
+    padding: 0;
+  }
+
+  .product-img-real img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  
+  .payment-method-box {
+    padding: 14px 20px;
+    border-bottom: 1px solid #eee;
+  }
+
+  .payment-method-box label {
+    font-size: 12px;
+    color: #999;
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  .payment-options {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .payment-option {
+    border: 1px solid #e5e5e5;
+    background: #fff;
+    border-radius: 9px;
+    padding: 9px 8px;
+    font-size: 12px;
+    font-weight: 800;
+    color: #555;
+    cursor: pointer;
+  }
+
+  .payment-option.active {
+    background: #e8192c;
+    border-color: #e8192c;
+    color: #fff;
+  }
+
+  .payment-extra-box {
+    padding: 0 20px 14px;
+    border-bottom: 1px solid #eee;
+  }
+ 
+  .payment-extra-box label {
+    font-size: 12px;
+    color: #999;
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  .payment-extra-box input {
+    width: 100%;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 9px 12px;
+    font-size: 13px;
+    outline: none;
+  }
+
+  .payment-extra-box input:focus {
+    border-color: #e8192c;
+  }
+
+  .payment-extra-box small {
+    display: block;
+    margin-top: 6px;
+    font-size: 11px;
+    color: #999;
+  }
+
+  .promo-discount-row {
+    color: #16a34a;
+  }
+
+  .promo-discount-row strong {
+    color: #16a34a;
+  }
+
   .product-info { padding: 12px; }
   .product-category { font-size: 11px; color: #999; margin-bottom: 4px; }
   .product-name { font-size: 14px; font-weight: 600; color: #111; margin-bottom: 8px; }
@@ -123,15 +305,23 @@
 >
 
     <div class="pos-toolbar">
-      <div class="search-box">
-        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <div class="search-box">
+        <svg viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+
         <input type="text" id="search-input" placeholder="Search product by name...">
-      </div>
-      <button type="button" id="btn-sales-history" class="btn-sales-history-toggle">
-        <svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M18.7 8l-5.1 5.2-3-3L7 13.5"/></svg>
-        Ver últimas ventas
+    </div>
+
+    <button type="button" id="btn-sales-history" class="btn-sales-history-toggle">
+        <svg viewBox="0 0 24 24">
+            <path d="M3 3v18h18"/>
+            <path d="M18.7 8l-5.1 5.2-3-3L7 13.5"/>
+        </svg>
+        See latest sales
         <span class="history-count" id="history-count">0</span>
-      </button>
+     </button>
     </div>
 
   <div class="pos-layout">
@@ -144,18 +334,38 @@
         <div class="error-msg" style="margin: 0 0 16px">{{ session('error') }}</div>
       @endif
 
-      <div class="filters">
-        <button class="filter-btn active" onclick="filterCategory('all', this)">All</button>
-        @foreach($categories as $cat)
-          <button class="filter-btn" onclick="filterCategory('{{ $cat->id }}', this)">{{ $cat->name }}</button>
+      <div class="category-area">
+    <div class="category-row main-category-row">
+        <button class="filter-btn active" onclick="selectMainCategory('all', this)">
+            All
+        </button>
+
+        @foreach($mainCategories as $main)
+            <button class="filter-btn" onclick="selectMainCategory('{{ $main->id }}', this)">
+                {{ $main->name }}
+            </button>
         @endforeach
-      </div>
+    </div>
+
+    <div class="category-row subcategory-row" id="subcategory-row">
+        @foreach($mainCategories as $main)
+            @foreach($main->children as $child)
+                <button class="subcategory-btn"
+                        data-parent="{{ $main->id }}"
+                        onclick="selectSubcategory('{{ $child->id }}', this)"
+                        style="display:none;">
+                    {{ $child->name }}
+                </button>
+            @endforeach
+        @endforeach
+       </div>
+     </div>
 
       <div class="price-search-bar">
         <input type="number" id="bst-min" placeholder="Min price" step="0.01" min="0">
         <span class="price-search-sep">—</span>
         <input type="number" id="bst-max" placeholder="Max price" step="0.01" min="0">
-        <button type="button" id="bst-search-btn">Search range (BST)</button>
+        <button type="button" id="bst-search-btn">Search range</button>
         <button type="button" id="bst-clear-btn">Clear</button>
         <span id="bst-status"></span>
       </div>
@@ -165,17 +375,28 @@
         @php
           $activeDiscount = $product->activeDiscount();
           $finalPrice = $product->finalPrice();
+          $productCategory = $product->category;
+          $parentCategoryId = $productCategory?->parent_id ?? $productCategory?->id;
         @endphp
         <div class="product-card {{ $product->stock <= 0 ? 'out-of-stock' : '' }}"
              data-id="{{ $product->id }}"
-             data-name="{{ $product->name }}"
+             data-name="{{ strtolower($product->name) }}"
              data-price="{{ $finalPrice }}"
              data-original-price="{{ $product->price }}"
              data-discount="{{ $activeDiscount?->value ?? 0 }}"
              data-stock="{{ $product->stock }}"
              data-category="{{ $product->category_id }}"
+             data-parent-category="{{ $parentCategoryId }}"
              @if($product->stock > 0) onclick="addToCart(this)" @endif>
-          <div class="product-img">{{ strtoupper(substr($product->name, 0, 1)) }}</div>
+          @if($product->image)
+            <div class="product-img product-img-real">
+            <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}">
+           </div>
+          @else
+          <div class="product-img">
+           {{ strtoupper(substr($product->name, 0, 1)) }}
+          </div>
+          @endif
           <div class="product-info">
             <div class="product-category">{{ $product->category?->name }}</div>
             <div class="product-name">{{ $product->name }}</div>
@@ -214,17 +435,90 @@
 
       <div class="cart-customer">
         <label>Customer</label>
-        <select id="customer-select">
+
+      <input type="text"
+         id="customer-search"
+         placeholder="Search customer by name or email..."
+         style="width:100%; border:1px solid #e0e0e0; border-radius:8px; padding:9px 12px; font-size:13px; margin-bottom:8px; outline:none;">
+
+         <select id="customer-select">
          <option value="">— Select customer —</option>
-           @foreach($customers as $customer)
-         <option value="{{ $customer->id }}"
-          {{ $customer->email === 'cliente@example.com' ? 'selected' : '' }}>
-          {{ $customer->name }}
-          {{ $customer->email === 'cliente@example.com' ? '(Generic)' : '' }}
+        @foreach($customers as $customer)
+        @php
+          $clientData = $clientsByUserId[$customer->id] ?? null;
+          $isGeneric = strtolower($customer->email) === 'cliente@example.com';
+        @endphp
+    <option value="{{ $customer->id }}"
+            data-search="{{ strtolower($customer->name . ' ' . $customer->email) }}"
+            data-generic="{{ $isGeneric ? '1' : '0' }}"
+            data-progress="{{ $clientData?->star_progress_amount ?? 0 }}">
+        {{ $customer->name }}
+        {{ $isGeneric ? '(Generic)' : '' }}
     </option>
-  @endforeach
+   @endforeach
 </select>
       </div>
+
+      <div class="payment-method-box">
+    <label>Payment method</label>
+
+    <div class="payment-options">
+        <div class="payment-extra-box">
+    <div id="cash-fields">
+        <label>Cash received</label>
+
+        <input type="number"
+               id="cash-received"
+               placeholder="Amount received"
+               step="0.01"
+               min="0">
+
+        <small id="cash-change-preview">
+            Change: S/ 0.00
+        </small>
+    </div>
+
+    <div id="reference-fields" style="display:none;">
+        <label id="payment-reference-label">Payment code</label>
+
+        <input type="text"
+               id="payment-reference"
+               placeholder="Enter payment code">
+
+        <small id="payment-reference-help">
+            Enter the operation code or voucher number.
+        </small>
+    </div>
+
+    <div id="promo-fields" style="display:none; margin-top:10px;">
+        <label>Promo code</label>
+
+        <input type="text"
+               id="promo-code"
+               placeholder="Example: YAPE10 or PLIN5">
+
+        <small id="promo-code-help">
+            Optional promotional code for digital payment.
+          </small>
+         </div>
+       </div>
+        <button type="button" class="payment-option active" data-method="cash" onclick="selectPaymentMethod(this)">
+            Cash
+        </button>
+
+        <button type="button" class="payment-option" data-method="card" onclick="selectPaymentMethod(this)">
+            Card
+        </button>
+
+        <button type="button" class="payment-option" data-method="yape" onclick="selectPaymentMethod(this)">
+            Yape
+        </button>
+
+        <button type="button" class="payment-option" data-method="plin" onclick="selectPaymentMethod(this)">
+            Plin
+        </button>
+      </div>
+    </div>
 
       <div class="cart-items" id="cart-items">
         <div class="cart-empty" id="cart-empty">
@@ -235,12 +529,27 @@
 
       <div class="cart-footer">
         <div class="cart-total-row">
-          <span>Subtotal</span>
-          <strong id="subtotal">S/ 0.00</strong>
+         <span>Subtotal</span>
+         <strong id="subtotal">S/ 0.00</strong>
         </div>
+
+        <div class="cart-total-row promo-discount-row" id="promo-discount-row" style="display:none;">
+         <span id="promo-discount-label">Promo discount</span>
+         <strong id="promo-discount">-S/ 0.00</strong>
+        </div>
+
+        <div class="cart-total-row stars-preview-row">
+         <span>Stars to earn</span>
+         <strong id="stars-preview">No stars</strong>
+        </div>
+
+        <div class="stars-progress-text" id="stars-progress-preview">
+         Select a registered customer to earn stars
+        </div>
+
         <div class="cart-grand-total">
-          <span>Total</span>
-          <strong id="total">S/ 0.00</strong>
+         <span>Total</span>
+         <strong id="total">S/ 0.00</strong>
         </div>
         <button class="btn-checkout" id="btn-checkout" onclick="submitSale()" disabled>
           Register Sale
@@ -261,13 +570,13 @@
     <div class="history-panel-header">
       <h3>
         <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="4" rx="1"/><rect x="4" y="10" width="16" height="4" rx="1"/><rect x="4" y="16" width="16" height="4" rx="1"/></svg>
-        Últimas ventas (Pila — LIFO)
+        Latest sales
       </h3>
       <button type="button" id="close-history" class="history-close">
         <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </div>
-    <p class="history-subtitle">La venta más reciente se muestra primero — cada venta registrada se apila (push) y se desapila (pop) en este orden.</p>
+    <p class="history-subtitle">The most recent sale will appear first</p>
     <div class="history-list" id="history-list"></div>
   </div>
 </div>
@@ -275,6 +584,11 @@
 <form id="sale-form" method="POST" action="{{ route('sales.store') }}" style="display:none">
   @csrf
   <input type="hidden" name="customer_id" id="form-customer">
+  <input type="hidden" name="payment_method" id="form-payment-method" value="cash">
+  <input type="hidden" name="payment_reference" id="form-payment-reference">
+  <input type="hidden" name="promo_code" id="form-promo-code">
+  <input type="hidden" name="cash_received" id="form-cash-received">
+
   <input type="hidden" name="order_id" value="{{ request('order_id') }}">
   <div id="form-products"></div>
 </form>
@@ -469,6 +783,20 @@ class Stack {
 
 const actionHistory = new Stack();
 const cart = new LinkedList();
+let selectedPaymentMethod = 'cash';
+
+function selectPaymentMethod(btn) {
+  selectedPaymentMethod = btn.dataset.method;
+
+  document.querySelectorAll('.payment-option').forEach(button => {
+    button.classList.remove('active');
+  });
+
+  btn.classList.add('active');
+
+  renderPaymentFields();
+  renderCart();
+}
 </script>
 <script id="order-items-data" type="application/json">{!! json_encode($orderItems->map(fn($item) => [
   'id' => $item->product_id,
@@ -616,6 +944,166 @@ function updateUndoBtn() {
 
 function clearCart() {
   cart.clear();
+  actionHistory.items = {};
+  actionHistory.top = -1;
+  renderCart();
+  updateUndoBtn();
+}
+
+function getSelectedCustomerOption() {
+  const select = document.getElementById('customer-select');
+  return select.options[select.selectedIndex];
+}
+
+function isGenericCustomerSelected() {
+  const option = getSelectedCustomerOption();
+  return option && option.dataset.generic === '1';
+}
+
+function getSelectedCustomerProgress() {
+  const option = getSelectedCustomerOption();
+  return parseFloat(option?.dataset.progress || 0);
+}
+
+function updateStarsPreview(total) {
+  const starsPreview = document.getElementById('stars-preview');
+  const progressPreview = document.getElementById('stars-progress-preview');
+
+  if (!starsPreview || !progressPreview) {
+    return;
+  }
+
+  const customerId = document.getElementById('customer-select').value;
+
+  if (!customerId) {
+    starsPreview.textContent = 'No stars';
+    progressPreview.textContent = 'Select a registered customer to earn stars';
+    return;
+  }
+
+  if (isGenericCustomerSelected()) {
+    starsPreview.textContent = 'No stars';
+    progressPreview.textContent = 'Generic customer does not earn stars';
+    return;
+  }
+
+  const previousProgress = getSelectedCustomerProgress();
+
+  const previousProgressCents = Math.round(previousProgress * 100);
+  const totalCents = Math.round(total * 100);
+  const starBaseCents = previousProgressCents + totalCents;
+
+  const starsEarned = Math.floor(starBaseCents / 500);
+  const newProgressCents = starBaseCents % 500;
+  const newProgressAmount = newProgressCents / 100;
+
+  starsPreview.textContent = `+${starsEarned} ⭐`;
+  progressPreview.textContent = `Progress after sale: S/ ${newProgressAmount.toFixed(2)} / S/ 5.00`;
+}
+
+function getPaymentMethodLabel(method) {
+  const labels = {
+    cash: 'Cash',
+    card: 'Card',
+    yape: 'Yape',
+    plin: 'Plin'
+  };
+
+  return labels[method] || method;
+}
+
+function getCartSubtotal() {
+  return cart.toArray().reduce((sum, item) => {
+    return sum + (item.price * item.quantity);
+  }, 0);
+}
+
+function getPromoCode() {
+  return document.getElementById('promo-code')?.value.trim().toUpperCase() || '';
+}
+
+function getPromoDiscountRate() {
+  const code = getPromoCode();
+
+  if (selectedPaymentMethod === 'yape' && code === 'YAPE10') {
+    return 0.10;
+  }
+
+  if (selectedPaymentMethod === 'plin' && code === 'PLIN5') {
+    return 0.05;
+  }
+
+  return 0;
+}
+
+function getPromoDiscount() {
+  return getCartSubtotal() * getPromoDiscountRate();
+}
+
+function getCartTotal() {
+  return getCartSubtotal() - getPromoDiscount();
+}
+
+function renderPaymentFields() {
+  const cashFields = document.getElementById('cash-fields');
+  const referenceFields = document.getElementById('reference-fields');
+  const promoFields = document.getElementById('promo-fields');
+
+  const referenceLabel = document.getElementById('payment-reference-label');
+  const referenceInput = document.getElementById('payment-reference');
+  const referenceHelp = document.getElementById('payment-reference-help');
+
+  if (selectedPaymentMethod === 'cash') {
+    cashFields.style.display = 'block';
+    referenceFields.style.display = 'none';
+    promoFields.style.display = 'none';
+
+    document.getElementById('payment-reference').value = '';
+    document.getElementById('promo-code').value = '';
+    updateCashChangePreview();
+
+    return;
+  }
+
+  cashFields.style.display = 'none';
+  referenceFields.style.display = 'block';
+
+  if (selectedPaymentMethod === 'card') {
+    promoFields.style.display = 'none';
+    document.getElementById('promo-code').value = '';
+
+    referenceLabel.textContent = 'Card voucher / last 4 digits';
+    referenceInput.placeholder = 'Example: 4587 or voucher code';
+    referenceHelp.textContent = 'Enter the card voucher code or the last 4 digits.';
+  }
+
+  if (selectedPaymentMethod === 'yape') {
+    promoFields.style.display = 'block';
+
+    referenceLabel.textContent = 'Yape operation code';
+    referenceInput.placeholder = 'Example: 845921';
+    referenceHelp.textContent = 'Enter the Yape operation code.';
+  }
+
+  if (selectedPaymentMethod === 'plin') {
+    promoFields.style.display = 'block';
+
+    referenceLabel.textContent = 'Plin operation code';
+    referenceInput.placeholder = 'Example: 739184';
+    referenceHelp.textContent = 'Enter the Plin operation code.';
+  }
+}
+
+function updateCashChangePreview() {
+  const cashReceived = parseFloat(document.getElementById('cash-received').value || 0);
+  const total = getCartTotal();
+  const change = cashReceived - total;
+
+  document.getElementById('cash-change-preview').textContent =
+    `Change: S/ ${change > 0 ? change.toFixed(2) : '0.00'}`;
+}
+
+function updatePromoPreview() {
   renderCart();
 }
 
@@ -669,18 +1157,117 @@ function renderCart() {
     container.appendChild(div);
   });
 
-  document.getElementById('subtotal').textContent = `S/ ${total.toFixed(2)}`;
-  document.getElementById('total').textContent = `S/ ${total.toFixed(2)}`;
+  const promoDiscount = total * getPromoDiscountRate();
+const finalTotal = total - promoDiscount;
+
+document.getElementById('subtotal').textContent = `S/ ${total.toFixed(2)}`;
+document.getElementById('total').textContent = `S/ ${finalTotal.toFixed(2)}`;
+
+const promoRow = document.getElementById('promo-discount-row');
+const promoLabel = document.getElementById('promo-discount-label');
+const promoAmount = document.getElementById('promo-discount');
+
+if (promoDiscount > 0) {
+  promoRow.style.display = 'flex';
+  promoLabel.textContent = `Promo ${getPromoCode()}`;
+  promoAmount.textContent = `-S/ ${promoDiscount.toFixed(2)}`;
+} else {
+  promoRow.style.display = 'none';
+}
+
+updateCashChangePreview();
+
+if (typeof updateStarsPreview === 'function') {
+  updateStarsPreview(finalTotal);
+}
+  updateStarsPreview(total);
+  updateStarsPreview(0);
+}
+
+function validatePaymentBeforeSubmit() {
+  const total = getCartTotal();
+
+  if (selectedPaymentMethod === 'cash') {
+    const cashReceived = parseFloat(document.getElementById('cash-received').value || 0);
+
+    if (cashReceived <= 0) {
+      alert('Enter the cash received.');
+      return false;
+    }
+
+    if (cashReceived < total) {
+      alert('Cash received is less than the total.');
+      return false;
+    }
+
+    return true;
+  }
+
+  const reference = document.getElementById('payment-reference').value.trim();
+
+  if (reference.length < 4) {
+    alert('Enter a valid operation code or voucher.');
+    return false;
+  }
+
+  const promoCode = getPromoCode();
+
+  if (promoCode !== '') {
+    if (selectedPaymentMethod === 'yape' && promoCode !== 'YAPE10') {
+      alert('Invalid promo code for Yape.');
+      return false;
+    }
+
+    if (selectedPaymentMethod === 'plin' && promoCode !== 'PLIN5') {
+      alert('Invalid promo code for Plin.');
+      return false;
+    }
+
+    if (selectedPaymentMethod === 'card' || selectedPaymentMethod === 'cash') {
+      alert('Promo code is only available for Yape or Plin.');
+      return false;
+    }
+  }
+
+  return true;
 }
 
 function submitSale() {
   const customerId = document.getElementById('customer-select').value;
-  if (!customerId) { alert('Please select a customer.'); return; }
+
+  if (!customerId) {
+    alert('Please select a customer.');
+    return;
+  }
 
   const items = cart.toArray();
-  if (items.length === 0) { alert('Cart is empty.'); return; }
+
+  if (items.length === 0) {
+    alert('Cart is empty.');
+    return;
+  }
+
+  if (!validatePaymentBeforeSubmit()) {
+    return;
+  }
 
   document.getElementById('form-customer').value = customerId;
+  document.getElementById('form-payment-method').value = selectedPaymentMethod;
+  document.getElementById('form-payment-reference').value =
+    selectedPaymentMethod === 'cash'
+      ? ''
+      : document.getElementById('payment-reference').value.trim();
+
+  document.getElementById('form-promo-code').value =
+    selectedPaymentMethod === 'yape' || selectedPaymentMethod === 'plin'
+      ? getPromoCode()
+      : '';
+
+  document.getElementById('form-cash-received').value =
+    selectedPaymentMethod === 'cash'
+      ? parseFloat(document.getElementById('cash-received').value || 0).toFixed(2)
+      : '';
+
   const container = document.getElementById('form-products');
   container.innerHTML = '';
 
@@ -694,19 +1281,74 @@ function submitSale() {
   document.getElementById('sale-form').submit();
 }
 
-document.getElementById('search-input').addEventListener('input', function() {
-  const q = this.value.toLowerCase();
+let selectedMainCategory = 'all';
+let selectedSubcategory = 'all';
+let currentSearch = '';
+let priceFilterIds = null;
+
+function applyProductFilters() {
   document.querySelectorAll('.product-card').forEach(card => {
-    card.style.display = card.dataset.name.toLowerCase().includes(q) ? '' : 'none';
+    const matchesSearch = card.dataset.name.includes(currentSearch);
+
+    const matchesMain =
+      selectedMainCategory === 'all' ||
+      card.dataset.parentCategory === selectedMainCategory;
+
+    const matchesSub =
+      selectedSubcategory === 'all' ||
+      card.dataset.category === selectedSubcategory;
+
+    const matchesPrice =
+      priceFilterIds === null ||
+      priceFilterIds.has(card.dataset.id);
+
+    card.style.display =
+      matchesSearch && matchesMain && matchesSub && matchesPrice
+        ? ''
+        : 'none';
   });
+}
+
+document.getElementById('search-input').addEventListener('input', function() {
+  currentSearch = this.value.toLowerCase().trim();
+  applyProductFilters();
 });
 
-function filterCategory(catId, btn) {
+function selectMainCategory(categoryId, btn) {
+  selectedMainCategory = categoryId;
+  selectedSubcategory = 'all';
+
   document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  document.querySelectorAll('.product-card').forEach(card => {
-    card.style.display = (catId === 'all' || card.dataset.category === catId) ? '' : 'none';
+
+  document.querySelectorAll('.subcategory-btn').forEach(button => {
+    button.classList.remove('active');
+
+    if (categoryId !== 'all' && button.dataset.parent === categoryId) {
+      button.style.display = '';
+    } else {
+      button.style.display = 'none';
+    }
   });
+
+  const subcategoryRow = document.getElementById('subcategory-row');
+
+  if (categoryId === 'all') {
+    subcategoryRow.classList.remove('show');
+  } else {
+    subcategoryRow.classList.add('show');
+  }
+
+  applyProductFilters();
+}
+
+function selectSubcategory(categoryId, btn) {
+  selectedSubcategory = categoryId;
+
+  document.querySelectorAll('.subcategory-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+
+  applyProductFilters();
 }
 
 document.getElementById('bst-search-btn').addEventListener('click', () => {
@@ -723,26 +1365,61 @@ document.getElementById('bst-search-btn').addEventListener('click', () => {
   }
 
   const results = priceBST.rangeSearch(min, max);
-  const matchingIds = new Set(results.map(p => String(p.id)));
 
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.product-card').forEach(card => {
-    card.style.display = matchingIds.has(card.dataset.id) ? '' : 'none';
-  });
+  priceFilterIds = new Set(results.map(p => String(p.id)));
+  applyProductFilters();
 
   const maxLabel = maxInput === '' ? '∞' : `S/ ${max.toFixed(2)}`;
-  status.textContent = `BST: ${results.length} product(s) between S/ ${min.toFixed(2)} and ${maxLabel} — ${priceBST.comparisons} node comparisons (out of ${productsForBST.length} products total)`;
+  status.textContent = `BST: ${results.length} product(s) between S/ ${min.toFixed(2)} and ${maxLabel} — ${priceBST.comparisons} node comparisons`;
 });
 
 document.getElementById('bst-clear-btn').addEventListener('click', () => {
   document.getElementById('bst-min').value = '';
   document.getElementById('bst-max').value = '';
   document.getElementById('bst-status').textContent = '';
-  document.querySelectorAll('.product-card').forEach(card => { card.style.display = ''; });
+
+  priceFilterIds = null;
+  selectedMainCategory = 'all';
+  selectedSubcategory = 'all';
+  currentSearch = '';
+
+  document.getElementById('search-input').value = '';
+
   document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+
   const allBtn = document.querySelector('.filter-btn');
-  if (allBtn) allBtn.classList.add('active');
+  if (allBtn) {
+    allBtn.classList.add('active');
+  }
+
+  document.querySelectorAll('.subcategory-btn').forEach(button => {
+    button.classList.remove('active');
+    button.style.display = 'none';
+  });
+
+  document.getElementById('subcategory-row').classList.remove('show');
+
+  applyProductFilters();
 });
+
+document.getElementById('customer-search').addEventListener('input', function () {
+  const q = this.value.toLowerCase().trim();
+
+  document.querySelectorAll('#customer-select option').forEach(option => {
+    if (option.value === '') {
+      option.style.display = '';
+      return;
+    }
+
+    const text = option.dataset.search || option.textContent.toLowerCase();
+    option.style.display = text.includes(q) ? '' : 'none';
+  });
+});
+
+document.getElementById('customer-select').addEventListener('change', function () {
+  renderCart();
+});
+
 </script>
 
 </x-portal-layout>

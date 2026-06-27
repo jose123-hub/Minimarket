@@ -251,9 +251,7 @@
     }
 
     function attendOrder(id) {
-      orderQueue.dequeue();
-      renderQueue();
-      window.location.href = `/cashier/sales/create?order_id=${id}`;
+     window.location.href = `/cashier/online-orders/${id}`;
     }
 
     renderQueue();

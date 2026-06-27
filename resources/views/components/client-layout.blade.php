@@ -287,6 +287,15 @@
                 padding: 24px 16px 45px;
             }
         }
+            .client-avatar-link {
+              text-decoration: none;
+              color: inherit;
+              display: inline-flex;
+            }
+
+            .client-avatar-link:hover {
+               opacity: 0.85;
+             }
     </style>
 
     {{ $styles ?? '' }}
@@ -361,10 +370,11 @@
                 {{ $clientStars }} stars
             </div>
         </div>
-
+        <a href="{{ url('/client/profile') }}" class="client-avatar-link">
         <div class="client-avatar">
             {{ $clientInitial }}
         </div>
+        </a>
 
         <form method="POST" action="{{ route('logout') }}">
             @csrf

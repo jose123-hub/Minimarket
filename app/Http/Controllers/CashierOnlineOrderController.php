@@ -8,11 +8,16 @@ use Illuminate\Support\Facades\Auth;
 
 class CashierOnlineOrderController extends Controller
 {
+    private function onlineOrderQuery()
+    {
+        return Sale::with(['details.product', 'customer'])
+            ->whereNotNull('receipt_number')
+            ->where('payment_status', 'paid');
+    }
+
     public function index()
     {
-        $orders = Sale::with(['details.product', 'customer'])
-            ->whereNotNull('receipt_number')
-            ->where('payment_status', 'paid')
+        $orders = $this->onlineOrderQuery()
             ->whereIn('order_status', ['pending', 'preparing', 'ready'])
             ->latest()
             ->get();
@@ -22,7 +27,9 @@ class CashierOnlineOrderController extends Controller
 
     public function show(Sale $sale)
     {
-        $sale->load(['details.product', 'customer']);
+        $sale = $this->onlineOrderQuery()
+            ->where('id', $sale->id)
+            ->firstOrFail();
 
         return view('cashier.online-orders.show', compact('sale'));
     }
@@ -32,6 +39,15 @@ class CashierOnlineOrderController extends Controller
         $request->validate([
             'order_status' => 'required|in:preparing,ready,delivered',
         ]);
+
+        $sale = Sale::whereNotNull('receipt_number')
+            ->where('payment_status', 'paid')
+            ->where('id', $sale->id)
+            ->firstOrFail();
+
+        if (in_array($sale->order_status, ['cancelled', 'delivered'])) {
+            return back()->with('error', 'This order can no longer be updated.');
+        }
 
         $sale->update([
             'order_status' => $request->order_status,

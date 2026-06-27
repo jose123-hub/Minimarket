@@ -22,14 +22,16 @@ class ClientController extends Controller
         $user = Auth::user();
 
         $client = Client::firstOrCreate(
-          ['user_id' => $user->id],
-           [
+           ['user_id' => $user->id],
+          [
             'first_name' => $user->name,
             'last_name' => '',
             'email' => $user->email,
             'type' => 'regular',
             'accumulated_stars' => 0,
-           ]
+            'star_progress_amount' => 0,
+            'store_credit_balance' => 0,
+          ]
         );
         $products = Product::with('category.parent')
           ->where('stock', '>', 0)
@@ -58,9 +60,9 @@ class ClientController extends Controller
         'pickup_store' => 'required_if:delivery_type,pickup|nullable|string|max:255',
         'pickup_note' => 'nullable|string|max:255',
 
-        'payment_method' => 'required|in:card',
+        'payment_method' => 'required|in:card,store_credit',
         'payment_status' => 'required|in:paid',
-        'card_last_four' => 'required|string|size:4',
+        'card_last_four' => 'nullable|string|size:4',
     ]);
 
     $user = Auth::user();
@@ -73,6 +75,8 @@ class ClientController extends Controller
             'email' => $user->email,
             'type' => 'regular',
             'accumulated_stars' => 0,
+            'star_progress_amount' => 0,
+            'store_credit_balance' => 0,
         ]
     );
 
@@ -123,6 +127,15 @@ class ClientController extends Controller
         $storeCreditUsed = min($availableCredit, $totalAfterOnlineDiscount);
 
         $total = round($totalAfterOnlineDiscount - $storeCreditUsed, 2);
+
+        if ($total > 0 && ($request->payment_method !== 'card' || empty($request->card_last_four))) {
+        throw ValidationException::withMessages([
+        'payment' => 'Card payment is required for this order.',
+         ]);
+        }
+
+        $paymentMethod = $total <= 0 ? 'store_credit' : 'card';
+        $cardLastFour = $total <= 0 ? null : $request->card_last_four;
         
         $previousProgressCents = (int) round(($client->star_progress_amount ?? 0) * 100);
         $totalCents = (int) round($total * 100);
@@ -147,9 +160,9 @@ class ClientController extends Controller
             'status' => 'completed',
             'order_status' => 'pending',
 
-            'payment_method' => 'card',
+            'payment_method' => $paymentMethod,
             'payment_status' => 'paid',
-            'card_last_four' => $request->card_last_four,
+            'card_last_four' => $cardLastFour,
 
             'voucher_type' => 'receipt',
 
@@ -178,12 +191,22 @@ class ClientController extends Controller
             $item['product']->decrement('stock', $item['quantity']);
         }
         
-        $client->increment('accumulated_stars', $starsEarned);
-
         $client->update([
-           'star_progress_amount' => $newProgressAmount,
-           'store_credit_balance' => round($availableCredit - $storeCreditUsed, 2),
-        ]);
+        'accumulated_stars' => $client->accumulated_stars + $starsEarned,
+        'star_progress_amount' => $newProgressAmount,
+        'store_credit_balance' => round($availableCredit - $storeCreditUsed, 2),
+     ]);
+
+    if ($starsEarned > 0) {
+    StarHistory::create([
+        'movement_type' => 'earned',
+        'amount' => $starsEarned,
+        'reason' => 'Online purchase - ' . ($sale->receipt_number ?? 'WEB-' . str_pad($sale->id, 6, '0', STR_PAD_LEFT)),
+        'date' => now(),
+        'client_id' => $client->id_cliente,
+        'sale_id' => $sale->id,
+     ]);
+    }
 
         return $sale;
     });

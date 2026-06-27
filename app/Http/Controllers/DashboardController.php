@@ -56,16 +56,19 @@ class DashboardController extends Controller
         ->get();
 
     $pendingOrders = Sale::with(['customer', 'details'])
-        ->where('status', 'pending')
+        ->whereNotNull('receipt_number')
+        ->where('payment_status', 'paid')
+        ->whereIn('order_status', ['pending', 'preparing', 'ready'])
         ->latest()
         ->get()
-        ->map(function($sale) {
+        ->map(function ($sale) {
             return [
                 'id'            => $sale->id,
-                'customer_name' => $sale->customer?->name ?? 'Guest',
+                'customer_name' => $sale->customer?->name ?? 'Customer',
                 'total'         => $sale->total,
                 'items_count'   => $sale->details->count(),
                 'time'          => $sale->created_at->format('h:i A'),
+                'status'        => $sale->order_status,
             ];
         });
 

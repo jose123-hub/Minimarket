@@ -169,7 +169,7 @@
                 background: #e8192c;
                 color: #fff;
                 font-weight: 900;
-                cursor: default;
+                cursor: pointer;
             }
 
             .btn-reward.disabled {
@@ -199,6 +199,47 @@
                 color: #111;
                 font-size: 17px;
                 margin-bottom: 6px;
+            }
+            
+            .stars-extra-info {
+              display: flex;
+              flex-wrap: wrap;
+              gap: 10px;
+              margin-top: 16px;
+            }
+
+             .stars-pill {
+              background: rgba(255,255,255,0.12);
+              border: 1px solid rgba(255,255,255,0.18);
+              border-radius: 999px;
+              padding: 8px 12px;
+              font-size: 12px;
+              font-weight: 800;
+              color: rgba(255,255,255,0.9);
+            }
+
+            .alert-message {
+              border-radius: 12px;
+              padding: 13px 15px;
+              margin-bottom: 18px;
+              font-size: 13px;
+              font-weight: 800;
+            }
+
+            .alert-message.success {
+              background: #ecfdf5;
+              color: #15803d;
+              border: 1px solid #bbf7d0;
+            }
+
+            .alert-message.error {
+              background: #fef2f2;
+              color: #dc2626;
+              border: 1px solid #fecaca;
+            }
+
+            .btn-reward {
+              cursor: pointer;
             }
 
             @media (max-width: 1000px) {
@@ -235,6 +276,18 @@
             <p>Check your stars and available rewards.</p>
         </div>
     </div>
+    
+    @if(session('success'))
+     <div class="alert-message success">
+        {{ session('success') }}
+     </div>
+    @endif
+
+    @if($errors->any())
+     <div class="alert-message error">
+        {{ $errors->first() }}
+     </div>
+    @endif
 
     <section class="stars-hero">
         <div>
@@ -246,8 +299,17 @@
             </div>
 
             <p class="stars-description">
-                You earn 1 star for every S/ 5.00 you spend. Use them to get exclusive rewards at checkout.
+                You earn 1 star for every S/ 5.00 you spend. Redeemed rewards become store credit for your next online purchase.
             </p>
+            <div class="stars-extra-info">
+         <div class="stars-pill">
+            Progress: S/ {{ number_format($client->star_progress_amount ?? 0, 2) }} / S/ 5.00
+         </div>
+
+         <div class="stars-pill">
+           Rewards credit: S/ {{ number_format($client->store_credit_balance ?? 0, 2) }}
+         </div>
+         </div>
         </div>
 
         <div class="hero-decoration">✦</div>
@@ -299,7 +361,7 @@
 
                             @if($reward->type === 'discount')
                                 <div class="reward-benefit">
-                                    Discount S/ {{ number_format($reward->discount_value, 2) }}
+                                    Store credit S/ {{ number_format($reward->discount_value, 2) }}
                                 </div>
                             @else
                                 <div class="reward-benefit">
@@ -308,15 +370,20 @@
                             @endif
                         </div>
 
-                        @if($canRedeem)
-                            <button type="button" class="btn-reward">
-                                Redeem at the checkout
-                            </button>
-                        @else
-                            <button type="button" class="btn-reward disabled" disabled>
-                                They're missing {{ $missingStars }}
-                            </button>
-                        @endif
+                @if($canRedeem)
+                  <form method="POST"
+                  action="{{ route('client.rewards.redeem', $reward) }}"
+                   onsubmit="return confirm('Redeem this reward? The credit will be applied to your next online purchase.');">
+                   @csrf
+                   <button type="submit" class="btn-reward">
+                    Redeem credit
+                   </button>
+                   </form>
+                    @else
+                     <button type="button" class="btn-reward disabled" disabled>
+                       Missing {{ $missingStars }} stars
+                     </button>
+                     @endif
                     </div>
                 @endforeach
             </div>

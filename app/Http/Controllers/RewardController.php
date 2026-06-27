@@ -46,16 +46,16 @@ class RewardController extends Controller
 
     private function validateReward(Request $request): array
     {
-        return $request->validate([
-            'name'             => 'required|string|max:255',
-            'description'      => 'nullable|string',
-            'type'             => 'required|in:discount,gift',
-            'stars_required'   => 'required|integer|min:1',
-            'discount_value'   => 'nullable|numeric|min:0',
-            'available_stock'  => 'required|integer|min:0',
-            'status'           => 'required|in:active,inactive',
-            'start_date'       => 'nullable|date',
-            'end_date'         => $request->filled('start_date') ? 'nullable|date|after_or_equal:start_date' : 'nullable|date',
-        ]);
+    return $request->validate([
+        'name'             => 'required|string|max:255',
+        'description'      => 'nullable|string',
+        'type'             => 'required|in:discount,gift',
+        'stars_required'   => 'required|integer|min:1',
+        'discount_value'   => 'required_if:type,discount|nullable|numeric|min:0.01',
+        'available_stock'  => 'required|integer|min:0',
+        'status'           => 'required|in:active,inactive',
+        'start_date'       => 'nullable|date',
+        'end_date'         => $request->filled('start_date') ? 'nullable|date|after_or_equal:start_date' : 'nullable|date',
+    ]);
     }
 }

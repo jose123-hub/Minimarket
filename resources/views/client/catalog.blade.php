@@ -1215,13 +1215,24 @@ function validateDeliveryData() {
 }
 
 function validateCardPayment() {
+  const finalTotal = getCartTotal();
+
+  if (finalTotal <= 0) {
+    return true;
+  }
+
   const cardName = document.getElementById('card-name').value.trim();
   const cardNumber = document.getElementById('card-number').value.replace(/\s/g, '');
   const cardExpiry = document.getElementById('card-expiry').value.trim();
   const cardCvv = document.getElementById('card-cvv').value.trim();
 
-  if (cardName === '') {
+  if (cardName.length < 3) {
     showCartToast('Enter cardholder name', 'error');
+    return false;
+  }
+
+  if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/.test(cardName)) {
+    showCartToast('Cardholder name must contain only letters', 'error');
     return false;
   }
 
@@ -1232,6 +1243,24 @@ function validateCardPayment() {
 
   if (!/^\d{2}\/\d{2}$/.test(cardExpiry)) {
     showCartToast('Enter expiry as MM/YY', 'error');
+    return false;
+  }
+
+  const [monthText, yearText] = cardExpiry.split('/');
+  const month = parseInt(monthText, 10);
+  const year = parseInt('20' + yearText, 10);
+
+  if (month < 1 || month > 12) {
+    showCartToast('Enter a valid expiry month', 'error');
+    return false;
+  }
+
+  const now = new Date();
+  const currentMonth = now.getMonth() + 1;
+  const currentYear = now.getFullYear();
+
+  if (year < currentYear || (year === currentYear && month < currentMonth)) {
+    showCartToast('Card expiry date is not valid', 'error');
     return false;
   }
 
@@ -1273,15 +1302,24 @@ function confirmCheckoutAndSubmit() {
     `;
   });
 
+  const finalTotal = getCartTotal();
   const cardNumber = document.getElementById('card-number').value.replace(/\s/g, '');
-  const cardLastFour = cardNumber.slice(-4);
+
+  let paymentMethod = 'card';
+  let cardLastFour = '';
+
+  if (finalTotal <= 0) {
+  paymentMethod = 'store_credit';
+  } else {
+  cardLastFour = cardNumber.slice(-4);
+  }
 
   container.innerHTML += `
-    <input type="hidden" name="delivery_type" value="${selectedDeliveryType}">
-    <input type="hidden" name="payment_method" value="card">
-    <input type="hidden" name="payment_status" value="paid">
-    <input type="hidden" name="card_last_four" value="${cardLastFour}">
-  `;
+  <input type="hidden" name="delivery_type" value="${selectedDeliveryType}">
+  <input type="hidden" name="payment_method" value="${paymentMethod}">
+  <input type="hidden" name="payment_status" value="paid">
+  <input type="hidden" name="card_last_four" value="${cardLastFour}">
+   `;
 
   if (selectedDeliveryType === 'delivery') {
     container.innerHTML += `

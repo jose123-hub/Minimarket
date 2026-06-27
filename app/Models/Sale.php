@@ -28,6 +28,10 @@ class Sale extends Model
     'payment_method',
     'payment_status',
     'card_last_four',
+    'payment_reference',
+    'promo_code',
+    'cash_received',
+    'cash_change',
 
     'voucher_type',
 
@@ -38,6 +42,16 @@ class Sale extends Model
 
     'pickup_store',
     'pickup_note',
+    ];
+
+    protected $casts = [
+        'total' => 'decimal:2',
+        'stars_earned' => 'integer',
+        'discount' => 'decimal:2',
+        'store_credit_used' => 'decimal:2',
+        'tax' => 'decimal:2',
+        'cash_received' => 'decimal:2',
+        'cash_change' => 'decimal:2',
     ];
 
     public function customer()
