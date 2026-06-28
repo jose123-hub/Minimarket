@@ -42,6 +42,7 @@ class Sale extends Model
 
     'pickup_store',
     'pickup_note',
+    'rounding_adjustment',
     ];
 
     protected $casts = [
@@ -52,6 +53,7 @@ class Sale extends Model
         'tax' => 'decimal:2',
         'cash_received' => 'decimal:2',
         'cash_change' => 'decimal:2',
+        'rounding_adjustment' => 'decimal:2',
     ];
 
     public function customer()

@@ -31,7 +31,7 @@
   .stars-equiv strong { font-size: 18px; font-weight: 700; color: #e8192c; }
   .profile-badge svg { width: 60px; height: 60px; stroke: #fca5a5; fill: none; stroke-width: 1; }
 
-  .actions-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+  .actions-row {display: grid;grid-template-columns: 1fr;gap: 16px;margin-bottom: 20px;}
   .action-card { background: #fff; border: 1px solid #eee; border-radius: 12px; padding: 20px; }
   .action-card h3 { font-size: 14px; font-weight: 700; color: #111; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
   .action-card p { font-size: 12px; color: #999; margin-bottom: 14px; }
@@ -51,8 +51,6 @@
   .stars-negative { color: #e8192c; font-weight: 700; }
   .empty-history { text-align: center; color: #ccc; font-size: 13px; padding: 24px 0; }
 
-  /* The shared portal topbar doesn't include a search box by default —
-     this page adds its own next to the date, like the original design. */
   .topbar-search-box { display: flex; align-items: center; gap: 8px; background: #f5f5f5; border: 1px solid #e8e8e8; border-radius: 8px; padding: 8px 14px; width: 220px; }
   .topbar-search-box svg { width: 15px; height: 15px; stroke: #aaa; fill: none; stroke-width: 1.8; }
   .topbar-search-box input { border: none; background: transparent; font-size: 13px; color: #555; outline: none; width: 100%; }
@@ -71,6 +69,7 @@
       </div>
       <div class="clients-list">
         @foreach($clients as $client)
+        @continue(strtolower($client->email ?? $client->user?->email ?? '') === 'cliente@example.com')
         <a href="{{ route('cashier.loyalty', ['client_id' => $client->id_cliente]) }}"
            class="client-item {{ isset($selected) && $selected->id_cliente == $client->id_cliente ? 'active' : '' }}">
           <div>
@@ -114,46 +113,40 @@
         </div>
 
         <div class="actions-row">
-          <div class="action-card">
-            <h3>📈 Earn stars</h3>
-            <p>1 star per S/5.00 spent</p>
-            <form method="POST" action="{{ route('cashier.loyalty.earn') }}">
-              @csrf
-              <input type="hidden" name="client_id" value="{{ $selected->id_cliente }}">
-              <div class="action-input-row">
-                <input type="number" name="amount" step="0.01" min="1" placeholder="Amount S/" class="action-input">
-                <button type="submit" class="btn-earn">Earn</button>
-              </div>
-            </form>
-          </div>
-          <div class="action-card">
-            <h3>🎁 Redeem reward</h3>
-            <p>Select an active reward according to the customer's stars</p>
-            <form method="POST" action="{{ route('cashier.loyalty.redeem') }}">
-              @csrf
-              <input type="hidden" name="client_id" value="{{ $selected->id_cliente }}">
-              <div class="action-input-row">
-                <select name="reward_id" class="action-input" required>
-                  <option value="">Select reward</option>
-                  @foreach($rewards as $reward)
-                    <option value="{{ $reward->id }}"
-                            {{ $selected->accumulated_stars < $reward->stars_required ? 'disabled' : '' }}>
-                      {{ $reward->name }}
-                      —
-                      {{ $reward->stars_required }} stars
-                      —
-                      Stock: {{ $reward->available_stock }}
-                    </option>
-                  @endforeach
-                </select>
-                <button type="submit" class="btn-redeem">Redeem</button>
-              </div>
-            </form>
-          </div>
-        </div>
+  <div class="action-card">
+    <h3>🎁 Redeem reward</h3>
+    <p>The cashier can redeem an active reward only if the customer has enough stars.</p>
+
+    <form method="POST" action="{{ route('cashier.loyalty.redeem') }}">
+      @csrf
+      <input type="hidden" name="client_id" value="{{ $selected->id_cliente }}">
+
+      <div class="action-input-row">
+        <select name="reward_id" class="action-input" required>
+          <option value="">Select reward</option>
+
+          @foreach($rewards as $reward)
+            <option value="{{ $reward->id }}"
+                    {{ $selected->accumulated_stars < $reward->stars_required ? 'disabled' : '' }}>
+              {{ $reward->name }}
+              —
+              {{ $reward->stars_required }} stars
+              —
+              Stock: {{ $reward->available_stock }}
+            </option>
+          @endforeach
+        </select>
+
+        <button type="submit" class="btn-redeem">
+          Redeem
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
 
         <div class="history-card">
-          <h3>Points history</h3>
+          <h3>Stars history</h3>
           @if($history->count() > 0)
           <table>
             <thead>

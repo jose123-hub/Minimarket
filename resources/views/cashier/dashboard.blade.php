@@ -1,5 +1,169 @@
 @push('portal-styles')
 <style>
+  .table-card {
+    background: #fff;
+    border-radius: 14px;
+    border: 1px solid #eee;
+    overflow: hidden;
+}
+
+.table-card .table-header {
+    padding: 20px 22px 14px;
+    margin-bottom: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.table-card .table-header h3 {
+    font-size: 17px;
+    font-weight: 900;
+    color: #111;
+    margin: 0;
+}
+
+.table-card .table-header span,
+.table-card .table-header a {
+    font-size: 13px;
+    color: #999;
+    text-decoration: none;
+}
+
+.table-card .ver-todo {
+    color: #e8192c;
+    font-weight: 600;
+}
+
+#order-queue {
+    padding: 0 22px 14px;
+}
+
+.queue-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.queue-item:last-child {
+    border-bottom: none;
+}
+
+.queue-customer {
+    font-size: 14px;
+    font-weight: 800;
+    color: #111;
+    margin-bottom: 4px;
+}
+
+.queue-meta {
+    font-size: 12px;
+    color: #999;
+}
+
+.queue-actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.queue-priority {
+    font-size: 12px;
+    font-weight: 900;
+    color: #16a34a;
+}
+
+.queue-total {
+    font-size: 17px;
+    font-weight: 900;
+    color: #111;
+}
+
+.btn-attend {
+    background: #e8192c;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 9px 14px;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.table-card table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table-card th {
+    padding: 16px 22px;
+    font-size: 12px;
+    color: #999;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.table-card td {
+    padding: 16px 22px;
+    font-size: 14px;
+    color: #111;
+    border-bottom: 1px solid #f5f5f5;
+}
+
+.table-card th:last-child,
+.table-card td:last-child {
+    padding-right: 24px;
+}
+
+.empty-row {
+    padding: 28px 22px;
+    color: #bbb;
+    font-size: 13px;
+    text-align: center;
+}
+
+.quick-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 22px;
+    border: 1px solid #eee;
+}
+
+.quick-card h3 {
+    font-size: 17px;
+    font-weight: 900;
+    color: #111;
+    margin-bottom: 18px;
+}
+
+.quick-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    border: 1px solid #eee;
+    border-radius: 10px;
+    margin-bottom: 12px;
+    color: #111;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.15s;
+}
+
+.quick-link:hover {
+    border-color: #ef0f25;
+    color: #e8192c;
+}
+
+.quick-link svg {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.8;
+}
   .metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px; }
   .metric-card { background: #fff; border-radius: 12px; padding: 20px; border: 1px solid #eee; display: flex; justify-content: space-between; align-items: flex-start; }
   .metric-label { font-size: 13px; color: #999; margin-bottom: 8px; }
@@ -16,16 +180,6 @@
   .table-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
   .table-header h3 { font-size: 15px; font-weight: 700; color: #111; }
   .ver-todo { font-size: 13px; color: #e8192c; text-decoration: none; font-weight: 500; }
-
-  .quick-card { background: #fff; border-radius: 12px; padding: 22px; border: 1px solid #eee; }
-  .quick-card h3 { font-size: 15px; font-weight: 700; color: #111; margin-bottom: 16px; }
-  .quick-link { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 8px; border: 1px solid #eee; text-decoration: none; color: #333; font-size: 14px; font-weight: 500; margin-bottom: 10px; transition: all 0.15s; }
-  .quick-link:hover { border-color: #e8192c; color: #e8192c; }
-  .quick-link svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.8; }
-  .queue-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f5f5f5; }
-  .queue-item:last-child { border-bottom: none; }
-  .queue-customer { font-size: 13px; font-weight: 600; color: #111; }
-  .queue-meta { font-size: 12px; color: #999; margin-top: 2px; }
 </style>
 @endpush
 
@@ -69,7 +223,7 @@
 
     <div class="table-card" style="margin-bottom:20px;">
       <div class="table-header">
-        <h3>Pending Orders Queue</h3>
+        <h3>Pending Orders</h3>
         <span style="font-size:12px; color:#999;">Sorted by priority</span>
       </div>
       <div id="order-queue">
@@ -81,7 +235,9 @@
       <div class="table-card">
         <div class="table-header">
           <h3>My latest sales</h3>
-          <a href="#" class="ver-todo">View all</a>
+          <a href="{{ route('cashier.sales.history') }}" class="vier-all">
+            View all
+          </a>
         </div>
         @if($recentSales->count() > 0)
         <table>

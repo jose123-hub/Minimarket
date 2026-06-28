@@ -126,7 +126,13 @@ class ClientController extends Controller
 
         $storeCreditUsed = min($availableCredit, $totalAfterOnlineDiscount);
 
-        $total = round($totalAfterOnlineDiscount - $storeCreditUsed, 2);
+        $totalBeforeRounding = round($totalAfterOnlineDiscount - $storeCreditUsed, 2);
+
+        $roundedTotal = round($totalBeforeRounding * 10) / 10;
+
+        $roundingAdjustment = round($roundedTotal - $totalBeforeRounding, 2);
+
+        $total = round($roundedTotal, 2);
 
         if ($total > 0 && ($request->payment_method !== 'card' || empty($request->card_last_four))) {
         throw ValidationException::withMessages([
@@ -154,6 +160,7 @@ class ClientController extends Controller
             'total' => $total,
             'stars_earned' => $starsEarned,
             'discount' => $onlineDiscount,
+            'rounding_adjustment' => $roundingAdjustment,
             'store_credit_used' => $storeCreditUsed,
             'tax' => 0,
 

@@ -106,7 +106,7 @@ class SaleController extends Controller
             'tax' => 0,
 
             'status' => 'completed',
-            'order_status' => null,
+            'order_status' => 'delivered',
 
             'payment_method' => $request->payment_method,
             'payment_reference' => null,
@@ -190,6 +190,14 @@ class SaleController extends Controller
 
         $total = round($subtotal - $promoDiscount, 2);
 
+        $roundingAdjustment = 0;
+
+        if ($request->payment_method === 'cash') {
+         $roundedTotal = round($total * 10) / 10;
+         $roundingAdjustment = round($roundedTotal - $total, 2);
+         $total = round($roundedTotal, 2);
+        }
+
         $paymentReference = null;
         $cashReceived = null;
         $cashChange = null;
@@ -265,6 +273,7 @@ class SaleController extends Controller
             'promo_code' => $promoCode,
             'cash_received' => $cashReceived,
             'cash_change' => $cashChange,
+            'rounding_adjustment' => $roundingAdjustment,
         ]);
 
         DB::commit();
@@ -291,5 +300,23 @@ class SaleController extends Controller
             ->withInput()
             ->with('error', 'Error registering sale: ' . $e->getMessage());
       }
+    }
+    public function history(Request $request)
+    {
+    $query = Sale::with('customer')
+        ->where('cashier_id', Auth::id())
+        ->latest();
+
+    if ($request->filled('date')) {
+        $query->whereDate('created_at', $request->date);
+    }
+
+    if ($request->filled('payment_method')) {
+        $query->where('payment_method', $request->payment_method);
+    }
+
+    $sales = $query->paginate(12)->withQueryString();
+
+    return view('cashier.sales.history', compact('sales'));
     }
 }

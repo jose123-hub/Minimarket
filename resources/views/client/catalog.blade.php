@@ -824,6 +824,10 @@
      <span>Rewards credit</span>
      <span id="store-credit-used">-S/ 0.00</span>
     </div>
+    <div class="summary-row" id="rounding-row" style="display:none;">
+    <span>Rounding</span>
+    <span id="rounding-adjustment">S/ 0.00</span>
+    </div>
     <div class="summary-stars">
      <span>Stars to earn</span>
      <span id="stars-earn">+0 ⭐</span>
@@ -1019,6 +1023,24 @@ function getStoreCreditUsed() {
   return Math.min(STORE_CREDIT_BALANCE, getTotalAfterOnlineDiscount());
 }
 
+function getTotalBeforeRounding() {
+  return getTotalAfterOnlineDiscount() - getStoreCreditUsed();
+}
+
+function getRoundingAdjustment() {
+  const beforeRounding = getTotalBeforeRounding();
+  if (beforeRounding <= 0) {
+    return 0;
+  }
+const roundedTotal = Math.round(beforeRounding * 10) / 10;
+
+  return roundedTotal - beforeRounding;
+}
+
+function getCartTotal() {
+  return getTotalBeforeRounding() + getRoundingAdjustment();
+}
+
 function saveCart() {
   localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart.toArray()));
 }
@@ -1132,18 +1154,37 @@ function renderCart() {
   });
 
   const subtotal = total;
-  const onlineDiscount = subtotal * ONLINE_DISCOUNT_RATE;
-  const totalAfterDiscount = subtotal - onlineDiscount;
-  const storeCreditUsed = Math.min(STORE_CREDIT_BALANCE, totalAfterDiscount);
-  const finalTotal = totalAfterDiscount - storeCreditUsed;
+const onlineDiscount = subtotal * ONLINE_DISCOUNT_RATE;
+const totalAfterDiscount = subtotal - onlineDiscount;
+const storeCreditUsed = Math.min(STORE_CREDIT_BALANCE, totalAfterDiscount);
+const totalBeforeRounding = totalAfterDiscount - storeCreditUsed;
 
-  const estimatedStars = Math.floor((STAR_PROGRESS_AMOUNT + finalTotal) / 5);
+const roundedTotal = totalBeforeRounding > 0
+  ? Math.round(totalBeforeRounding * 10) / 10
+  : 0;
 
-  document.getElementById('subtotal').textContent = `S/ ${subtotal.toFixed(2)}`;
-  document.getElementById('online-discount').textContent = `-S/ ${onlineDiscount.toFixed(2)}`;
-  document.getElementById('store-credit-used').textContent = `-S/ ${storeCreditUsed.toFixed(2)}`;
-  document.getElementById('total').textContent = `S/ ${finalTotal.toFixed(2)}`;
-  document.getElementById('stars-earn').textContent = `+${estimatedStars} ⭐`;
+const roundingAdjustment = roundedTotal - totalBeforeRounding;
+const finalTotal = roundedTotal;
+
+const estimatedStars = Math.floor((STAR_PROGRESS_AMOUNT + finalTotal) / 5);
+
+document.getElementById('subtotal').textContent = `S/ ${subtotal.toFixed(2)}`;
+document.getElementById('online-discount').textContent = `-S/ ${onlineDiscount.toFixed(2)}`;
+document.getElementById('store-credit-used').textContent = `-S/ ${storeCreditUsed.toFixed(2)}`;
+document.getElementById('total').textContent = `S/ ${finalTotal.toFixed(2)}`;
+document.getElementById('stars-earn').textContent = `+${estimatedStars} ⭐`;
+
+const roundingRow = document.getElementById('rounding-row');
+const roundingAmount = document.getElementById('rounding-adjustment');
+
+if (Math.abs(roundingAdjustment) > 0.001) {
+  roundingRow.style.display = 'flex';
+
+  roundingAmount.textContent =
+    `${roundingAdjustment > 0 ? '+' : '-'}S/ ${Math.abs(roundingAdjustment).toFixed(2)}`;
+} else {
+  roundingRow.style.display = 'none';
+}
 }
 
 function getCartTotal() {

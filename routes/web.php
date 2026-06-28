@@ -88,6 +88,7 @@ Route::middleware(['auth', 'cashier'])->prefix('cashier')->group(function () {
     Route::get('/online-orders', [CashierOnlineOrderController::class, 'index'])->name('cashier.online-orders.index');
     Route::get('/online-orders/{sale}', [CashierOnlineOrderController::class, 'show'])->name('cashier.online-orders.show');
     Route::patch('/online-orders/{sale}/status', [CashierOnlineOrderController::class, 'updateStatus'])->name('cashier.online-orders.update-status');
+    Route::get('/sales/history', [SaleController::class, 'history'])->name('cashier.sales.history');
 });
 
 Route::middleware(['auth'])->prefix('client')->group(function () {

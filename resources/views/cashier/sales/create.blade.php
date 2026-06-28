@@ -293,7 +293,151 @@
 
   .success-msg { background: #f0fff4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 10px 14px; font-size: 13px; color: #16a34a; margin: 12px 20px 0; }
   .error-msg { background: #fff0f0; border: 1px solid #fcc; border-radius: 8px; padding: 10px 14px; font-size: 13px; color: #c00; margin: 12px 20px 0; }
+   
+  .pos-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(17,17,17,0.45);
+    z-index: 400;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+  }
 
+  .pos-modal-overlay.open {
+    display: flex;
+  }
+
+  .pos-modal {
+    width: 480px;
+    max-width: 95vw;
+    max-height: 92vh;
+    overflow-y: auto;
+    background: #fff;
+    border-radius: 14px;
+    padding: 20px;
+    box-shadow: 0 18px 50px rgba(0,0,0,0.18);
+  }
+
+  .pos-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+
+  .pos-modal-title {
+    font-size: 17px;
+    font-weight: 900;
+    color: #111;
+  }
+
+  .pos-modal-close {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    color: #777;
+    font-size: 24px;
+    line-height: 1;
+  }
+
+  .receipt-paper {
+    border: 1px dashed #d4d4d4;
+    border-radius: 10px;
+    padding: 18px;
+    font-family: monospace;
+    font-size: 12px;
+    color: #111;
+    background: #fff;
+  }
+
+  .receipt-center {
+    text-align: center;
+  }
+
+  .receipt-title {
+    font-size: 16px;
+    font-weight: 900;
+    letter-spacing: 2px;
+  }
+
+  .receipt-line {
+    border-top: 1px dashed #d4d4d4;
+    margin: 12px 0;
+  }
+
+  .receipt-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 7px;
+  }
+
+  .receipt-row span:first-child {
+    color: #555;
+  }
+
+  .receipt-table-header,
+  .receipt-product-row {
+    display: grid;
+    grid-template-columns: 42px 1fr 78px;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+
+  .receipt-table-header {
+    font-weight: 900;
+  }
+
+  .receipt-table-header span:last-child,
+  .receipt-product-row span:last-child {
+    text-align: right;
+  }
+
+  .receipt-total {
+    font-size: 15px;
+    font-weight: 900;
+  }
+
+  .receipt-success-note {
+    margin-top: 12px;
+    padding: 10px;
+    border-radius: 8px;
+    background: #f0fdf4;
+    color: #15803d;
+    font-size: 12px;
+    font-weight: 800;
+    text-align: center;
+  }
+
+  .pos-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 16px;
+  } 
+
+  .btn-modal-cancel,
+  .btn-modal-confirm {
+    border-radius: 9px;
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+  }
+
+  .btn-modal-cancel {
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    color: #333;
+  }
+
+  .btn-modal-confirm {
+    background: #e8192c;
+    border: 1px solid #e8192c;
+    color: #fff;
+  }
   .hidden { display: none; }
 </style>
 @endpush
@@ -463,7 +607,25 @@
     <label>Payment method</label>
 
     <div class="payment-options">
-        <div class="payment-extra-box">
+        <button type="button" class="payment-option active" data-method="cash" onclick="selectPaymentMethod(this)">
+            Cash
+        </button>
+
+        <button type="button" class="payment-option" data-method="card" onclick="selectPaymentMethod(this)">
+            Card
+        </button>
+
+        <button type="button" class="payment-option" data-method="yape" onclick="selectPaymentMethod(this)">
+            Yape
+        </button>
+
+        <button type="button" class="payment-option" data-method="plin" onclick="selectPaymentMethod(this)">
+            Plin
+        </button>
+    </div>
+</div>
+
+<div class="payment-extra-box">
     <div id="cash-fields">
         <label>Cash received</label>
 
@@ -499,25 +661,8 @@
 
         <small id="promo-code-help">
             Optional promotional code for digital payment.
-          </small>
-         </div>
-       </div>
-        <button type="button" class="payment-option active" data-method="cash" onclick="selectPaymentMethod(this)">
-            Cash
-        </button>
-
-        <button type="button" class="payment-option" data-method="card" onclick="selectPaymentMethod(this)">
-            Card
-        </button>
-
-        <button type="button" class="payment-option" data-method="yape" onclick="selectPaymentMethod(this)">
-            Yape
-        </button>
-
-        <button type="button" class="payment-option" data-method="plin" onclick="selectPaymentMethod(this)">
-            Plin
-        </button>
-      </div>
+        </small>
+     </div>
     </div>
 
       <div class="cart-items" id="cart-items">
@@ -554,10 +699,6 @@
         <button class="btn-checkout" id="btn-checkout" onclick="submitSale()" disabled>
           Register Sale
         </button>
-        <button class="btn-clear" id="btn-undo" onclick="undo()" disabled
-        style="margin-bottom:8px; color:#e8192c; border-color:#fecaca;">
-           ↩ Undo
-        </button>
         <button class="btn-clear" onclick="clearCart()">Clear cart</button>
       </div>
     </div>
@@ -592,6 +733,165 @@
   <input type="hidden" name="order_id" value="{{ request('order_id') }}">
   <div id="form-products"></div>
 </form>
+
+@if(!empty($receiptSale))
+    @php
+        $receiptSubtotal = $receiptSale->total + ($receiptSale->discount ?? 0);
+
+        $methodLabel = match($receiptSale->payment_method) {
+            'cash' => 'Cash',
+            'card' => 'Card',
+            'yape' => 'Yape',
+            'plin' => 'Plin',
+            default => ucfirst($receiptSale->payment_method ?? 'Cash'),
+        };
+
+        $isGenericCustomer = strtolower($receiptSale->customer?->email ?? '') === 'cliente@example.com';
+
+        $receiptNumber = $receiptSale->invoice_number
+            ?? 'B-' . str_pad($receiptSale->id, 6, '0', STR_PAD_LEFT);
+    @endphp
+
+    <div class="pos-modal-overlay open" id="receipt-modal">
+        <div class="pos-modal">
+            <div class="pos-modal-header">
+                <div class="pos-modal-title">
+                    🧾 Ticket generated
+                </div>
+
+                <button type="button" class="pos-modal-close" onclick="closeReceiptModal()">
+                    ×
+                </button>
+            </div>
+
+            <div class="receipt-paper" id="receipt-print-area">
+                <div class="receipt-center">
+                    <div class="receipt-title">MINIMARKET EXPRESS</div>
+                    <div>RUC: 20512345678</div>
+                    <div>Av. Los Próceres 123 - Lima</div>
+                    <div>Electronic Ticket</div>
+                    <strong>{{ $receiptNumber }}</strong>
+                </div>
+
+                <div class="receipt-line"></div>
+
+                <div class="receipt-row">
+                    <span>Date:</span>
+                    <span>{{ $receiptSale->created_at->format('d/m/Y h:i A') }}</span>
+                </div>
+
+                <div class="receipt-row">
+                    <span>Client:</span>
+                    <span>
+                        @if($isGenericCustomer)
+                            Generic client
+                        @else
+                            {{ $receiptSale->customer?->name ?? 'Cliente' }}
+                        @endif
+                    </span>
+                </div>
+
+                <div class="receipt-row">
+                    <span>Method:</span>
+                    <span>{{ $methodLabel }}</span>
+                </div>
+
+                @if($receiptSale->payment_method === 'cash')
+                    <div class="receipt-row">
+                        <span>Got it:</span>
+                        <span>S/ {{ number_format($receiptSale->cash_received ?? 0, 2) }}</span>
+                    </div>
+
+                    <div class="receipt-row">
+                        <span>Change:</span>
+                        <span>S/ {{ number_format($receiptSale->cash_change ?? 0, 2) }}</span>
+                    </div>
+                @else
+                    <div class="receipt-row">
+                        <span>Operation code:</span>
+                        <span>{{ $receiptSale->payment_reference ?? '-' }}</span>
+                    </div>
+                @endif
+
+                @if($receiptSale->promo_code)
+                    <div class="receipt-row">
+                        <span>Promo code:</span>
+                        <span>{{ $receiptSale->promo_code }}</span>
+                    </div>
+                @endif
+
+                <div class="receipt-line"></div>
+
+                <div class="receipt-table-header">
+                    <span>Units</span>
+                    <span>Product</span>
+                    <span>Amount</span>
+                </div>
+
+                @foreach($receiptSale->details as $detail)
+                    <div class="receipt-product-row">
+                        <span>{{ $detail->quantity }}</span>
+                        <span>{{ $detail->product?->name ?? 'Product removed' }}</span>
+                        <span>S/ {{ number_format($detail->subtotal, 2) }}</span>
+                    </div>
+                @endforeach
+
+                <div class="receipt-line"></div>
+
+                <div class="receipt-row">
+                    <span>Subtotal:</span>
+                    <span>S/ {{ number_format($receiptSubtotal, 2) }}</span>
+                </div>
+
+                @if(($receiptSale->discount ?? 0) > 0)
+                    <div class="receipt-row">
+                        <span>Promo discount:</span>
+                        <span>-S/ {{ number_format($receiptSale->discount, 2) }}</span>
+                    </div>
+                @endif
+
+                <div class="receipt-row">
+                    <span>Stars earned:</span>
+                    <span>
+                        @if($isGenericCustomer)
+                            Not applicable
+                        @else
+                            +{{ $receiptSale->stars_earned ?? 0 }} ⭐
+                        @endif
+                    </span>
+                </div>
+
+                <div class="receipt-line"></div>
+
+                <div class="receipt-row receipt-total">
+                    <span>TOTAL:</span>
+                    <span>S/ {{ number_format($receiptSale->total, 2) }}</span>
+                </div>
+
+                <div class="receipt-line"></div>
+
+                <div class="receipt-center">
+                    <div>Thanks for your purchase!</div>
+                    <small>Keep this receipt as proof.</small>
+                </div>
+            </div>
+
+            <div class="receipt-success-note">
+                Sale registered successfully.
+            </div>
+
+            <div class="pos-modal-actions">
+                <button type="button" class="btn-modal-cancel" onclick="closeReceiptModal()">
+                    Close
+                </button>
+
+                <button type="button" class="btn-modal-confirm" onclick="printReceipt()">
+                    Print
+                </button>
+            </div>
+        </div>
+    </div>
+@endif
 
 <script id="products-price-data" type="application/json">{!! json_encode($products->map(fn($p) => ['id' => $p->id, 'name' => $p->name, 'price' => (float) $p->price]), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}</script>
 
@@ -912,35 +1212,7 @@ function removeItem(id) {
   updateUndoBtn();
 }
 
-function undo() {
-  if (actionHistory.isEmpty()) return;
-
-  const last = actionHistory.pop();
-
-  if (last.type === 'add') {
-    cart.remove(last.product.id);
-  } else if (last.type === 'qty') {
-    cart.updateQty(last.id, -last.delta);
-  } else if (last.type === 'remove') {
-    cart.insert(last.product);
-    const items = cart.toArray();
-    const p = items.find(i => i.id === last.product.id);
-    if (p) p.quantity = last.product.quantity;
-  }
-
-  renderCart();
-  updateUndoBtn();
-}
-
-function updateUndoBtn() {
-  const btn = document.getElementById('btn-undo');
-  if (btn) {
-    btn.disabled = actionHistory.isEmpty();
-    btn.textContent = actionHistory.isEmpty()
-      ? 'Undo'
-      : `Undo (${actionHistory.size()})`;
-  }
-}
+//
 
 function clearCart() {
   cart.clear();
@@ -1036,6 +1308,17 @@ function getPromoDiscountRate() {
   return 0;
 }
 
+function getRoundingAdjustment() {
+  if (selectedPaymentMethod !== 'cash') {
+    return 0;
+  }
+
+  const beforeRounding = getTotalBeforeRounding();
+  const roundedTotal = Math.round(beforeRounding * 10) / 10;
+
+  return roundedTotal - beforeRounding;
+}
+
 function getPromoDiscount() {
   return getCartSubtotal() * getPromoDiscountRate();
 }
@@ -1121,67 +1404,86 @@ function renderCart() {
         <svg viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
         No products added yet
       </div>`;
+
     document.getElementById('subtotal').textContent = 'S/ 0.00';
     document.getElementById('total').textContent = 'S/ 0.00';
+
+    const promoRow = document.getElementById('promo-discount-row');
+    if (promoRow) {
+      promoRow.style.display = 'none';
+    }
+
     countEl.textContent = '0 products';
     btn.disabled = true;
+
+    if (typeof updateStarsPreview === 'function') {
+      updateStarsPreview(0);
+    }
+
+    updateCashChangePreview();
+
     return;
   }
 
   countEl.textContent = `${items.length} product${items.length > 1 ? 's' : ''}`;
   btn.disabled = false;
 
-  let total = 0;
+  let subtotalCart = 0;
 
   items.forEach(item => {
     const subtotal = item.price * item.quantity;
-    total += subtotal;
+    subtotalCart += subtotal;
+
     const div = document.createElement('div');
     div.className = 'cart-item';
+
     div.innerHTML = `
       <div class="cart-item-avatar">${item.name[0].toUpperCase()}</div>
+
       <div class="cart-item-info">
         <div class="cart-item-name">${item.name}</div>
         <div class="cart-item-price">S/ ${item.price.toFixed(2)}</div>
       </div>
+
       <div class="cart-item-controls">
         <button class="qty-btn" onclick="changeQty(${item.id}, -1)">−</button>
         <span class="qty-num">${item.quantity}</span>
         <button class="qty-btn" onclick="changeQty(${item.id}, 1)">+</button>
       </div>
+
       <span class="cart-item-subtotal">S/ ${subtotal.toFixed(2)}</span>
+
       <button class="delete-btn" onclick="removeItem(${item.id})">
         <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
       </button>
     `;
+
     container.appendChild(div);
   });
 
-  const promoDiscount = total * getPromoDiscountRate();
-const finalTotal = total - promoDiscount;
+  const promoDiscount = subtotalCart * getPromoDiscountRate();
+  const finalTotal = subtotalCart - promoDiscount;
 
-document.getElementById('subtotal').textContent = `S/ ${total.toFixed(2)}`;
-document.getElementById('total').textContent = `S/ ${finalTotal.toFixed(2)}`;
+  document.getElementById('subtotal').textContent = `S/ ${subtotalCart.toFixed(2)}`;
+  document.getElementById('total').textContent = `S/ ${finalTotal.toFixed(2)}`;
 
-const promoRow = document.getElementById('promo-discount-row');
-const promoLabel = document.getElementById('promo-discount-label');
-const promoAmount = document.getElementById('promo-discount');
+  const promoRow = document.getElementById('promo-discount-row');
+  const promoLabel = document.getElementById('promo-discount-label');
+  const promoAmount = document.getElementById('promo-discount');
 
-if (promoDiscount > 0) {
-  promoRow.style.display = 'flex';
-  promoLabel.textContent = `Promo ${getPromoCode()}`;
-  promoAmount.textContent = `-S/ ${promoDiscount.toFixed(2)}`;
-} else {
-  promoRow.style.display = 'none';
-}
+  if (promoDiscount > 0) {
+    promoRow.style.display = 'flex';
+    promoLabel.textContent = `Promo ${getPromoCode()}`;
+    promoAmount.textContent = `-S/ ${promoDiscount.toFixed(2)}`;
+  } else {
+    promoRow.style.display = 'none';
+  }
 
-updateCashChangePreview();
+  if (typeof updateStarsPreview === 'function') {
+    updateStarsPreview(finalTotal);
+  }
 
-if (typeof updateStarsPreview === 'function') {
-  updateStarsPreview(finalTotal);
-}
-  updateStarsPreview(total);
-  updateStarsPreview(0);
+  updateCashChangePreview();
 }
 
 function validatePaymentBeforeSubmit() {
@@ -1370,7 +1672,7 @@ document.getElementById('bst-search-btn').addEventListener('click', () => {
   applyProductFilters();
 
   const maxLabel = maxInput === '' ? '∞' : `S/ ${max.toFixed(2)}`;
-  status.textContent = `BST: ${results.length} product(s) between S/ ${min.toFixed(2)} and ${maxLabel} — ${priceBST.comparisons} node comparisons`;
+  status.textContent = `${results.length} product(s) between S/ ${min.toFixed(2)} and ${maxLabel} — ${priceBST.comparisons} node comparisons`;
 });
 
 document.getElementById('bst-clear-btn').addEventListener('click', () => {
@@ -1419,6 +1721,96 @@ document.getElementById('customer-search').addEventListener('input', function ()
 document.getElementById('customer-select').addEventListener('change', function () {
   renderCart();
 });
+
+document.getElementById('cash-received').addEventListener('input', updateCashChangePreview);
+
+document.getElementById('promo-code').addEventListener('input', function () {
+  renderCart();
+});
+
+renderPaymentFields();
+renderCart();
+
+function closeReceiptModal() {
+  const modal = document.getElementById('receipt-modal');
+
+  if (modal) {
+    modal.classList.remove('open');
+  }
+}
+
+function printReceipt() {
+  const content = document.getElementById('receipt-print-area').innerHTML;
+
+  const win = window.open('', '_blank', 'width=420,height=650');
+
+  win.document.write(`
+    <html>
+      <head>
+        <title>Boleta</title>
+        <style>
+          body {
+            font-family: monospace;
+            padding: 16px;
+            color: #111;
+          }
+
+          .receipt-center {
+            text-align: center;
+          }
+
+          .receipt-title {
+            font-size: 16px;
+            font-weight: 900;
+            letter-spacing: 2px;
+          }
+
+          .receipt-line {
+            border-top: 1px dashed #ccc;
+            margin: 12px 0;
+          }
+
+          .receipt-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 7px;
+          }
+
+          .receipt-table-header,
+          .receipt-product-row {
+            display: grid;
+            grid-template-columns: 42px 1fr 78px;
+            gap: 8px;
+            margin-bottom: 6px;
+          }
+
+          .receipt-table-header {
+            font-weight: 900;
+          }
+
+          .receipt-table-header span:last-child,
+          .receipt-product-row span:last-child {
+            text-align: right;
+          }
+
+          .receipt-total {
+            font-size: 15px;
+            font-weight: 900;
+          }
+        </style>
+      </head>
+
+      <body>
+        ${content}
+      </body>
+    </html>
+  `);
+
+  win.document.close();
+  win.focus();
+  win.print();
+}
 
 </script>
 

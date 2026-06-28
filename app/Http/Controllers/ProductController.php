@@ -149,8 +149,17 @@ class ProductController extends Controller
     }
     public function cashierInventory()
     {
-    $products = Product::with('category')->get();
-    $categories = \App\Models\Category::all();
-    return view('cashier.inventory', compact('products', 'categories'));
+    $products = Product::with('category.parent')
+        ->orderBy('name')
+        ->get();
+
+    $mainCategories = Category::with(['children' => function ($query) {
+            $query->orderBy('name');
+        }])
+        ->whereNull('parent_id')
+        ->orderBy('name')
+        ->get();
+
+    return view('cashier.inventory', compact('products', 'mainCategories'));
     }
 }

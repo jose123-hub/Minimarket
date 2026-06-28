@@ -286,6 +286,15 @@
                  <span>Rewards credit</span>
                  <span>-S/ {{ number_format($sale->store_credit_used ?? 0, 2) }}</span>
                 </div>
+                @if(($sale->rounding_adjustment ?? 0) != 0)
+                <div class="summary-line">
+                 <span>Rounding</span>
+                 <span>
+                 {{ $sale->rounding_adjustment > 0 ? '+' : '-' }}S/
+                 {{ number_format(abs($sale->rounding_adjustment), 2) }}
+                </span>
+               </div>
+               @endif
                 <div class="summary-line">
                  <span>Stars earned</span>
                  <span>+{{ $sale->stars_earned ?? 0 }} ⭐</span>

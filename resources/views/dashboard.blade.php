@@ -1,5 +1,132 @@
 @push('portal-styles')
 <style>
+  .cashier-card {
+    background: #fff;
+    border-radius: 14px;
+    border: 1px solid #eee;
+    overflow: hidden;
+  }
+
+  .cashier-card-header {
+    padding: 20px 22px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .cashier-card-header h3 {
+    font-size: 17px;
+    font-weight: 900;
+    color: #111;
+    margin: 0;
+  }
+
+  .cashier-card-header span,
+  .cashier-card-header a {
+    font-size: 13px;
+    color: #999;
+    text-decoration: none;
+  }
+
+  .order-queue-list {
+    padding: 0 22px 14px;
+  }
+
+  .order-queue-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 0;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  .order-queue-item:last-child {
+    border-bottom: none;
+  }
+
+  .order-info strong {
+    display: block;
+    font-size: 14px;
+    color: #111;
+    margin-bottom: 4px;
+  }
+
+  .order-info small {
+    font-size: 12px;
+    color: #999;
+  }
+
+  .order-actions {  
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .order-priority {
+    font-size: 12px;
+    font-weight: 900;
+    color: #16a34a;
+  }
+
+  .order-total {
+    font-size: 17px;
+    font-weight: 900;
+    color: #111;
+  }
+
+  .btn-attend {
+    background: #e8192c;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 9px 14px;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+  }
+
+  .latest-sales-card table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .latest-sales-card th {
+    padding: 16px 22px;
+    font-size: 12px;
+    color: #999;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+  }
+
+  .latest-sales-card td {
+    padding: 16px 22px;
+    font-size: 14px;
+    color: #111;
+    border-bottom: 1px solid #f5f5f5;
+  }
+
+  .quick-access-card {
+    padding: 22px;
+  }
+
+  .quick-access-card h3 {
+    font-size: 17px;
+    font-weight: 900;
+    margin-bottom: 18px;
+  }
+
+  .quick-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    border: 1px solid #eee;
+    border-radius: 10px;
+    margin-bottom: 12px;
+    color: #111;
+    text-decoration: none;
+    font-weight: 600;
+  }
   .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
   .metric-card {
     background: #fff; border-radius: 12px; padding: 20px;
