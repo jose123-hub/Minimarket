@@ -7,31 +7,31 @@
     border: 1px solid #eee;
     margin-bottom: 18px;
     box-shadow: 0 8px 20px rgba(0,0,0,0.03);
-}
+  }
 
-.card h3 {
+  .card h3 {
     font-size: 16px;
     font-weight: 900;
     color: #111;
     margin-bottom: 14px;
-}
+  }
 
-.search-row {
+  .search-row {
     display: grid;
     grid-template-columns: 1fr 130px;
     gap: 12px;
-}
+  }
 
-.search-row input {
+  .search-row input {
     height: 46px;
     border: 1px solid #e5e5e5;
     background: #fff;
     border-radius: 10px;
     padding: 0 14px;
     font-size: 14px;
-}
+  }
 
-.search-row .btn {
+  .search-row .btn {
     height: 46px;
     border-radius: 10px;
     background: #e8192c;
@@ -39,13 +39,13 @@
     border: none;
     font-weight: 800;
     cursor: pointer;
-}
+  }
 
-.search-row .btn:hover {
+  .search-row .btn:hover {
     background: #c41525;
-}
+  }
 
-.sale-info {
+  .sale-info {
     background: #fff7f7;
     border: 1px solid #fecaca;
     border-radius: 10px;
@@ -53,16 +53,16 @@
     font-size: 13px;
     color: #666;
     margin-bottom: 16px;
-}
+  }
 
-#returnForm table {
+  #returnForm table {
     width: 100%;
     border-collapse: collapse;
     overflow: hidden;
     border-radius: 10px;
-}
+  }
 
-#returnForm th {
+  #returnForm th {
     background: #fafafa;
     font-size: 11px;
     text-transform: uppercase;
@@ -71,31 +71,31 @@
     text-align: left;
     padding: 14px 12px;
     border-bottom: 1px solid #eee;
-}
+  }
 
-#returnForm td {
+  #returnForm td {
     font-size: 14px;
     color: #333;
     padding: 14px 12px;
     border-bottom: 1px solid #f5f5f5;
-}
+  }
 
-#returnForm td input[type="number"] {
+  #returnForm td input[type="number"] {
     width: 80px;
     height: 36px;
     border: 1px solid #e5e5e5;
     border-radius: 8px;
     padding: 0 10px;
     font-size: 13px;
-}
+  }
 
-.returnable-hint {
+  .returnable-hint {
     font-size: 11px;
     color: #999;
     margin-top: 4px;
-}
+  }
 
-#returnForm .form-group textarea {
+  #returnForm .form-group textarea {
     width: 100%;
     border: 1px solid #e5e5e5;
     background: #fff;
@@ -105,13 +105,13 @@
     font-family: inherit;
     resize: vertical;
     outline: none;
-}
+  }
 
-#returnForm .form-group textarea:focus {
+  #returnForm .form-group textarea:focus {
     border-color: #e8192c;
-}
+  }
 
-#submitReturnBtn {
+  #submitReturnBtn {
     background: #e8192c;
     color: #fff;
     border: none;
@@ -120,14 +120,14 @@
     font-size: 14px;
     font-weight: 900;
     cursor: pointer;
-}
+  }
 
-#submitReturnBtn:disabled {
+  #submitReturnBtn:disabled {
     background: #ddd;
     cursor: not-allowed;
-}
+  }
 
-.lookup-error {
+  .lookup-error {
     background: #fef2f2;
     border: 1px solid #fecaca;
     color: #dc2626;
@@ -136,12 +136,9 @@
     padding: 10px 12px;
     border-radius: 9px;
     display: none;
-}
+  }
   .content {max-width: 1050px;margin: 0 auto;}
-  .card { background: #fff; border-radius: 12px; padding: 22px; border: 1px solid #eee; margin-bottom: 18px; }
-  .card h3 { font-size: 14px; font-weight: 700; color: #111; margin-bottom: 14px; }
 
-  .search-row { display: flex; gap: 10px; }
   .search-row input { flex: 1; border: 1px solid #e5e5e5; background: #fafafa; border-radius: 9px; padding: 11px 14px; font-size: 13px; }
   .search-row input:focus { outline: none; border-color: #e8192c; background: #fff; }
   .lookup-error { color: #dc2626; font-size: 13px; margin-top: 10px; display: none; }

@@ -117,7 +117,7 @@ class ClientPortalController extends Controller
             : 'Reward redeemed successfully.';
 
         return redirect()
-            ->route('stars')
+            ->route('client.stars')
             ->with('success', $message);
     }
 

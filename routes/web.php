@@ -20,6 +20,7 @@ use App\Http\Controllers\ClientPortalController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\OnlineOrderController;
 use App\Http\Controllers\CashierOnlineOrderController;
+use App\Http\Controllers\Admin\AuditController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -37,7 +38,8 @@ Route::get('/dashboard', [DashboardController::class, 'index'])
     ->name('dashboard');
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
-    Route::resource('categories', CategoryController::class);
+    Route::get('/audit', [AuditController::class, 'index'])->name('admin.audit.index');
+    Route::get('/audit/{audit}', [AuditController::class, 'show'])->name('admin.audit.show');
     Route::resource('suppliers', SupplierController::class);
     Route::get('/purchases', [PurchaseController::class, 'index'])->name('admin.purchases');
     Route::get('/purchases/create', [PurchaseController::class, 'create'])->name('admin.purchases.create');
@@ -76,7 +78,6 @@ Route::middleware(['auth', 'cashier'])->prefix('cashier')->group(function () {
     Route::get('/sales/create', [SaleController::class, 'create'])->name('sales.create');
     Route::post('/sales', [SaleController::class, 'store'])->name('sales.store');
     Route::get('/loyalty', [\App\Http\Controllers\LoyaltyController::class, 'index'])->name('cashier.loyalty');
-    Route::post('/loyalty/earn', [\App\Http\Controllers\LoyaltyController::class, 'earn'])->name('cashier.loyalty.earn');
     Route::post('/loyalty/redeem', [\App\Http\Controllers\LoyaltyController::class, 'redeem'])->name('cashier.loyalty.redeem');
     Route::get('/cash', [CashController::class, 'index'])->name('cashier.cash');
     Route::post('/cash/open', [CashController::class, 'open'])->name('cashier.cash.open');

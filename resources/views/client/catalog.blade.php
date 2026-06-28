@@ -841,7 +841,7 @@
   </div>
 </div>
 
-<form id="order-form" method="POST" action="{{ route('orders.store') }}" style="display:none">
+<form id="order-form" method="POST" action="{{ route('client.orders.store') }}" style="display:none">
   @csrf
   <div id="form-products"></div>
 </form>
@@ -1185,10 +1185,6 @@ if (Math.abs(roundingAdjustment) > 0.001) {
 } else {
   roundingRow.style.display = 'none';
 }
-}
-
-function getCartTotal() {
-  return getTotalAfterOnlineDiscount() - getStoreCreditUsed();
 }
 
 function openCheckoutModal() {

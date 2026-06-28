@@ -6,24 +6,26 @@ use Illuminate\Database\Eloquent\Model;
 
 class AuditLog extends Model
 {
-    protected $table = 'audit_logs';
-
     protected $fillable = [
-        'table_affected',
-        'action',
-        'old_data',
-        'new_data',
-        'date',
         'user_id',
+        'module',
+        'action',
+        'table_name',
+        'record_id',
+        'description',
+        'old_values',
+        'new_values',
+        'ip_address',
+        'user_agent',
     ];
 
     protected $casts = [
-        'old_data' => 'array',
-        'new_data' => 'array',
+        'old_values' => 'array',
+        'new_values' => 'array',
     ];
 
     public function user()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(User::class);
     }
 }

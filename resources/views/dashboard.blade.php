@@ -144,23 +144,138 @@
   .metric-icon.dark { background: #f5f5f5; }
   .metric-icon.dark svg { stroke: #333; }
 
-  .quick-access { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
-  .quick-btn {
-    background: #fff; border: 1px solid #eee; border-radius: 12px;
-    padding: 18px 16px; display: flex; flex-direction: column; align-items: center;
-    gap: 10px; text-decoration: none; transition: all 0.15s;
-    font-size: 13px; font-weight: 600; color: #333;
+  .quick-access {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
   }
-  .quick-btn:hover { border-color: #e8192c; color: #e8192c; }
-  .quick-btn svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.8; }
-  .quick-btn.red { background: #e8192c; color: #fff; border-color: #e8192c; }
-  .quick-btn.red:hover { background: #c41525; }
-  .quick-btn.dark { background: #111; color: #fff; border-color: #111; }
-  .quick-btn.dark:hover { background: #222; }
+
+  .quick-btn {
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 14px;
+    min-height: 138px;
+    padding: 22px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    text-decoration: none;
+    transition: all 0.15s ease;
+    font-size: 14px;
+    font-weight: 900;
+    color: #111;
+    text-align: center;
+  }
+
+  .quick-btn:hover {
+    border-color: #e8192c;
+    color: #e8192c;
+    transform: translateY(-2px);
+  }
+
+  .quick-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 18px;
+    background: #ffe1e5;
+    color: #e8192c;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .quick-icon svg {
+    width: 26px;
+    height: 26px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .quick-btn.red {
+    background: #e8192c;
+    color: #fff;
+    border-color: #e8192c;
+  }
+
+  .quick-btn.red .quick-icon {
+    background: rgba(255,255,255,0.18);
+    color: #fff;
+  }
+
+  .quick-btn.dark {
+    background: #111;
+    color: #fff;
+    border-color: #111;
+  }
+
+  .quick-btn.dark .quick-icon {
+    background: rgba(255,255,255,0.12);
+    color: #fff;
+  }
 
   .bottom-row { display: grid; grid-template-columns: 1fr 340px; gap: 16px; }
+  .table-card {
+    background: #fff;
+    border-radius: 14px;
+    border: 1px solid #eee;
+    overflow: hidden;
+  }
+
+  .table-card .card-header {
+    padding: 18px 22px;
+    margin-bottom: 0;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  .table-card .card-header h3 {
+    font-size: 17px;
+    font-weight: 900;
+  }
+
+  .table-card .ver-todo {
+    padding-right: 4px;
+    font-weight: 700;
+  }
+ 
+  .table-card table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .table-card th {
+    padding: 16px 22px;
+    font-size: 12px;
+    color: #999;
+    text-align: left;
+    text-transform: uppercase;
+    border-bottom: 1px solid #eee;
+  }
+
+  .table-card td {
+    padding: 18px 22px;
+    font-size: 14px;
+    color: #111;
+    border-bottom: 1px solid #f5f5f5;
+  }
+
+  .table-card th:last-child,
+  .table-card td:last-child {
+    text-align: right;
+    padding-right: 26px;
+  }
+
+  .table-card tr:last-child td {
+    border-bottom: none;
+  }
   .stock-card {
-    background: #fff; border-radius: 12px; padding: 22px; border: 1px solid #eee;
+    background: #fff;
+    border-radius: 14px;
+    padding: 22px;
+    border: 1px solid #eee;
   }
   .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
   .card-header h3 { font-size: 15px; font-weight: 700; color: #111; display: flex; align-items: center; gap: 8px; }
@@ -251,35 +366,58 @@
     </div>
 
     <div class="quick-access">
-      <a href="/admin/products" class="quick-btn red">
-        <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
-        Inventory
-      </a>
-      <a href="/admin/rewards" class="quick-btn dark">
-        <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-        Rewards
-      </a>
-      <a href="/admin/purchases/create" class="quick-btn">
-        <svg viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
-        New Purchase
-      </a>
-      <a href="/admin/promotions" class="quick-btn">
-        <svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
-        Promotions
-      </a>
-      <a href="/admin/reports" class="quick-btn">
-        <div class="report-icon">
-          <svg viewBox="0 0 24 24">
-            <path d="M4 19V5a2 2 0 012-2h12a2 2 0 012 2v14"/>
-            <path d="M8 7h8"/>
-            <path d="M8 11h8"/>
-            <path d="M8 15h4"/>
-            <path d="M4 19h16"/>
-          </svg>
-        </div>
-        Sales Reports
-      </a>
+  <a href="/admin/products" class="quick-btn red">
+    <div class="quick-icon">
+      <svg viewBox="0 0 24 24">
+        <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>
+      </svg>
     </div>
+    <span>Inventory</span>
+  </a>
+
+  <a href="/admin/rewards" class="quick-btn dark">
+    <div class="quick-icon">
+      <svg viewBox="0 0 24 24">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+      </svg>
+    </div>
+    <span>Rewards</span>
+  </a>
+
+  <a href="/admin/purchases/create" class="quick-btn">
+    <div class="quick-icon">
+      <svg viewBox="0 0 24 24">
+        <circle cx="9" cy="21" r="1"/>
+        <circle cx="20" cy="21" r="1"/>
+        <path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/>
+      </svg>
+    </div>
+    <span>New Purchase</span>
+  </a>
+
+  <a href="/admin/promotions" class="quick-btn">
+    <div class="quick-icon">
+      <svg viewBox="0 0 24 24">
+        <path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/>
+        <line x1="7" y1="7" x2="7.01" y2="7"/>
+      </svg>
+    </div>
+    <span>Promotions</span>
+  </a>
+
+  <a href="/admin/reports" class="quick-btn">
+    <div class="quick-icon">
+      <svg viewBox="0 0 24 24">
+        <path d="M4 19V5a2 2 0 012-2h12a2 2 0 012 2v14"/>
+        <path d="M8 7h8"/>
+        <path d="M8 11h8"/>
+        <path d="M8 15h4"/>
+        <path d="M4 19h16"/>
+      </svg>
+    </div>
+    <span>Sales Reports</span>
+  </a>
+</div>
 
     <div class="bottom-row">
       <div class="table-card">

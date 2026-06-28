@@ -44,30 +44,6 @@ class LoyaltyController extends Controller
     return view('cashier.loyalty', compact('clients', 'selected', 'history', 'rewards'));
     }
 
-    public function earn(Request $request)
-    {
-        $client = Client::findOrFail($request->client_id);
-        $stars = (int) floor($request->amount / 5);
-
-        if ($stars <= 0) {
-            return redirect()->back()->with('error', 'Invalid amount.');
-        }
-
-        $client->accumulated_stars += $stars;
-        $client->save();
-
-        StarHistory::create([
-            'movement_type' => 'earned',
-            'amount'        => $stars,
-            'reason'        => 'Manual purchase — S/ ' . $request->amount . ' — 1 star per S/5.00',
-            'date'          => now(),
-            'client_id'     => $client->id_cliente,
-        ]);
-
-        return redirect()->route('cashier.loyalty', ['client_id' => $client->id_cliente])
-            ->with('success', "+{$stars} stars added successfully.");
-    }
-
     public function redeem(Request $request)
     {
     $request->validate([

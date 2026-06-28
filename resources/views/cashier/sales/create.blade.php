@@ -1323,8 +1323,23 @@ function getPromoDiscount() {
   return getCartSubtotal() * getPromoDiscountRate();
 }
 
-function getCartTotal() {
+function getTotalBeforeRounding() {
   return getCartSubtotal() - getPromoDiscount();
+}
+
+function getRoundingAdjustment() {
+  if (selectedPaymentMethod !== 'cash') {
+    return 0;
+  }
+
+  const beforeRounding = getTotalBeforeRounding();
+  const roundedTotal = Math.round(beforeRounding * 10) / 10;
+
+  return roundedTotal - beforeRounding;
+}
+
+function getCartTotal() {
+  return getTotalBeforeRounding() + getRoundingAdjustment();
 }
 
 function renderPaymentFields() {
@@ -1462,8 +1477,12 @@ function renderCart() {
   });
 
   const promoDiscount = subtotalCart * getPromoDiscountRate();
-  const finalTotal = subtotalCart - promoDiscount;
+  const beforeRounding = subtotalCart - promoDiscount;
+  const roundingAdjustment = selectedPaymentMethod === 'cash'
+  ? Math.round(beforeRounding * 10) / 10 - beforeRounding
+  : 0;
 
+  const finalTotal = beforeRounding + roundingAdjustment;
   document.getElementById('subtotal').textContent = `S/ ${subtotalCart.toFixed(2)}`;
   document.getElementById('total').textContent = `S/ ${finalTotal.toFixed(2)}`;
 

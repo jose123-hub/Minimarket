@@ -272,7 +272,10 @@
             <div class="receipt-summary">
                 <div class="summary-box">
                   @php
-                   $subtotalBeforeDiscount = $sale->total + ($sale->discount ?? 0) + ($sale->store_credit_used ?? 0);
+                   $subtotalBeforeDiscount = $sale->total
+                   - ($sale->rounding_adjustment ?? 0)
+                   + ($sale->discount ?? 0)
+                   + ($sale->store_credit_used ?? 0);
                   @endphp
                 <div class="summary-line">
                  <span>Subtotal</span>
