@@ -19,43 +19,68 @@ class AuthenticatedSessionController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        $credentials = $request->only('email', 'password');
+    $request->validate([
+        'email' => ['required', 'email'],
+        'password' => ['required'],
+        'login_type' => ['required', 'in:employee,client'],
+    ]);
 
-        if (Auth::attempt($credentials)) {
-            $request->session()->regenerate();
+    $loginType = $request->input('login_type', 'employee');
 
-            $role = Auth::user()->role;
-            $loginType = $request->login_type;
+    $credentials = $request->only('email', 'password');
 
-        if ($loginType === 'employee' && !in_array($role, ['admin', 'cashier'])) {
+    if (!Auth::attempt($credentials, $request->boolean('remember'))) {
+        return back()
+        ->withErrors([
+        'email' => 'Invalid credentials.',
+         ])
+        ->withInput($request->only('email', 'login_type'))
+        ->with('login_error_type', $loginType);
+    }
+
+    $request->session()->regenerate();
+
+    $user = Auth::user();
+
+    $role = strtolower($user->roleInfo?->name ?? $user->role ?? '');
+
+    if ($loginType === 'employee' && !in_array($role, ['admin', 'cashier'])) {
         Auth::logout();
 
-        return back()->withErrors([
-        'email' => 'This portal is for employees only.',
-         ]);
-        }
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
 
-        if ($loginType === 'client' && $role !== 'client') {
+        return back()
+           ->withErrors([
+          'email' => 'This portal is for employees only.',
+           ])
+          ->withInput($request->only('email', 'login_type'))
+          ->with('login_error_type', $loginType);
+    }
+
+    if ($loginType === 'client' && $role !== 'client') {
         Auth::logout();
 
-        return back()->withErrors([
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return back()
+        ->withErrors([
         'email' => 'This portal is for customers only.',
-         ]);
-        }
-            if ($role === 'admin') {
-                return redirect('/dashboard');
-            }
+           ])
+            ->withInput($request->only('email', 'login_type'))
+            ->with('login_error_type', $loginType);
+    }
 
-            if ($role === 'cashier') {
-                return redirect('/cashier/dashboard');
-            }
+    if ($role === 'admin') {
+        return redirect('/dashboard');
+    }
 
-            return redirect('/client/catalog');
-        }
+    if ($role === 'cashier') {
+        return redirect('/cashier/dashboard');
+    }
 
-        return back()->withErrors([
-            'email' => 'Invalid credentials.',
-        ]);
+    return redirect('/client/catalog'); 
     }
 
     public function destroy(Request $request): RedirectResponse
@@ -77,7 +102,7 @@ class AuthenticatedSessionController extends Controller
     if (!Auth::attempt($credentials, $request->boolean('remember'))) {
         return back()
           ->withErrors([
-        'email' => 'Las credenciales no son correctas.',
+        'email' => 'The credentials are incorrect.',
          ])
           ->withInput($request->only('email', 'login_type'));
     }

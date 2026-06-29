@@ -125,10 +125,19 @@
       <button class="toggle-btn" id="btn-client" onclick="switchTab('client')">I'm a customer</button>
     </div>
 
-    @if ($errors->any())
-      <div class="error-msg">{{ $errors->first() }}</div>
-    @endif
+    @php
+    $errorTab = session('login_error_type', old('login_type', 'employee'));
+    @endphp
 
+    @if ($errors->any())
+    <div 
+    class="error-msg" 
+    id="login-error-box" 
+    data-error-tab="{{ $errorTab }}"
+     >
+     {{ $errors->first() }}
+    </div>
+    @endif
     <form method="POST" action="{{ route('login') }}">
       @csrf
 
@@ -215,15 +224,24 @@ function switchTab(tab) {
   document.getElementById('left-desc').textContent = isEmployee
     ? 'Point of sale, inventory, purchasing, promotions and loyalty in one platform.'
     : 'Browse the catalog, check your orders and redeem your Express stars for discounts.';
-}
-document.addEventListener('DOMContentLoaded', function () {
-  const selectedTab = "{{ old('login_type', 'employee') }}";
 
-  if (selectedTab === 'client') {
-    switchTab('client');
-  } else {
-    switchTab('employee');
+  const errorBox = document.getElementById('login-error-box');
+
+  if (errorBox) {
+    const errorTab = errorBox.getAttribute('data-error-tab');
+
+    if (errorTab === tab) {
+      errorBox.style.display = 'block';
+    } else {
+      errorBox.style.display = 'none';
+    }
   }
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+  const selectedTab = "{{ old('login_type', session('login_error_type', 'employee')) }}";
+
+  switchTab(selectedTab);
 });
 </script>
 
