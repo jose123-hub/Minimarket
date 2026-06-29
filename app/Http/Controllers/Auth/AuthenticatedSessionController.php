@@ -8,6 +8,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
+use Illuminate\Validation\ValidationException;
 
 class AuthenticatedSessionController extends Controller
 {
@@ -63,5 +64,44 @@ class AuthenticatedSessionController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
         return redirect('/login');
+    }
+    public function storeClient(Request $request)
+    {
+    $request->validate([
+        'email' => ['required', 'email'],
+        'password' => ['required'],
+    ]);
+
+    $credentials = $request->only('email', 'password');
+
+    if (!Auth::attempt($credentials, $request->boolean('remember'))) {
+        return back()
+          ->withErrors([
+        'email' => 'Las credenciales no son correctas.',
+         ])
+          ->withInput($request->only('email', 'login_type'));
+    }
+
+    $request->session()->regenerate();
+
+    $user = Auth::user();
+
+    $role = strtolower($user->roleInfo?->name ?? $user->role ?? '');
+
+    if ($role !== 'client') {
+        Auth::logout();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()
+            ->route('client.login')
+            ->withErrors([
+                'email' => 'This login is only for clients.',
+            ])
+            ->withInput($request->only('email'));
+    }
+
+    return redirect()->route('catalog');
     }
 }

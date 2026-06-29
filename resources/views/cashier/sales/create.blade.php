@@ -1,5 +1,58 @@
 @push('portal-styles')
 <style>
+  .pos-toast {
+    position: fixed;
+    top: 84px;
+    right: 28px;
+    max-width: 340px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 800;
+    z-index: 9999;
+    box-shadow: 0 10px 28px rgba(0,0,0,0.14);
+    animation: toastIn 0.25s ease forwards;
+}
+
+.pos-toast.success {
+    background: #ecfdf5;
+    color: #15803d;
+    border: 1px solid #bbf7d0;
+}
+
+.pos-toast.error {
+    background: #fef2f2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+}
+
+.pos-toast.hide {
+    animation: toastOut 0.25s ease forwards;
+}
+
+@keyframes toastIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes toastOut {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    to {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+}
   .btn-sales-history-toggle {
     display: flex; align-items: center; gap: 7px; background: #fff; border: 1px solid #e5e5e5;
     border-radius: 9px; padding: 9px 14px; font-size: 13px; font-weight: 600; color: #333; cursor: pointer;
@@ -472,12 +525,16 @@
     <div class="products-panel">
 
       @if(session('success'))
-        <div class="success-msg" style="margin: 0 0 16px">{{ session('success') }}</div>
-      @endif
-      @if(session('error'))
-        <div class="error-msg" style="margin: 0 0 16px">{{ session('error') }}</div>
+       <div class="pos-toast success">
+        {{ session('success') }}
+       </div>
       @endif
 
+      @if(session('error'))
+      <div class="pos-toast error">
+        {{ session('error') }}
+      </div>
+      @endif
       <div class="category-area">
     <div class="category-row main-category-row">
         <button class="filter-btn active" onclick="selectMainCategory('all', this)">
@@ -1830,7 +1887,15 @@ function printReceipt() {
   win.focus();
   win.print();
 }
+document.querySelectorAll('.pos-toast').forEach(toast => {
+    setTimeout(() => {
+        toast.classList.add('hide');
 
+        setTimeout(() => {
+            toast.remove();
+        }, 300);
+    }, 1800);
+});
 </script>
 
 </x-portal-layout>

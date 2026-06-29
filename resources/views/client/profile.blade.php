@@ -5,6 +5,115 @@
 >
     <x-slot name="styles">
         <style>
+            .profile-action-btn {
+    border: 1px solid #e5e5e5;
+    background: #fff;
+    color: #111;
+    border-radius: 10px;
+    padding: 11px 16px;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.profile-action-btn:hover {
+    border-color: #e8192c;
+    color: #e8192c;
+}
+
+.client-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(17, 17, 17, 0.45);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+}
+
+.client-modal-overlay.open {
+    display: flex;
+}
+
+.client-modal {
+    width: 520px;
+    max-width: 95vw;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 18px 50px rgba(0,0,0,0.18);
+    overflow: hidden;
+}
+
+.client-modal-header {
+    padding: 18px 22px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.client-modal-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 900;
+    color: #111;
+}
+
+.client-modal-header button {
+    border: none;
+    background: transparent;
+    font-size: 26px;
+    color: #999;
+    cursor: pointer;
+}
+
+.return-policy-content {
+    padding: 20px 22px;
+}
+
+.policy-item {
+    padding: 14px 0;
+    border-bottom: 1px solid #f3f3f3;
+}
+
+.policy-item:last-child {
+    border-bottom: none;
+}
+
+.policy-item strong {
+    display: block;
+    font-size: 14px;
+    font-weight: 900;
+    color: #111;
+    margin-bottom: 5px;
+}
+
+.policy-item p {
+    margin: 0;
+    font-size: 13px;
+    color: #777;
+    line-height: 1.45;
+}
+
+.client-modal-footer {
+    padding: 16px 22px;
+    border-top: 1px solid #eee;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.btn-close-policy {
+    background: #e8192c;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 11px 16px;
+    font-size: 13px;
+    font-weight: 900;
+    cursor: pointer;
+}
             .profile-grid {
                 display: grid;
                 grid-template-columns: 320px 1fr;
@@ -202,6 +311,70 @@
             <div class="note-box">
                 Your stars automatically accumulate when you make registered purchases. You can check the available rewards from the section <strong>My stars</strong>.
             </div>
+            <button type="button" class="profile-action-btn" onclick="openReturnPolicyModal()">
+              Return policy
+            </button>
         </div>
     </div>
+    <div class="client-modal-overlay" id="return-policy-modal">
+    <div class="client-modal">
+        <div class="client-modal-header">
+            <h3>Return policy</h3>
+            <button type="button" onclick="closeReturnPolicyModal()">×</button>
+        </div>
+
+        <div class="return-policy-content">
+            <div class="policy-item">
+                <strong>1. Return period</strong>
+                <p>Returns can be requested within 7 days after the purchase date.</p>
+            </div>
+
+            <div class="policy-item">
+                <strong>2. Proof of purchase</strong>
+                <p>The customer must present the receipt or order number.</p>
+            </div>
+
+            <div class="policy-item">
+                <strong>3. Product condition</strong>
+                <p>The product must be in good condition and with its original packaging when applicable.</p>
+            </div>
+
+            <div class="policy-item">
+                <strong>4. Non-returnable products</strong>
+                <p>Used, damaged, expired, or opened personal-use products cannot be returned.</p>
+            </div>
+
+            <div class="policy-item">
+                <strong>5. Approval process</strong>
+                <p>The cashier can register the return request, but only the administrator can approve or reject it.</p>
+            </div>
+
+            <div class="policy-item">
+                <strong>6. Stock update</strong>
+                <p>Returned stock is restored only after the administrator approves the return.</p>
+            </div>
+        </div>
+
+        <div class="client-modal-footer">
+            <button type="button" onclick="closeReturnPolicyModal()" class="btn-close-policy">
+                I understand
+            </button>
+        </div>
+    </div>
+</div>
+<script>
+    function openReturnPolicyModal() {
+        document.getElementById('return-policy-modal').classList.add('open');
+    }
+
+    function closeReturnPolicyModal() {
+        document.getElementById('return-policy-modal').classList.remove('open');
+    }
+
+    document.getElementById('return-policy-modal')?.addEventListener('click', function (e) {
+        if (e.target === this) {
+            closeReturnPolicyModal();
+        }
+    });
+</script>
 </x-client-layout>

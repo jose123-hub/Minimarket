@@ -6,6 +6,7 @@ use App\Models\Product;
 use App\Models\Category;
 use App\Models\AuditLog;
 use Illuminate\Http\Request;
+use App\Services\AuditService;
 use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
@@ -64,7 +65,7 @@ class ProductController extends Controller
         $imagePath = $request->file('image')->store('products', 'public');
     }
 
-    Product::create([
+    $product = Product::create([
         'category_id' => $request->category_id,
         'supplier_id' => $request->supplier_id,
         'name'        => $request->name,
@@ -75,6 +76,16 @@ class ProductController extends Controller
         'min_stock'   => $request->min_stock ?? 5,
         'image'       => $imagePath,
     ]);
+    
+    AuditService::log(
+    module: 'Inventory',
+    action: 'created',
+    tableName: 'products',
+    recordId: $product->id,
+    description: 'Product created: ' . $product->name,
+    oldValues: null,
+    newValues: $product->toArray()
+    );
 
     return redirect('/admin/products')->with('success', 'Product created successfully.');
     }
@@ -123,7 +134,7 @@ class ProductController extends Controller
         }
         $imagePath = $request->file('image')->store('products', 'public');
     }
-
+    $oldValues = $product->toArray();
     $product->update([
         'category_id' => $request->category_id,
         'supplier_id' => $request->supplier_id,
@@ -136,6 +147,18 @@ class ProductController extends Controller
         'image'       => $imagePath,
     ]);
 
+    $product->refresh();
+
+    AuditService::log(
+    module: 'Inventory',
+    action: 'updated',
+    tableName: 'products',
+    recordId: $product->id,
+    description: 'Product updated: ' . $product->name,
+    oldValues: $oldValues,
+    newValues: $product->toArray()
+    );
+
     return redirect('/admin/products')->with('success', 'Product updated successfully.');
     }
  
@@ -144,8 +167,21 @@ class ProductController extends Controller
         if ($product->image) {
             Storage::disk('public')->delete($product->image);
         }
+        
+        $oldValues = $product->toArray();
+        $productId = $product->id;
+        $productName = $product->name;
 
         $product->delete();
+        AuditService::log(
+         module: 'Inventory',
+         action: 'deleted',
+         tableName: 'products',
+         recordId: $productId,
+         description: 'Product deleted: ' . $productName,
+         oldValues: $oldValues,
+         newValues: null
+        );
         return redirect('/admin/products')->with('success', 'product removed.');
     }
     public function cashierInventory()

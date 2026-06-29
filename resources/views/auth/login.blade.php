@@ -141,7 +141,7 @@
         <p class="form-subtitle">Sign in to your Express customer account</p>
       </div>
 
-      <input type="hidden" name="login_type" id="login_type" value="employee">
+      <input type="hidden" name="login_type" id="login_type" value="{{ old('login_type', 'employee') }}">
 
       <div class="form-group">
         <label>Email</label>
@@ -216,6 +216,15 @@ function switchTab(tab) {
     ? 'Point of sale, inventory, purchasing, promotions and loyalty in one platform.'
     : 'Browse the catalog, check your orders and redeem your Express stars for discounts.';
 }
+document.addEventListener('DOMContentLoaded', function () {
+  const selectedTab = "{{ old('login_type', 'employee') }}";
+
+  if (selectedTab === 'client') {
+    switchTab('client');
+  } else {
+    switchTab('employee');
+  }
+});
 </script>
 
 </body>

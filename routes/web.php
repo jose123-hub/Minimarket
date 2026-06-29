@@ -21,6 +21,7 @@ use App\Http\Controllers\ClientController;
 use App\Http\Controllers\OnlineOrderController;
 use App\Http\Controllers\CashierOnlineOrderController;
 use App\Http\Controllers\Admin\AuditController;
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -38,6 +39,7 @@ Route::get('/dashboard', [DashboardController::class, 'index'])
     ->name('dashboard');
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
+    Route::resource('categories', CategoryController::class);
     Route::get('/audit', [AuditController::class, 'index'])->name('admin.audit.index');
     Route::get('/audit/{audit}', [AuditController::class, 'show'])->name('admin.audit.show');
     Route::resource('suppliers', SupplierController::class);
@@ -107,5 +109,8 @@ Route::middleware(['auth'])->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+
+Route::get('/client/login', function () {return view('auth.client-login');})->middleware('guest')->name('client.login');
+Route::post('/client/login', [AuthenticatedSessionController::class, 'storeClient'])->middleware('guest')->name('client.login.store');
 
 require __DIR__.'/auth.php';

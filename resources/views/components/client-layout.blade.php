@@ -6,6 +6,128 @@
     <title>Express — {{ $title }}</title>
 
     <style>
+        .client-notification-wrapper {
+    position: relative;
+}
+
+.client-notification-btn {
+    width: 38px;
+    height: 38px;
+    border: none;
+    background: #fff;
+    border-radius: 50%;
+    cursor: pointer;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.client-notification-btn:hover {
+    background: #f5f5f5;
+}
+
+.client-notification-btn svg {
+    width: 21px;
+    height: 21px;
+    stroke: #444;
+    fill: none;
+    stroke-width: 1.8;
+}
+
+.client-notification-dot {
+    min-width: 17px;
+    height: 17px;
+    padding: 0 5px;
+    background: #e8192c;
+    color: #fff;
+    border-radius: 999px;
+    position: absolute;
+    top: 3px;
+    right: 2px;
+    border: 2px solid #fff;
+    font-size: 10px;
+    font-weight: 900;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.client-notification-dropdown {
+    display: none;
+    position: absolute;
+    top: 46px;
+    right: 0;
+    width: 320px;
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 14px;
+    box-shadow: 0 14px 40px rgba(0,0,0,0.12);
+    z-index: 9999;
+    overflow: hidden;
+}
+
+.client-notification-dropdown.open {
+    display: block;
+}
+
+.client-notification-header {
+    padding: 15px 18px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.client-notification-header strong {
+    font-size: 15px;
+    color: #111;
+}
+
+.client-notification-header span {
+    font-size: 12px;
+    color: #999;
+}
+
+.client-notification-item {
+    padding: 14px 18px;
+    border-bottom: 1px solid #f5f5f5;
+}
+
+.client-notification-item strong {
+    display: block;
+    font-size: 13px;
+    color: #111;
+    margin-bottom: 4px;
+}
+
+.client-notification-item p {
+    margin: 0;
+    font-size: 12px;
+    color: #777;
+    line-height: 1.4;
+}
+
+.client-notification-item.info strong {
+    color: #2563eb;
+}
+
+.client-notification-item.success strong {
+    color: #16a34a;
+}
+
+.client-notification-item.reward strong,
+.client-notification-item.stars strong {
+    color: #f59e0b;
+}
+
+.client-notification-empty {
+    padding: 24px 18px;
+    text-align: center;
+    color: #aaa;
+    font-size: 13px;
+}
+
         * {
             margin: 0;
             padding: 0;
@@ -361,7 +483,7 @@
         Profile
     </a>
 </div>
-
+    
     <div class="client-user">
         <div class="client-user-info">
             <strong>{{ $clientName }}</strong>
@@ -375,6 +497,39 @@
             {{ $clientInitial }}
         </div>
         </a>
+
+         <div class="client-notification-wrapper">
+    <button type="button" class="client-notification-btn" onclick="toggleClientNotifications(event)">
+        <svg viewBox="0 0 24 24">
+            <path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 01-3.46 0"/>
+        </svg>
+
+        @if(($clientNotificationCount ?? 0) > 0)
+            <span class="client-notification-dot">
+                {{ $clientNotificationCount > 9 ? '9+' : $clientNotificationCount }}
+            </span>
+        @endif
+    </button>
+
+    <div class="client-notification-dropdown" id="client-notification-dropdown">
+        <div class="client-notification-header">
+            <strong>Notifications</strong>
+            <span>{{ now()->format('d/m/Y') }}</span>
+        </div>
+
+        @forelse($clientNotifications ?? [] as $notification)
+            <div class="client-notification-item {{ $notification['type'] ?? '' }}">
+                <strong>{{ $notification['title'] }}</strong>
+                <p>{{ $notification['message'] }}</p>
+            </div>
+        @empty
+            <div class="client-notification-empty">
+                No notifications for now.
+            </div>
+        @endforelse
+     </div>
+    </div>
 
         <form method="POST" action="{{ route('logout') }}">
             @csrf
@@ -410,6 +565,25 @@
 
     {{ $slot }}
 </main>
+
+<script>
+    function toggleClientNotifications(event) {
+        event.stopPropagation();
+
+        const dropdown = document.getElementById('client-notification-dropdown');
+        if (dropdown) {
+            dropdown.classList.toggle('open');
+        }
+    }
+
+    document.addEventListener('click', function (event) {
+        const wrapper = document.querySelector('.client-notification-wrapper');
+
+        if (wrapper && !wrapper.contains(event.target)) {
+            document.getElementById('client-notification-dropdown')?.classList.remove('open');
+        }
+    });
+</script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {

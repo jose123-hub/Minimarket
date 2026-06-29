@@ -130,6 +130,127 @@
   .field-error { color: #dc2626; font-size: 12px; margin-top: 4px; }
   .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 22px; }
 
+  .notification-wrapper {
+    position: relative;
+  }
+
+  .notification-btn {
+    width: 38px;
+    height: 38px;
+    border: none;
+    background: transparent;
+    border-radius: 50%;
+    cursor: pointer;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .notification-btn:hover {
+    background: #f5f5f5;
+  }
+
+  .notification-btn svg {
+    width: 21px;
+    height: 21px;
+    stroke: #444;
+    fill: none;
+    stroke-width: 1.8;
+  }
+
+  .notification-dot {
+    min-width: 17px;
+    height: 17px;
+    padding: 0 5px;
+    background: #e8192c;
+    color: #fff;
+    border-radius: 999px;
+    position: absolute;
+    top: 3px;
+    right: 2px;
+    border: 2px solid #fff;
+    font-size: 10px;
+    font-weight: 900;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .notification-dropdown {
+    display: none;
+    position: absolute;
+    top: 46px;
+    right: 0;
+    width: 320px;
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 14px;
+    box-shadow: 0 14px 40px rgba(0,0,0,0.12);
+    z-index: 9999;
+    overflow: hidden;
+  }
+
+  .notification-dropdown.open {
+    display: block;
+  }
+
+  .notification-header {
+    padding: 15px 18px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .notification-header strong {
+    font-size: 15px;
+    color: #111;
+  }
+
+  .notification-header span {
+    font-size: 12px;
+    color: #999;
+  }
+
+  .notification-item {
+    padding: 14px 18px;
+    border-bottom: 1px solid #f5f5f5;
+  }
+
+  .notification-item:last-child {
+    border-bottom: none;
+  }
+
+  .notification-item strong {
+    display: block;
+    font-size: 13px;
+    color: #111;
+    margin-bottom: 4px;
+  }
+
+  .notification-item p {
+    margin: 0;
+    font-size: 12px;
+    color: #777;
+    line-height: 1.4;
+  }
+
+  .notification-item.warning strong {
+    color: #f59e0b;
+  }
+
+  .notification-item.info strong {
+    color: #2563eb;
+  }
+
+  .notification-empty {
+    padding: 24px 18px;
+    text-align: center;
+    color: #aaa;
+    font-size: 13px;
+  }
+
   .toast-message {position: fixed;top: 82px;right: 28px;z-index: 9999;min-width: 280px;max-width: 380px;padding: 14px 18px;border-radius: 12px;font-size: 14px;font-weight: 700;box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);animation: slideInToast 0.25s ease;}
   .success-toast {background: #dcfce7;color: #166534;border: 1px solid #86efac;}
   .error-toast {background: #fee2e2;color: #991b1b;border: 1px solid #fecaca;}
@@ -199,6 +320,13 @@
       </svg>
          Online Orders
       </a>
+      <a href="/admin/audit" class="nav-item {{ $active === 'audit' ? 'active' : '' }}">
+      <svg viewBox="0 0 24 24">
+        <path d="M9 11l3 3L22 4"/>
+        <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+      </svg>
+       Audit
+     </a>
     @else
       <a href="/cashier/dashboard" class="nav-item {{ $active === 'dashboard' ? 'active' : '' }}">
         <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
@@ -260,9 +388,38 @@
     </div>
     <div class="topbar-right">
       <span class="topbar-date">{{ now()->isoFormat('dddd, D [de] MMMM [de] YYYY') }}</span>
-      <button class="bell-btn">
-        <svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
-      </button>
+      <div class="notification-wrapper">
+    <button type="button" class="notification-btn" onclick="togglePortalNotifications(event)">
+        <svg viewBox="0 0 24 24">
+            <path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 01-3.46 0"/>
+        </svg>
+
+        @if(($portalNotificationCount ?? 0) > 0)
+            <span class="notification-dot">
+                {{ $portalNotificationCount > 9 ? '9+' : $portalNotificationCount }}
+            </span>
+        @endif
+    </button>
+
+    <div class="notification-dropdown" id="portal-notification-dropdown">
+        <div class="notification-header">
+            <strong>Notifications</strong>
+            <span>{{ now()->format('d/m/Y') }}</span>
+        </div>
+
+        @forelse($portalNotifications ?? [] as $notification)
+            <div class="notification-item {{ $notification['type'] ?? '' }}">
+                <strong>{{ $notification['title'] }}</strong>
+                <p>{{ $notification['message'] }}</p>
+            </div>
+        @empty
+            <div class="notification-empty">
+                No notifications for now.
+            </div>
+        @endforelse
+      </div>
+     </div>
     </div>
   </div>
 
@@ -303,6 +460,24 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 3000);
     });
 });
+</script>
+<script>
+    function togglePortalNotifications(event) {
+        event.stopPropagation();
+
+        const dropdown = document.getElementById('portal-notification-dropdown');
+        if (dropdown) {
+            dropdown.classList.toggle('open');
+        }
+    }
+
+    document.addEventListener('click', function (event) {
+        const wrapper = document.querySelector('.notification-wrapper');
+
+        if (wrapper && !wrapper.contains(event.target)) {
+            document.getElementById('portal-notification-dropdown')?.classList.remove('open');
+        }
+    });
 </script>
 
 </body>
