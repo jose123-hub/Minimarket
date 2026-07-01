@@ -50,21 +50,25 @@ class CashController extends Controller
 
     public function close(Request $request)
     {
-        $opening = CashOpening::where('user_id', Auth::id())
-            ->where('status', 'open')
-            ->firstOrFail();
+    $request->validate([
+        'counted_amount' => 'nullable|numeric|min:0',
+    ]);
 
-        $totalSales = $opening->sales()->sum('total');
-        $finalAmount = $opening->initial_amount + $totalSales;
+    $opening = CashOpening::where('user_id', Auth::id())
+        ->where('status', 'open')
+        ->firstOrFail();
 
-        $opening->update([
-            'closing_date' => now(),
-            'final_amount' => $finalAmount,
-            'total_sales'  => $totalSales,
-            'difference'   => $finalAmount - ($request->counted_amount ?? $finalAmount),
-            'status'       => 'closed',
-        ]);
+    $totalSales = $opening->sales()->sum('total');
+    $finalAmount = $opening->initial_amount + $totalSales;
 
-        return redirect()->back()->with('success', 'Cash register closed. Total sales: S/ ' . number_format($totalSales, 2));
+    $opening->update([
+        'closing_date' => now(),
+        'final_amount' => $finalAmount,
+        'total_sales'  => $totalSales,
+        'difference'   => $finalAmount - ($request->counted_amount ?? $finalAmount),
+        'status'       => 'closed',
+    ]);
+
+    return redirect()->back()->with('success', 'Cash register closed. Total sales: S/ ' . number_format($totalSales, 2));
     }
 }

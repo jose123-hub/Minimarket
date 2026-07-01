@@ -20,21 +20,21 @@ class SupplierController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'company_name' => 'required',
-            'ruc'          => 'required|unique:suppliers,ruc',
-        ]);
+    $validated = $request->validate([
+        'company_name' => 'required|string|max:255',
+        'ruc'          => 'required|digits:11|unique:suppliers,ruc',
+        'contact_name' => 'nullable|string|max:255',
+        'phone'        => 'nullable|string|max:20',
+        'email'        => 'nullable|email|max:255',
+        'address'      => 'nullable|string|max:255',
+        'status'       => 'required|in:active,inactive',
+    ]);
 
-        $request->validate([
-              'company_name' => 'required|string|max:255',
-              'ruc'          => 'required|digits:11|unique:suppliers,ruc',
-              'contact_name' => 'nullable|string|max:255',
-              'phone'        => 'nullable|string|max:20',
-              'email'        => 'nullable|email|max:255',
-              'address'      => 'nullable|string|max:255',
-              'status'       => 'required|in:active,inactive',
-           ]);
-        return redirect('/admin/suppliers')->with('success', 'Supplier created successfully.');
+    Supplier::create($validated);
+
+    return redirect()
+        ->route('suppliers.index')
+        ->with('success', 'Supplier created successfully.');
     }
 
     public function edit(Supplier $supplier)

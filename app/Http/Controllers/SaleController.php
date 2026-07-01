@@ -43,7 +43,7 @@ class SaleController extends Controller
     $recentSales = Sale::with('details')
         ->where('cashier_id', Auth::id())
         ->whereDate('created_at', now())
-        ->oldest()
+        ->latest()
         ->take(20)
         ->get()
         ->map(fn ($sale) => [
@@ -70,9 +70,9 @@ class SaleController extends Controller
     $request->validate([
         'customer_id' => 'required|exists:users,id',
         'payment_method' => 'required|in:cash,card,yape,plin',
-        'payment_reference' => 'nullable|string|max:50',
+        'payment_reference' => 'required_unless:payment_method,cash|nullable|string|min:4|max:50',
         'promo_code' => 'nullable|string|max:20',
-        'cash_received' => 'nullable|numeric|min:0',
+        'cash_received' => 'required_if:payment_method,cash|nullable|numeric|min:0',
         'products' => 'required|array|min:1',
         'products.*.product_id' => 'required|integer|exists:products,id',
         'products.*.quantity' => 'required|integer|min:1',

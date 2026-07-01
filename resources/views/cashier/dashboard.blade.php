@@ -406,15 +406,17 @@ class PriorityQueue {
     <script>
     const pendingOrders = JSON.parse(document.getElementById('pending-orders-data').textContent || '[]');
 
-    pendingOrders.forEach(order => {
-      orderQueue.enqueue({
-        id: order.id,
-        customer: order.customer_name,
-        total: parseFloat(order.total),
-        items: order.items_count,
-        time: order.time,
-      });
-    });
+  for (let i = 0; i < pendingOrders.length; i++) {
+  const order = pendingOrders[i];
+
+  orderQueue.enqueue({
+    id: order.id,
+    customer: order.customer_name,
+    total: parseFloat(order.total),
+    items: order.items_count,
+    time: order.time,
+  });
+}
 
   function renderOrderQueue() {
   const container = document.getElementById('order-queue');

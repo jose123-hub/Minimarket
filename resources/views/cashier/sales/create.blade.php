@@ -1000,7 +1000,7 @@ class PriceBST {
 
     this.comparisons++;
     if (node.product.price >= min && node.product.price <= max) {
-      result.push(node.product);
+      result[result.length] = node.product;
     }
 
     this.comparisons++;
@@ -1012,7 +1012,9 @@ class PriceBST {
 
 const productsForBST = JSON.parse(document.getElementById('products-price-data').textContent || '[]');
 const priceBST = new PriceBST();
-productsForBST.forEach(p => priceBST.insert(p));
+for (let i = 0; i < productsForBST.length; i++) {
+  priceBST.insert(productsForBST[i]);
+}
 </script>
 
 <script>
@@ -1776,8 +1778,8 @@ function applyProductFilters() {
       card.dataset.category === selectedSubcategory;
 
     const matchesPrice =
-      priceFilterIds === null ||
-      priceFilterIds.has(card.dataset.id);
+     priceFilterIds === null ||
+     priceFilterIds[card.dataset.id] === true;
 
     card.style.display =
       matchesSearch && matchesMain && matchesSub && matchesPrice
@@ -1799,7 +1801,7 @@ function selectMainCategory(categoryId, btn) {
   btn.classList.add('active');
 
   document.querySelectorAll('.subcategory-btn').forEach(button => {
-    button.classList.remove('active');
+  button.classList.remove('active');
 
     if (categoryId !== 'all' && button.dataset.parent === categoryId) {
       button.style.display = '';
@@ -1843,7 +1845,11 @@ document.getElementById('bst-search-btn').addEventListener('click', () => {
 
   const results = priceBST.rangeSearch(min, max);
 
-  priceFilterIds = new Set(results.map(p => String(p.id)));
+  priceFilterIds = {};
+
+  for (let i = 0; i < results.length; i++) {
+  priceFilterIds[String(results[i].id)] = true;
+  }
   applyProductFilters();
 
   const maxLabel = maxInput === '' ? '∞' : `S/ ${max.toFixed(2)}`;

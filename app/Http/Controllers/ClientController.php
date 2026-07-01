@@ -55,14 +55,14 @@ class ClientController extends Controller
 
         'delivery_address' => 'required_if:delivery_type,delivery|nullable|string|max:255',
         'delivery_reference' => 'required_if:delivery_type,delivery|nullable|string|max:255',
-        'delivery_phone' => 'required_if:delivery_type,delivery|nullable|string|max:20',
+        'delivery_phone' => ['required_if:delivery_type,delivery', 'nullable', 'regex:/^\d{9}$/'],
 
         'pickup_store' => 'required_if:delivery_type,pickup|nullable|string|max:255',
         'pickup_note' => 'nullable|string|max:255',
 
         'payment_method' => 'required|in:card,store_credit',
         'payment_status' => 'required|in:paid',
-        'card_last_four' => 'nullable|string|size:4',
+        'card_last_four' => 'nullable|digits:4',
     ]);
 
     $user = Auth::user();
