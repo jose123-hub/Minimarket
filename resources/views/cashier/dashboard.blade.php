@@ -224,7 +224,6 @@
     <div class="table-card" style="margin-bottom:20px;">
       <div class="table-header">
         <h3>Pending Orders</h3>
-        <span style="font-size:12px; color:#999;">Sorted by priority</span>
       </div>
       <div id="order-queue">
         <div class="empty-row">No pending orders</div>
@@ -283,75 +282,123 @@
     </div>
 
     <script>
-    class PriorityQueue {
-      constructor() {
-        this.items = {};
-        this.size = 0;
-      }
+class OrderNode {
+  constructor(order) {
+    this.order = order;
+    this.next = null;
+  }
+}
 
-      getPriority(total) {
-        if (total >= 30) return 3;
-        if (total >= 10) return 2;
-        return 1;
-      }
+class PriorityQueue {
+  constructor() {
+    this.front = null;
+    this.length = 0;
+  }
 
-      enqueue(order) {
-        const priority = this.getPriority(order.total);
-        order.priority = priority;
+  enqueue(order) {
+    const newNode = new OrderNode(order);
 
-        if (!this.items[priority]) {
-          this.items[priority] = [];
-        }
-
-        let i = this.size;
-        this.items[priority][this.items[priority].length] = order;
-        this.size++;
-      }
-
-      dequeue() {
-        if (this.isEmpty()) return null;
-
-        for (let p = 3; p >= 1; p--) {
-          if (this.items[p] && this.items[p].length > 0) {
-            const order = this.items[p][0];
-            for (let i = 0; i < this.items[p].length - 1; i++) {
-              this.items[p][i] = this.items[p][i + 1];
-            }
-            this.items[p].length--;
-            this.size--;
-            return order;
-          }
-        }
-        return null;
-      }
-
-      peek() {
-        for (let p = 3; p >= 1; p--) {
-          if (this.items[p] && this.items[p].length > 0) {
-            return this.items[p][0];
-          }
-        }
-        return null;
-      }
-
-      isEmpty() {
-        return this.size === 0;
-      }
-
-      toArray() {
-        const result = {};
-        let i = 0;
-        for (let p = 3; p >= 1; p--) {
-          if (this.items[p]) {
-            for (let j = 0; j < this.items[p].length; j++) {
-              result[i] = this.items[p][j];
-              i++;
-            }
-          }
-        }
-        return Object.values(result);
-      }
+    if (this.front === null || order.total > this.front.order.total) {
+      newNode.next = this.front;
+      this.front = newNode;
+      this.length++;
+      return;
     }
+
+    let current = this.front;
+
+    while (
+      current.next !== null &&
+      current.next.order.total >= order.total
+    ) {
+      current = current.next;
+    }
+
+    newNode.next = current.next;
+    current.next = newNode;
+    this.length++;
+  }
+
+  dequeue() {
+    if (this.front === null) {
+      return null;
+    }
+
+    const removedOrder = this.front.order;
+    this.front = this.front.next;
+    this.length--;
+
+    return removedOrder;
+  }
+
+  peek() {
+    if (this.front === null) {
+      return null;
+    }
+
+    return this.front.order;
+  }
+
+  search(id) {
+    let current = this.front;
+
+    while (current !== null) {
+      if (current.order.id === id) {
+        return current.order;
+      }
+
+      current = current.next;
+    }
+
+    return null;
+  }
+
+  remove(id) {
+    if (this.front === null) {
+      return false;
+    }
+
+    if (this.front.order.id === id) {
+      this.front = this.front.next;
+      this.length--;
+      return true;
+    }
+
+    let current = this.front;
+
+    while (current.next !== null) {
+      if (current.next.order.id === id) {
+        current.next = current.next.next;
+        this.length--;
+        return true;
+      }
+
+      current = current.next;
+    }
+
+    return false;
+  }
+
+  isEmpty() {
+    return this.front === null;
+  }
+
+  size() {
+    return this.length;
+  }
+
+  toArray() {
+    const result = [];
+    let current = this.front;
+
+    while (current !== null) {
+      result[result.length] = current.order;
+      current = current.next;
+    }
+
+    return result;
+  }
+}
 
     const orderQueue = new PriorityQueue();
     </script>
@@ -369,48 +416,62 @@
       });
     });
 
-    function renderQueue() {
-      const container = document.getElementById('order-queue');
-      if (!container) return;
+  function renderOrderQueue() {
+  const container = document.getElementById('order-queue');
 
-      const orders = orderQueue.toArray();
-      container.innerHTML = '';
+  if (!container) return;
 
-      if (orders.length === 0) {
-        container.innerHTML = '<div class="empty-row">No pending orders</div>';
-        return;
-      }
+  const orders = orderQueue.toArray();
 
-      const priorityLabels = { 3: 'High', 2: 'Medium', 1: 'Low' };
-      const priorityColors = { 3: '#e8192c', 2: '#f59e0b', 1: '#22c55e' };
+  if (orders.length === 0) {
+    container.innerHTML = '<div class="empty-row">No pending orders</div>';
+    return;
+  }
 
-      orders.forEach(order => {
-        const div = document.createElement('div');
-        div.className = 'queue-item';
-        div.innerHTML = `
-          <div class="queue-item-info">
-            <div class="queue-customer">${order.customer}</div>
-            <div class="queue-meta">${order.items} items · ${order.time}</div>
+  let html = '';
+
+  for (let i = 0; i < orders.length; i++) {
+    const order = orders[i];
+
+    const label = i === 0 ? 'Highest value' : 'Suggested';
+
+    html += `
+      <div class="queue-item">
+        <div>
+          <div class="queue-customer">
+            ${order.customer}
           </div>
-          <div style="display:flex; align-items:center; gap:10px;">
-            <span style="font-size:11px; font-weight:700; color:${priorityColors[order.priority]}">
-              ${priorityLabels[order.priority]}
-            </span>
-            <span style="font-weight:700; color:#111">S/ ${order.total.toFixed(2)}</span>
-            <button onclick="attendOrder(${order.id})" style="padding:6px 12px; background:#e8192c; color:#fff; border:none; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer;">
-              Attend
-            </button>
+
+          <div class="queue-meta">
+            Order #${order.id} · ${order.items} items · ${order.time}
           </div>
-        `;
-        container.appendChild(div);
-      });
-    }
+        </div>
+
+        <div class="queue-actions">
+          <span class="queue-priority">
+            ${label}
+          </span>
+
+          <span class="queue-total">
+            S/ ${Number(order.total).toFixed(2)}
+          </span>
+
+          <a href="/cashier/online-orders/${order.id}" class="btn-attend">
+            Attend
+          </a>
+        </div>
+      </div>
+    `;
+  }
+
+  container.innerHTML = html;
+}
 
     function attendOrder(id) {
      window.location.href = `/cashier/online-orders/${id}`;
     }
 
-    renderQueue();
+    renderOrderQueue();
     </script>
 
 </x-portal-layout>

@@ -924,77 +924,146 @@
 
 <script> 
 class Node {
-  constructor(data) { this.data = data; this.next = null; }
+  constructor(data) {
+    this.data = data;
+    this.next = null;
+  }
 }
-class LinkedList {
-  constructor() { this.head = null; this.size = 0; }
-  insert(product) {
-  let cur = this.head;
 
-  while (cur) {
-    if (cur.data.id === product.id) {
-      if (cur.data.quantity < cur.data.stock) {
-        cur.data.quantity++;
-        return true;
+class LinkedList {
+  constructor() {
+    this.head = null;
+    this.tail = null;
+    this.size = 0;
+  }
+
+  search(id) {
+    let current = this.head;
+
+    while (current !== null) {
+      if (current.data.id === id) {
+        return current.data;
       }
 
+      current = current.next;
+    }
+
+    return null;
+  }
+
+  insert(product) {
+    const existingProduct = this.search(product.id);
+    const quantityToAdd = product.quantity ?? 1;
+
+    if (existingProduct !== null) {
+      const newQuantity = existingProduct.quantity + quantityToAdd;
+
+      if (newQuantity > existingProduct.stock) {
+        return false;
+      }
+
+      existingProduct.quantity = newQuantity;
+      return true;
+    }
+
+    const node = new Node({
+      ...product,
+      quantity: quantityToAdd,
+    });
+
+    if (this.head === null) {
+      this.head = node;
+      this.tail = node;
+    } else {
+      this.tail.next = node;
+      this.tail = node;
+    }
+
+    this.size++;
+    return true;
+  }
+
+  remove(id) {
+    if (this.head === null) {
       return false;
     }
 
-    cur = cur.next;
-  }
+    if (this.head.data.id === id) {
+      this.head = this.head.next;
 
-  const node = new Node({ ...product, quantity: 1 });
-  node.next = this.head;
-  this.head = node;
-  this.size++;
-
-  return true;
-  }
-  remove(id) {
-    if (!this.head) return;
-    if (this.head.data.id === id) { this.head = this.head.next; this.size--; return; }
-    let cur = this.head;
-    while (cur.next) {
-      if (cur.next.data.id === id) { cur.next = cur.next.next; this.size--; return; }
-      cur = cur.next;
-    }
-  }
-  updateQty(id, delta) {
-    let cur = this.head;
-    while (cur) {
-      if (cur.data.id === id) {
-        const q = cur.data.quantity + delta;
-        if (q <= 0) { this.remove(id); return; }
-        if (q > cur.data.stock) return;
-        cur.data.quantity = q; return;
+      if (this.head === null) {
+        this.tail = null;
       }
-      cur = cur.next;
+
+      this.size--;
+      return true;
+    }
+
+    let current = this.head;
+
+    while (current.next !== null) {
+      if (current.next.data.id === id) {
+        if (current.next === this.tail) {
+          this.tail = current;
+        }
+
+        current.next = current.next.next;
+        this.size--;
+        return true;
+      }
+
+      current = current.next;
+    }
+
+    return false;
+  }
+
+  updateQty(id, delta) {
+    const product = this.search(id);
+
+    if (product === null) {
+      return false;
+    }
+
+    const newQty = product.quantity + delta;
+
+    if (newQty <= 0) {
+      return this.remove(id);
+    }
+
+    if (newQty > product.stock) {
+      return false;
+    }
+
+    product.quantity = newQty;
+    return true;
+  }
+
+  toArray() {
+    const result = [];
+    let current = this.head;
+
+    while (current !== null) {
+      result[result.length] = current.data;
+      current = current.next;
+    }
+
+    return result;
+  }
+
+  clear() {
+    this.head = null;
+    this.tail = null;
+    this.size = 0;
+  }
+
+  fromArray(items) {
+    this.clear();
+
+    for (let i = 0; i < items.length; i++) {
+      this.insert(items[i]);
     }
   }
-  toArray() {
-  const arr = []; 
-  let cur = this.head;
-
-  while (cur) { 
-    arr.push(cur.data); 
-    cur = cur.next; 
-  }
-
-  return arr;
-}
-
-fromArray(items) {
-  this.head = null;
-  this.size = 0;
-
-  items.reverse().forEach(item => {
-    const node = new Node(item);
-    node.next = this.head;
-    this.head = node;
-    this.size++;
-  });
-}
 }
 const cart = new LinkedList();
 let selectedDeliveryType = 'delivery';
@@ -1006,9 +1075,14 @@ const STORE_CREDIT_BALANCE = parseFloat('{{ $client->store_credit_balance ?? 0 }
 const STAR_PROGRESS_AMOUNT = parseFloat('{{ $client->star_progress_amount ?? 0 }}');
 
 function getCartSubtotal() {
-  return cart.toArray().reduce((sum, item) => {
-    return sum + (item.price * item.quantity);
-  }, 0);
+  const items = cart.toArray();
+  let subtotal = 0;
+
+  for (let i = 0; i < items.length; i++) {
+    subtotal += items[i].price * items[i].quantity;
+  }
+
+  return subtotal;
 }
 
 function getOnlineDiscount() {

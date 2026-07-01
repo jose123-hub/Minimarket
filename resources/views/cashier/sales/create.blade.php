@@ -1026,119 +1026,222 @@ class Node {
 class LinkedList {
   constructor() {
     this.head = null;
+    this.tail = null;
     this.size = 0;
   }
 
-  insert(product) {
+  search(id) {
     let current = this.head;
-    while (current) {
-      if (current.data.id === product.id) {
-        if (current.data.quantity < current.data.stock) {
-          current.data.quantity++;
-        }
-        return;
+
+    while (current !== null) {
+      if (current.data.id === id) {
+        return current.data;
       }
+
       current = current.next;
     }
-    const node = new Node({ ...product, quantity: 1 });
-    node.next = this.head;
-    this.head = node;
+
+    return null;
+  }
+
+  insert(product) {
+    const existingProduct = this.search(product.id);
+    const quantityToAdd = product.quantity ?? 1;
+
+    if (existingProduct !== null) {
+      const newQuantity = existingProduct.quantity + quantityToAdd;
+
+      if (newQuantity > existingProduct.stock) {
+        return false;
+      }
+
+      existingProduct.quantity = newQuantity;
+      return true;
+    }
+
+    const node = new Node({
+      ...product,
+      quantity: quantityToAdd,
+    });
+
+    if (this.head === null) {
+      this.head = node;
+      this.tail = node;
+    } else {
+      this.tail.next = node;
+      this.tail = node;
+    }
+
     this.size++;
+    return true;
   }
 
   remove(id) {
-    if (!this.head) return;
+    if (this.head === null) {
+      return false;
+    }
+
     if (this.head.data.id === id) {
       this.head = this.head.next;
+
+      if (this.head === null) {
+        this.tail = null;
+      }
+
       this.size--;
-      return;
+      return true;
     }
+
     let current = this.head;
-    while (current.next) {
+
+    while (current.next !== null) {
       if (current.next.data.id === id) {
+        if (current.next === this.tail) {
+          this.tail = current;
+        }
+
         current.next = current.next.next;
         this.size--;
-        return;
+        return true;
       }
+
       current = current.next;
     }
+
+    return false;
   }
 
   updateQty(id, delta) {
-  let cur = this.head;
-  let prev = null;
-  while (cur) {
-    if (cur.data.id === id) {
-      const newQty = cur.data.quantity + delta;
+    const product = this.search(id);
 
-      if (newQty <= 0) {
-        if (prev === null) {
-          this.head = cur.next;
-        } else {
-          prev.next = cur.next;
-        }
-        this.size--;
-        return;
-      }
-
-      if (newQty > cur.data.stock) return;
-      cur.data.quantity = newQty;
-      return;
+    if (product === null) {
+      return false;
     }
-    prev = cur;
-    cur = cur.next;
-  }
+
+    const newQty = product.quantity + delta;
+
+    if (newQty <= 0) {
+      return this.remove(id);
+    }
+
+    if (newQty > product.stock) {
+      return false;
+    }
+
+    product.quantity = newQty;
+    return true;
   }
 
   toArray() {
-    const arr = [];
+    const result = [];
     let current = this.head;
-    while (current) {
-      arr.push(current.data);
+
+    while (current !== null) {
+      result[result.length] = current.data;
       current = current.next;
     }
-    return arr;
+
+    return result;
   }
 
   clear() {
     this.head = null;
+    this.tail = null;
     this.size = 0;
+  }
+
+  fromArray(items) {
+    this.clear();
+
+    for (let i = 0; i < items.length; i++) {
+      this.insert(items[i]);
+    }
+  }
+}
+
+class StackNode {
+  constructor(data) {
+    this.data = data;
+    this.next = null;
   }
 }
 
 class Stack {
   constructor() {
-    this.items = {};
-    this.top = -1;
+    this.top = null;
+    this.length = 0;
   }
 
-  push(action) {
-    this.top++;
-    this.items[this.top] = action;
+  push(data) {
+    const newNode = new StackNode(data);
+
+    newNode.next = this.top;
+    this.top = newNode;
+
+    this.length++;
   }
 
   pop() {
-  if (this.top === -1) return null;
-  const item = this.items[this.top];
-  delete this.items[this.top];
-  this.top--;
-  return item;
+    if (this.top === null) {
+      return null;
+    }
+
+    const removedData = this.top.data;
+    this.top = this.top.next;
+
+    this.length--;
+
+    return removedData;
   }
 
   peek() {
-    return this.items[this.top];
+    if (this.top === null) {
+      return null;
+    }
+
+    return this.top.data;
+  }
+
+  search(id) {
+    let current = this.top;
+
+    while (current !== null) {
+      if (current.data.id === id) {
+        return current.data;
+      }
+
+      current = current.next;
+    }
+
+    return null;
   }
 
   isEmpty() {
-    return this.top === -1;
+    return this.top === null;
   }
 
   size() {
-    return this.top + 1;
+    return this.length;
+  }
+
+  toArray() {
+    const result = [];
+    let current = this.top;
+
+    while (current !== null) {
+      result[result.length] = current.data;
+      current = current.next;
+    }
+
+    return result;
+  }
+
+  clear() {
+    this.top = null;
+    this.length = 0;
   }
 }
 
-const actionHistory = new Stack();
 const cart = new LinkedList();
 let selectedPaymentMethod = 'cash';
 
@@ -1183,7 +1286,10 @@ const salesHistoryStack = new Stack();
 <script id="recent-sales-data" type="application/json">{!! json_encode($recentSales ?? []) !!}</script>
 <script>
 const serverRecentSales = JSON.parse(document.getElementById('recent-sales-data').textContent || '[]');
-serverRecentSales.forEach(sale => salesHistoryStack.push(sale));
+
+for (let i = serverRecentSales.length - 1; i >= 0; i--) {
+  salesHistoryStack.push(serverRecentSales[i]);
+}
 updateHistoryCount();
 
 function updateHistoryCount() {
@@ -1192,16 +1298,8 @@ function updateHistoryCount() {
 }
 
 function getSalesHistoryLIFO() {
-  const drained = [];
-  while (!salesHistoryStack.isEmpty()) {
-    drained.push(salesHistoryStack.pop());
-  }
-  for (let i = drained.length - 1; i >= 0; i--) {
-    salesHistoryStack.push(drained[i]);
-  }
-  return drained; 
+  return salesHistoryStack.toArray();
 }
-
 function renderSalesHistory() {
   const list = document.getElementById('history-list');
   const sales = getSalesHistoryLIFO();
@@ -1211,16 +1309,28 @@ function renderSalesHistory() {
     return;
   }
 
-  list.innerHTML = sales.map((sale, i) => `
-    <div class="history-item ${i === 0 ? 'is-top' : ''}">
-      ${i === 0 ? '<span class="top-tag">TOP — last popped</span>' : ''}
-      <div class="history-item-row">
-        <span class="history-invoice">${sale.invoice_number}</span>
-        <span class="history-total">S/ ${parseFloat(sale.total).toFixed(2)}</span>
+  let html = '';
+
+  for (let i = 0; i < sales.length; i++) {
+    const sale = sales[i];
+
+    html += `
+      <div class="history-item ${i === 0 ? 'is-top' : ''}">
+        ${i === 0 ? '<span class="top-tag">Most recent</span>' : ''}
+
+        <div class="history-item-row">
+          <span class="history-invoice">${sale.invoice_number}</span>
+          <span class="history-total">S/ ${Number(sale.total).toFixed(2)}</span>
+        </div>
+
+        <div class="history-meta">
+          ${sale.items} item(s) · ${sale.time}
+        </div>
       </div>
-      <div class="history-meta">${sale.items} item(s) · ${sale.time}</div>
-    </div>
-  `).join('');
+    `;
+  }
+
+  list.innerHTML = html;
 }
 
 document.getElementById('btn-sales-history').addEventListener('click', () => {
@@ -1241,42 +1351,26 @@ function addToCart(el) {
     price: parseFloat(el.dataset.price),
     stock: parseInt(el.dataset.stock),
   };
-  actionHistory.push({
-    type: 'add',
-    product: { ...product }
-  });
 
   cart.insert(product);
   renderCart();
-  updateUndoBtn();
 }
 
 function changeQty(id, delta) {
-  actionHistory.push({ type: 'qty', id, delta });
   cart.updateQty(id, delta);
   renderCart();
-  updateUndoBtn();
 }
 
 function removeItem(id) {
-  const items = cart.toArray();
-  const product = items.find(p => p.id === id);
-  if (product) {
-    actionHistory.push({ type: 'remove', product: { ...product } });
-  }
   cart.remove(id);
   renderCart();
-  updateUndoBtn();
 }
 
 //
 
 function clearCart() {
   cart.clear();
-  actionHistory.items = {};
-  actionHistory.top = -1;
   renderCart();
-  updateUndoBtn();
 }
 
 function getSelectedCustomerOption() {
@@ -1342,9 +1436,14 @@ function getPaymentMethodLabel(method) {
 }
 
 function getCartSubtotal() {
-  return cart.toArray().reduce((sum, item) => {
-    return sum + (item.price * item.quantity);
-  }, 0);
+  const items = cart.toArray();
+  let subtotal = 0;
+
+  for (let i = 0; i < items.length; i++) {
+    subtotal += items[i].price * items[i].quantity;
+  }
+
+  return subtotal;
 }
 
 function getPromoCode() {

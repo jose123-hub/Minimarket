@@ -194,45 +194,61 @@
         URL.revokeObjectURL(url);
       });
 
-      let quickComparisons = 0;
-      let quickSwaps = 0;
+let quickComparisons = 0;
+let quickSwaps = 0;
 
-      function quickSort(items) {
-        const arr = items.slice(); 
-        quickSortInPlace(arr, 0, arr.length - 1);
-        return arr;
-      }
+function copyArray(items) {
+  const copy = [];
 
-      function quickSortInPlace(arr, low, high) {
-        if (low < high) {
-          const pivotIndex = partition(arr, low, high);
-          quickSortInPlace(arr, low, pivotIndex - 1);
-          quickSortInPlace(arr, pivotIndex + 1, high);
-        }
-      }
+  for (let i = 0; i < items.length; i++) {
+    copy[copy.length] = items[i];
+  }
 
-      function partition(arr, low, high) {
-        const pivot = arr[high].price;
-        let i = low - 1;
+  return copy;
+}
 
-        for (let j = low; j < high; j++) {
-          quickComparisons++;
-          if (arr[j].price <= pivot) {
-            i++;
-            swap(arr, i, j);
-          }
-        }
-        swap(arr, i + 1, high);
-        return i + 1;
-      }
+function quickSort(items) {
+  const arr = copyArray(items);
+  quickSortInPlace(arr, 0, arr.length - 1);
+  return arr;
+}
 
-      function swap(arr, a, b) {
-        if (a === b) return;
-        const tmp = arr[a];
-        arr[a] = arr[b];
-        arr[b] = tmp;
-        quickSwaps++;
-      }
+function quickSortInPlace(arr, low, high) {
+  if (low < high) {
+    const pivotIndex = partition(arr, low, high);
+
+    quickSortInPlace(arr, low, pivotIndex - 1);
+    quickSortInPlace(arr, pivotIndex + 1, high);
+  }
+}
+
+function partition(arr, low, high) {
+  const pivot = arr[high].price;
+  let i = low - 1;
+
+  for (let j = low; j < high; j++) {
+    quickComparisons++;
+
+    if (arr[j].price <= pivot) {
+      i++;
+      swap(arr, i, j);
+    }
+  }
+
+  swap(arr, i + 1, high);
+
+  return i + 1;
+}
+
+function swap(arr, a, b) {
+  if (a === b) return;
+
+  const temp = arr[a];
+  arr[a] = arr[b];
+  arr[b] = temp;
+
+  quickSwaps++;
+}
 
       const sortBtn = document.getElementById('sortByPriceBtn');
       const sortStatus = document.getElementById('sort-status');
@@ -244,13 +260,13 @@
           quickSwaps = 0;
           const sorted = quickSort(originalProducts);
           renderProducts(sorted);
-          sortStatus.textContent = `Sorted by price (lowest first) — Quick Sort: ${quickComparisons} comparisons, ${quickSwaps} swaps over ${originalProducts.length} products`;
+          sortStatus.textContent = `Sorted by price (lowest first) ${quickComparisons} comparisons, ${quickSwaps} swaps over ${originalProducts.length} products`;
           sortBtn.textContent = 'Reset to default order';
           isPriceSorted = true;
         } else {
           renderProducts(originalProducts);
           sortStatus.textContent = 'Showing products in default order';
-          sortBtn.textContent = 'Sort by price (Quick Sort)';
+          sortBtn.textContent = 'Sort by price';
           isPriceSorted = false;
         }
       });

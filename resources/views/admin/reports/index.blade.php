@@ -503,7 +503,7 @@ tr:last-child td {
 
             @if($recentSales->count() > 0)
                 <button type="button" id="sortByTotalBtn" class="tab-btn" style="background:#e8192c; color:#fff;">
-                    Sort by total (Merge Sort)
+                    Sort by total
                 </button>
             @endif
         </div>
@@ -1244,55 +1244,93 @@ updateExportLinks();
 
 <script id="sales-detail-data" type="application/json">{!! $salesDetailJson !!}</script>
 <script>
-  const originalSalesDetail = JSON.parse(document.getElementById('sales-detail-data').textContent || '[]');
-  let mergeComparisons = 0;
-  let mergeOperations = 0;
+const originalSalesDetail = JSON.parse(document.getElementById('sales-detail-data').textContent || '[]');
+let mergeComparisons = 0;
+let mergeOperations = 0;
 
-  function mergeSort(items) {
-    if (items.length <= 1) return items;
-
-    const middle = Math.floor(items.length / 2);
-    const left = mergeSort(items.slice(0, middle));
-    const right = mergeSort(items.slice(middle));
-
-    return merge(left, right);
+function mergeSort(items) {
+  if (items.length <= 1) {
+    return items;
   }
 
-  function merge(left, right) {
-    const result = [];
-    let i = 0, j = 0;
+  const middle = Math.floor(items.length / 2);
 
-    while (i < left.length && j < right.length) {
-      mergeComparisons++;
-      if (left[i].total >= right[j].total) {
-        result.push(left[i]);
-        i++;
-      } else {
-        result.push(right[j]);
-        j++;
-      }
-      mergeOperations++;
+  const left = [];
+  const right = [];
+
+  for (let i = 0; i < middle; i++) {
+    left[left.length] = items[i];
+  }
+
+  for (let i = middle; i < items.length; i++) {
+    right[right.length] = items[i];
+  }
+
+  const sortedLeft = mergeSort(left);
+  const sortedRight = mergeSort(right);
+
+  return merge(sortedLeft, sortedRight);
+}
+
+function merge(left, right) {
+  const result = [];
+
+  let i = 0;
+  let j = 0;
+
+  while (i < left.length && j < right.length) {
+    mergeComparisons++;
+
+    if (left[i].total >= right[j].total) {
+      result[result.length] = left[i];
+      i++;
+    } else {
+      result[result.length] = right[j];
+      j++;
     }
 
-    while (i < left.length) { result.push(left[i]); i++; mergeOperations++; }
-    while (j < right.length) { result.push(right[j]); j++; mergeOperations++; }
-
-    return result;
+    mergeOperations++;
   }
 
+  while (i < left.length) {
+    result[result.length] = left[i];
+    i++;
+    mergeOperations++;
+  }
+
+  while (j < right.length) {
+    result[result.length] = right[j];
+    j++;
+    mergeOperations++;
+  }
+
+  return result;
+}
+
   function renderSalesDetail(sales) {
-    const tbody = document.getElementById('sales-detail-body');
-    tbody.innerHTML = sales.map(s => `
+  const tbody = document.getElementById('sales-detail-body');
+
+  let html = '';
+
+  for (let i = 0; i < sales.length; i++) {
+    const s = sales[i];
+
+    html += `
       <tr>
         <td><span class="invoice">${s.invoice}</span></td>
         <td>${s.time}</td>
         <td>${s.items}</td>
         <td><span class="method-badge">${s.method}</span></td>
         <td>${s.cashier}</td>
-        <td style="text-align:right"><span class="total-amount">S/ ${s.total.toFixed(2)}</span></td>
+        <td style="text-align:right">
+          <span class="total-amount">S/ ${Number(s.total).toFixed(2)}</span>
+        </td>
       </tr>
-    `).join('');
+    `;
   }
+
+  tbody.innerHTML = html;
+}
 
   const sortBtn = document.getElementById('sortByTotalBtn');
   if (sortBtn) {
@@ -1306,13 +1344,13 @@ updateExportLinks();
         mergeOperations = 0;
         const sorted = mergeSort(originalSalesDetail);
         renderSalesDetail(sorted);
-        status.textContent = `Sorted by total (highest first) — Merge Sort: ${mergeComparisons} comparisons, ${mergeOperations} merge operations over ${originalSalesDetail.length} sales`;
+        status.textContent = `Sorted by total (highest first) ${mergeComparisons} comparisons, ${mergeOperations} merge operations over ${originalSalesDetail.length} sales`;
         sortBtn.textContent = 'Reset to default order';
         isSorted = true;
       } else {
         renderSalesDetail(originalSalesDetail);
-        status.textContent = 'Showing sales in default order (most recent first)';
-        sortBtn.textContent = 'Sort by total (Merge Sort)';
+        status.textContent = 'Showing sales in default order';
+        sortBtn.textContent = 'Sort by total';
         isSorted = false;
       }
     });

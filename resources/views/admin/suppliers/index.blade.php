@@ -149,60 +149,170 @@
     </script>
 
     <script>
-    class HashTable {
-      constructor(size = 13) {
-        this.size = size;
-        this.buckets = Array.from({ length: size }, () => []);
+    class HashNode {
+  constructor(key, value) {
+    this.key = key;
+    this.value = value;
+    this.next = null;
+  }
+}
+
+class HashTable {
+  constructor(size = 13) {
+    this.size = size;
+    this.buckets = {};
+
+    for (let i = 0; i < this.size; i++) {
+      this.buckets[i] = null;
+    }
+  }
+
+  hash(key) {
+    let h = 0;
+
+    for (let i = 0; i < key.length; i++) {
+      h = (h * 31 + key.charCodeAt(i)) % this.size;
+    }
+
+    return h;
+  }
+
+  insert(key, value) {
+    const index = this.hash(key);
+    const newNode = new HashNode(key, value);
+
+    if (this.buckets[index] === null) {
+      this.buckets[index] = newNode;
+      return;
+    }
+
+    let current = this.buckets[index];
+
+    while (current !== null) {
+      if (current.key === key) {
+        current.value = value;
+        return;
       }
 
-      hash(key) {
-        let h = 0;
-        for (let i = 0; i < key.length; i++) {
-          h = (h * 31 + key.charCodeAt(i)) % this.size;
+      if (current.next === null) {
+        break;
+      }
+
+      current = current.next;
+    }
+
+    current.next = newNode;
+  }
+
+  search(key) {
+    const index = this.hash(key);
+    let current = this.buckets[index];
+    let comparisons = 0;
+
+    while (current !== null) {
+      comparisons++;
+
+      if (current.key === key) {
+        return {
+          found: true,
+          value: current.value,
+          index: index,
+          comparisons: comparisons,
+          bucketSize: this.countBucket(index),
+        };
+      }
+
+      current = current.next;
+    }
+
+    return {
+      found: false,
+      value: null,
+      index: index,
+      comparisons: comparisons,
+      bucketSize: this.countBucket(index),
+    };
+  }
+
+  remove(key) {
+    const index = this.hash(key);
+    let current = this.buckets[index];
+    let previous = null;
+
+    while (current !== null) {
+      if (current.key === key) {
+        if (previous === null) {
+          this.buckets[index] = current.next;
+        } else {
+          previous.next = current.next;
         }
-        return h;
+
+        return true;
       }
 
-      insert(key, value) {
-        const index = this.hash(key);
-        this.buckets[index].push({ key, value });
-      }
+      previous = current;
+      current = current.next;
+    }
 
-      search(key) {
-        const index = this.hash(key);
-        const bucket = this.buckets[index];
-        let comparisons = 0;
+    return false;
+  }
 
-        for (const entry of bucket) {
-          comparisons++;
-          if (entry.key === key) {
-            return { found: true, value: entry.value, index, comparisons, bucketSize: bucket.length };
-          }
-        }
-        return { found: false, value: null, index, comparisons, bucketSize: bucket.length };
+  countBucket(index) {
+    let count = 0;
+    let current = this.buckets[index];
+
+    while (current !== null) {
+      count++;
+      current = current.next;
+    }
+
+    return count;
+  }
+
+  toArray() {
+    const result = [];
+
+    for (let i = 0; i < this.size; i++) {
+      let current = this.buckets[i];
+
+      while (current !== null) {
+        result[result.length] = current.value;
+        current = current.next;
       }
     }
+
+    return result;
+  }
+}
 
     const supplierHashTable = new HashTable(13);
-    suppliersData.forEach(s => supplierHashTable.insert(s.ruc, s));
+    for (let i = 0; i < suppliersData.length; i++) {
+  supplierHashTable.insert(suppliersData[i].ruc, suppliersData[i]);
+  }
 
-    function renderBuckets(highlightIndex = null) {
-      const viz = document.getElementById('buckets-viz');
-      viz.innerHTML = '';
-      supplierHashTable.buckets.forEach((bucket, i) => {
-        const col = document.createElement('div');
-        col.className = 'bucket-col';
-        const bar = document.createElement('div');
-        bar.className = 'bucket-bar' + (i === highlightIndex ? ' hit' : '');
-        bar.style.height = Math.max(4, bucket.length * 16) + 'px';
-        const label = document.createElement('div');
-        label.className = 'bucket-label';
-        label.textContent = i;
-        col.appendChild(bar);
-        col.appendChild(label);
-        viz.appendChild(col);
-      });
-    }
+  function renderBuckets(highlightIndex = null) {
+  const viz = document.getElementById('buckets-viz');
+  viz.innerHTML = '';
+
+  for (let i = 0; i < supplierHashTable.size; i++) {
+    const bucketSize = supplierHashTable.countBucket(i);
+
+    const col = document.createElement('div');
+    col.className = 'bucket-col';
+
+    const bar = document.createElement('div');
+    bar.className = 'bucket-bar' + (i === highlightIndex ? ' hit' : '');
+    bar.style.height = Math.max(4, bucketSize * 16) + 'px';
+
+    const label = document.createElement('div');
+    label.className = 'bucket-label';
+    label.textContent = i;
+
+    col.appendChild(bar);
+    col.appendChild(label);
+    viz.appendChild(col);
+  }
+}
     renderBuckets();
 
     function searchSupplierByRuc() {
