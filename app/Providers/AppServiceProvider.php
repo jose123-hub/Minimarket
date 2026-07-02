@@ -109,7 +109,7 @@ class AppServiceProvider extends ServiceProvider
 
             if ($pendingOrders > 0) {
                 $clientNotifications[] = [
-                    'key' => 'pending_orders',
+                    'key' => 'client_pending_orders',
                     'type' => 'info',
                     'title' => 'Orders in progress',
                     'message' => $pendingOrders . ' order(s) are still being processed.',
@@ -138,6 +138,7 @@ class AppServiceProvider extends ServiceProvider
 
             if ($client && ($client->store_credit_balance ?? 0) > 0) {
                 $clientNotifications[] = [
+                    'key' => 'client_store_credit',
                     'type' => 'reward',
                     'title' => 'Reward credit available',
                     'message' => 'You have S/ ' . number_format($client->store_credit_balance, 2) . ' available.',
@@ -146,6 +147,7 @@ class AppServiceProvider extends ServiceProvider
 
             if ($client && ($client->accumulated_stars ?? 0) > 0) {
                 $clientNotifications[] = [
+                    'key' => 'client_stars_balance',
                     'type' => 'stars',
                     'title' => 'Stars balance',
                     'message' => 'You have ' . $client->accumulated_stars . ' stars available.',

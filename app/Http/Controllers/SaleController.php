@@ -140,23 +140,6 @@ class SaleController extends Controller
 
             $lineSubtotal = round($unitPrice * $quantity, 2);
             $subtotal += $lineSubtotal;
-            $promoCodeText = strtoupper(trim($request->promo_code ?? ''));
-            $discount = 0;
-            $promotionCode = null;
-
-            if ($promoCodeText !== '') {
-            $promotionCode = PromotionCode::where('code', $promoCodeText)->first();
-
-            if (!$promotionCode) {
-            return back()->with('error', 'Invalid promotion code.');
-            }
-
-            if (!$promotionCode->isAvailableFor($request->payment_method, $subtotal)) {
-            return back()->with('error', 'Promotion code is not available for this sale.');
-            }
-
-            $discount = $promotionCode->calculateDiscount($subtotal);
-            }
 
             SaleDetail::create([
                 'sale_id' => $sale->id,
@@ -172,21 +155,37 @@ class SaleController extends Controller
         $subtotal = round($subtotal, 2);
 
         $promoCode = $request->filled('promo_code')
+    ? strtoupper(trim($request->promo_code))
+    : null;
+
+        $promoDiscount = 0;
+        $promotionCode = null;
+
+        if ($promoCode) {
+        $promotionCode = PromotionCode::where('code', $promoCode)->first();
+
+        if (!$promotionCode) {
+        throw ValidationException::withMessages([
+            'promo_code' => 'Invalid promotion code.',
+        ]);
+        }
+
+        if (!$promotionCode->isAvailableFor($request->payment_method, $subtotal)) {
+        throw ValidationException::withMessages([
+            'promo_code' => 'Promotion code is not available for this sale.',
+        ]);
+        }
+
+        $promoDiscount = $promotionCode->calculateDiscount($subtotal);
+        }
+
+        $total = round(max($subtotal - $promoDiscount, 0), 2);
+
+        $promoCode = $request->filled('promo_code')
             ? strtoupper(trim($request->promo_code))
             : null;
 
         $promoDiscount = 0;
-
-        $validPromoCodes = [
-            'YAPE10' => [
-                'method' => 'yape',
-                'percent' => 10,
-            ],
-            'PLIN5' => [
-                'method' => 'plin',
-                'percent' => 5,
-            ],
-        ];
 
         if ($promoCode) {
             if (!isset($validPromoCodes[$promoCode])) {
@@ -293,6 +292,10 @@ class SaleController extends Controller
             'cash_change' => $cashChange,
             'rounding_adjustment' => $roundingAdjustment,
         ]);
+        
+        if ($promotionCode) {
+        $promotionCode->increment('used_count');
+        }
 
         DB::commit();
 

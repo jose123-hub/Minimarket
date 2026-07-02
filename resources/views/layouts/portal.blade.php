@@ -420,16 +420,22 @@
         </div>
 
         @forelse($portalNotifications ?? [] as $notification)
-            <a href="{{ $notification['url'] ?? '#' }}"
-               class="notification-item {{ $notification['type'] ?? '' }}">
-               <strong>{{ $notification['title'] }}</strong>
-               <p>{{ $notification['message'] }}</p>
-            </a>
+       <a href="{{ $notification['url'] ?? '#' }}"
+       class="notification-item {{ $notification['type'] ?? '' }}"
+       data-notification-key="{{ $notification['key'] ?? md5($notification['title']) }}"
+       onclick="dismissPortalNotification(event, this)">
+        <strong>{{ $notification['title'] }}</strong>
+        <p>{{ $notification['message'] }}</p>
+        </a>
         @empty
-            <div class="notification-empty">
-                No notifications for now.
-            </div>
+        <div class="notification-empty">
+          No notifications for now.
+        </div>
         @endforelse
+
+        <div class="notification-empty" id="portal-notification-empty-js" style="display:none;">
+        No notifications for now.
+       </div>
       </div>
      </div>
     </div>
