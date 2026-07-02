@@ -47,9 +47,11 @@ class AppServiceProvider extends ServiceProvider
 
                 if ($lowStockCount > 0) {
                     $notifications[] = [
-                        'type' => 'warning',
-                        'title' => 'Low stock',
-                        'message' => $lowStockCount . ' products need attention.',
+                     'key' => 'low_stock',
+                     'type' => 'warning',
+                     'title' => 'Low stock',
+                     'message' => $lowStockCount . ' products need attention.',
+                     'url' => route('products.index'),
                     ];
                 }
             }
@@ -67,10 +69,12 @@ class AppServiceProvider extends ServiceProvider
 
                 if ($pendingOrdersCount > 0) {
                     $notifications[] = [
-                        'type' => 'info',
-                        'title' => 'Pending orders',
-                        'message' => $pendingOrdersCount . ' online orders waiting.',
-                    ];
+                  'key' => 'pending_orders',
+                  'type' => 'info',
+                  'title' => 'Pending orders',
+                  'message' => $pendingOrdersCount . ' online orders waiting.',
+                  'url' => route('cashier.online-orders.index'),
+                 ];
                 }
             }
 
@@ -79,9 +83,11 @@ class AppServiceProvider extends ServiceProvider
 
                 if ($auditToday > 0) {
                     $notifications[] = [
+                        'key' => 'audit_today',
                         'type' => 'info',
                         'title' => 'Audit activity',
                         'message' => $auditToday . ' system events registered today.',
+                        'url' => route('admin.audit.index'),
                     ];
                 }
             }
@@ -103,9 +109,11 @@ class AppServiceProvider extends ServiceProvider
 
             if ($pendingOrders > 0) {
                 $clientNotifications[] = [
+                    'key' => 'pending_orders',
                     'type' => 'info',
                     'title' => 'Orders in progress',
                     'message' => $pendingOrders . ' order(s) are still being processed.',
+                    'url' => route('orders'),
                 ];
             }
 
@@ -116,9 +124,11 @@ class AppServiceProvider extends ServiceProvider
 
             if ($deliveredToday > 0) {
                 $clientNotifications[] = [
+                    'key' => 'delivered_orders',
                     'type' => 'success',
                     'title' => 'Order delivered',
                     'message' => 'One of your orders was delivered today.',
+                    'url' => route('stars'),
                 ];
             }
         }

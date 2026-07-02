@@ -105,6 +105,51 @@
         text-decoration: none;
         font-weight: 800;
     }
+    
+    .audit-pagination {
+    margin-top: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 13px;
+    }
+
+    .audit-pagination-links {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    }
+
+    .audit-page-link,
+    .audit-page-disabled {
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-weight: 700;
+    text-decoration: none;
+    }
+
+    .audit-page-link {
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    color: #333;
+    }
+
+    .audit-page-link:hover {
+    border-color: #e8192c;
+    color: #e8192c;
+    }
+
+    .audit-page-disabled {
+    background: #f5f5f5;
+    border: 1px solid #eee;
+    color: #aaa;
+    }   
+
+    .audit-page-info {
+    color: #777;
+    font-weight: 600;
+    }
 </style>
 @endpush
 <x-portal-layout
@@ -177,7 +222,27 @@
         </table>
 
         <div>
-            {{ $audits->links() }}
+            @if ($audits->hasPages())
+         <div class="audit-pagination">
+            <div class="audit-pagination-links">
+            @if ($audits->onFirstPage())
+                <span class="audit-page-disabled">‹ Previous</span>
+            @else
+                <a href="{{ $audits->previousPageUrl() }}" class="audit-page-link">‹ Previous</a>
+            @endif
+
+            @if ($audits->hasMorePages())
+                <a href="{{ $audits->nextPageUrl() }}" class="audit-page-link">Next ›</a>
+            @else
+                <span class="audit-page-disabled">Next ›</span>
+            @endif
+        </div>
+
+        <div class="audit-page-info">
+            Showing {{ $audits->firstItem() }} to {{ $audits->lastItem() }} of {{ $audits->total() }} results
+          </div>
+         </div>
+         @endif
         </div>
     </div>
 </x-portal-layout>

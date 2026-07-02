@@ -251,6 +251,17 @@
     font-size: 13px;
   }
 
+  .notification-item {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+  }
+
+  .notification-item:hover {
+    background: #f9fafb;
+  }
+
   .toast-message {position: fixed;top: 82px;right: 28px;z-index: 9999;min-width: 280px;max-width: 380px;padding: 14px 18px;border-radius: 12px;font-size: 14px;font-weight: 700;box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);animation: slideInToast 0.25s ease;}
   .success-toast {background: #dcfce7;color: #166534;border: 1px solid #86efac;}
   .error-toast {background: #fee2e2;color: #991b1b;border: 1px solid #fecaca;}
@@ -396,9 +407,9 @@
         </svg>
 
         @if(($portalNotificationCount ?? 0) > 0)
-            <span class="notification-dot">
-                {{ $portalNotificationCount > 9 ? '9+' : $portalNotificationCount }}
-            </span>
+         <span class="notification-dot" id="portal-notification-count">
+        {{ $portalNotificationCount > 9 ? '9+' : $portalNotificationCount }}
+         </span>
         @endif
     </button>
 
@@ -409,10 +420,11 @@
         </div>
 
         @forelse($portalNotifications ?? [] as $notification)
-            <div class="notification-item {{ $notification['type'] ?? '' }}">
-                <strong>{{ $notification['title'] }}</strong>
-                <p>{{ $notification['message'] }}</p>
-            </div>
+            <a href="{{ $notification['url'] ?? '#' }}"
+               class="notification-item {{ $notification['type'] ?? '' }}">
+               <strong>{{ $notification['title'] }}</strong>
+               <p>{{ $notification['message'] }}</p>
+            </a>
         @empty
             <div class="notification-empty">
                 No notifications for now.
@@ -478,6 +490,87 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('portal-notification-dropdown')?.classList.remove('open');
         }
     });
+
+    function getDismissedPortalNotifications() {
+    const saved = localStorage.getItem('dismissed_portal_notifications');
+
+    if (!saved) {
+        return {};
+    }
+
+    try {
+        return JSON.parse(saved);
+    } catch (e) {
+        return {};
+    }
+}
+
+function saveDismissedPortalNotifications(data) {
+    localStorage.setItem('dismissed_portal_notifications', JSON.stringify(data));
+}
+
+function updatePortalNotificationCount() {
+    const items = document.querySelectorAll('.notification-item');
+    let visibleCount = 0;
+
+    for (let i = 0; i < items.length; i++) {
+        if (items[i].style.display !== 'none') {
+            visibleCount++;
+        }
+    }
+
+    const countBadge = document.getElementById('portal-notification-count');
+    const emptyBox = document.getElementById('portal-notification-empty-js');
+
+    if (countBadge) {
+        if (visibleCount === 0) {
+            countBadge.remove();
+        } else {
+            countBadge.textContent = visibleCount > 9 ? '9+' : visibleCount;
+        }
+    }
+
+    if (emptyBox) {
+        emptyBox.style.display = visibleCount === 0 ? 'block' : 'none';
+    }
+}
+
+function loadDismissedPortalNotifications() {
+    const dismissed = getDismissedPortalNotifications();
+    const items = document.querySelectorAll('.notification-item');
+
+    for (let i = 0; i < items.length; i++) {
+        const key = items[i].dataset.notificationKey;
+
+        if (dismissed[key] === true) {
+            items[i].style.display = 'none';
+        }
+    }
+
+    updatePortalNotificationCount();
+}
+
+function dismissPortalNotification(event, element) {
+    event.preventDefault();
+
+    const key = element.dataset.notificationKey;
+    const url = element.getAttribute('href');
+
+    const dismissed = getDismissedPortalNotifications();
+    dismissed[key] = true;
+    saveDismissedPortalNotifications(dismissed);
+
+    element.style.display = 'none';
+    updatePortalNotificationCount();
+
+    setTimeout(function () {
+        window.location.href = url;
+    }, 150);
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    loadDismissedPortalNotifications();
+});
 </script>
 
 </body>

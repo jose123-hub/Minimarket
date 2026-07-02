@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Discount;
 use App\Models\Product;
 use App\Models\ProductDiscount;
+use App\Models\PromotionCode;
 use Illuminate\Http\Request;
 
 class DiscountController extends Controller
@@ -17,7 +18,8 @@ class DiscountController extends Controller
         $products = Product::with('category')
             ->orderBy('name')
             ->get();
-        return view('admin.promotions.index', compact('discounts', 'products'));
+        $promoCodes = PromotionCode::latest()->get();
+        return view('admin.promotions.index', compact('discounts', 'products', 'promoCodes'));
     }
 
     public function store(Request $request)
@@ -65,5 +67,59 @@ class DiscountController extends Controller
     ]);
 
     return redirect('/admin/promotions')->with('success', 'Promotion updated successfully.');
+    }
+    public function storeCode(Request $request)
+    {
+    $validated = $request->validate([
+        'code' => 'required|string|max:30|unique:promotion_codes,code',
+        'payment_method' => 'required|in:all,cash,card,yape,plin',
+        'discount_type' => 'required|in:percentage,fixed',
+        'value' => 'required|numeric|min:0.01',
+        'minimum_amount' => 'required|numeric|min:0',
+        'start_date' => 'nullable|date',
+        'end_date' => 'nullable|date|after_or_equal:start_date',
+        'usage_limit' => 'nullable|integer|min:1',
+        'status' => 'required|in:active,inactive',
+    ]);
+
+    $validated['code'] = strtoupper(trim($validated['code']));
+
+    PromotionCode::create($validated);
+
+    return redirect()
+        ->route('admin.promotions')
+        ->with('success', 'Promotion code created successfully.');
+    }
+
+    public function updateCode(Request $request, PromotionCode $promotionCode)
+    {
+    $validated = $request->validate([
+        'code' => 'required|string|max:30|unique:promotion_codes,code,' . $promotionCode->id,
+        'payment_method' => 'required|in:all,cash,card,yape,plin',
+        'discount_type' => 'required|in:percentage,fixed',
+        'value' => 'required|numeric|min:0.01',
+        'minimum_amount' => 'required|numeric|min:0',
+        'start_date' => 'nullable|date',
+        'end_date' => 'nullable|date|after_or_equal:start_date',
+        'usage_limit' => 'nullable|integer|min:1',
+        'status' => 'required|in:active,inactive',
+    ]);
+
+    $validated['code'] = strtoupper(trim($validated['code']));
+
+    $promotionCode->update($validated);
+
+    return redirect()
+        ->route('admin.promotions')
+        ->with('success', 'Promotion code updated successfully.');
+    }
+
+    public function destroyCode(PromotionCode $promotionCode) 
+    {
+    $promotionCode->delete();
+
+    return redirect()
+        ->route('admin.promotions')
+        ->with('success', 'Promotion code deleted successfully.');
     }
 }

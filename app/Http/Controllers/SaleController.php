@@ -8,6 +8,7 @@ use App\Models\SaleDetail;
 use App\Models\User;
 use App\Models\Client;
 use App\Models\StarHistory;
+use App\Models\PromotionCode;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
@@ -139,6 +140,23 @@ class SaleController extends Controller
 
             $lineSubtotal = round($unitPrice * $quantity, 2);
             $subtotal += $lineSubtotal;
+            $promoCodeText = strtoupper(trim($request->promo_code ?? ''));
+            $discount = 0;
+            $promotionCode = null;
+
+            if ($promoCodeText !== '') {
+            $promotionCode = PromotionCode::where('code', $promoCodeText)->first();
+
+            if (!$promotionCode) {
+            return back()->with('error', 'Invalid promotion code.');
+            }
+
+            if (!$promotionCode->isAvailableFor($request->payment_method, $subtotal)) {
+            return back()->with('error', 'Promotion code is not available for this sale.');
+            }
+
+            $discount = $promotionCode->calculateDiscount($subtotal);
+            }
 
             SaleDetail::create([
                 'sale_id' => $sale->id,

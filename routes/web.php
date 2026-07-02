@@ -72,6 +72,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::get('/online-orders', [OnlineOrderController::class, 'index'])->name('admin.online-orders.index');
     Route::get('/online-orders/{sale}', [OnlineOrderController::class, 'show'])->name('admin.online-orders.show');
     Route::patch('/online-orders/{sale}/status', [OnlineOrderController::class, 'updateStatus'])->name('admin.online-orders.update-status');
+    Route::post('/promotion-codes', [DiscountController::class, 'storeCode'])->name('admin.promotion-codes.store');
+    Route::put('/promotion-codes/{promotionCode}', [DiscountController::class, 'updateCode'])->name('admin.promotion-codes.update');
+    Route::delete('/promotion-codes/{promotionCode}', [DiscountController::class, 'destroyCode'])->name('admin.promotion-codes.destroy');
 });
 
 Route::middleware(['auth', 'cashier'])->prefix('cashier')->group(function () {

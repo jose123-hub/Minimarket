@@ -46,6 +46,67 @@
   .btn-cancel-modal { flex: 1; padding: 11px; background: #f5f5f5; color: #555; border: none; border-radius: 8px; font-size: 14px; cursor: pointer; }
   .product-select { width: 100%; max-width: 100%; height: 42px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .product-select option { max-width: 100%; white-space: normal; }
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+
+  .form-grid label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    color: #777;
+    margin-bottom: 6px;
+  }
+
+  .form-grid input,
+  .form-grid select {
+    width: 100%;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    padding: 9px 10px;
+    font-size: 13px;
+  }
+
+  .btn-primary {
+    background: #e8192c;
+    border: none;
+    color: #fff;
+    padding: 10px 16px;
+    border-radius: 9px;
+    font-weight: 800;
+    cursor: pointer;
+  }
+
+  .btn-delete {
+    background: #fee2e2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+    padding: 7px 10px;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .promo-code-table {
+    margin-top: 18px;
+    overflow-x: auto;
+  }
+
+  .promo-code-table table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .promo-code-table th,
+  .promo-code-table td {
+    padding: 11px 12px;
+    border-bottom: 1px solid #eee;
+    font-size: 13px;
+    text-align: left;
+  }
 </style>
 @endpush
 
@@ -199,6 +260,135 @@
         </form>
       </div>
     </div>
+    <div class="admin-card" style="margin-top: 24px;">
+    <div class="card-header">
+        <h3>Promotion Codes</h3>
+        <p>Create codes for Yape, Plin, card or general discounts.</p>
+    </div>
+
+    <form method="POST" action="{{ route('admin.promotion-codes.store') }}" class="promo-code-form">
+        @csrf
+
+        <div class="form-grid">
+            <div>
+                <label>Code</label>
+                <input type="text" name="code" placeholder="Example: YAPE10" required>
+            </div>
+
+            <div>
+                <label>Payment method</label>
+                <select name="payment_method" required>
+                    <option value="all">All</option>
+                    <option value="cash">Cash</option>
+                    <option value="card">Card</option>
+                    <option value="yape">Yape</option>
+                    <option value="plin">Plin</option>
+                </select>
+            </div>
+
+            <div>
+                <label>Discount type</label>
+                <select name="discount_type" required>
+                    <option value="percentage">Percentage</option>
+                    <option value="fixed">Fixed amount</option>
+                </select>
+            </div>
+
+            <div>
+                <label>Value</label>
+                <input type="number" name="value" step="0.01" min="0.01" placeholder="10" required>
+            </div>
+
+            <div>
+                <label>Minimum amount</label>
+                <input type="number" name="minimum_amount" step="0.01" min="0" value="0" required>
+            </div>
+
+            <div>
+                <label>Usage limit</label>
+                <input type="number" name="usage_limit" min="1" placeholder="Optional">
+            </div>
+
+            <div>
+                <label>Start date</label>
+                <input type="date" name="start_date">
+            </div>
+
+            <div>
+                <label>End date</label>
+                <input type="date" name="end_date">
+            </div>
+
+            <div>
+                <label>Status</label>
+                <select name="status" required>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                </select>
+            </div>
+        </div>
+
+        <button type="submit" class="btn-primary">
+            Create code
+        </button>
+    </form>
+
+    <div class="promo-code-table">
+        <table>
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Method</th>
+                    <th>Type</th>
+                    <th>Value</th>
+                    <th>Min. amount</th>
+                    <th>Uses</th>
+                    <th>Status</th>
+                    <th>Delete</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @forelse($promoCodes ?? [] as $code)
+                    <tr>
+                        <td><strong>{{ $code->code }}</strong></td>
+                        <td>{{ ucfirst($code->payment_method) }}</td>
+                        <td>{{ ucfirst($code->discount_type) }}</td>
+                        <td>
+                            @if($code->discount_type === 'percentage')
+                                {{ number_format($code->value, 0) }}%
+                            @else
+                                S/ {{ number_format($code->value, 2) }}
+                            @endif
+                        </td>
+                        <td>S/ {{ number_format($code->minimum_amount, 2) }}</td>
+                        <td>
+                            {{ $code->used_count }}
+                            @if($code->usage_limit)
+                                / {{ $code->usage_limit }}
+                            @endif
+                        </td>
+                        <td>{{ ucfirst($code->status) }}</td>
+                        <td>
+                            <form method="POST" action="{{ route('admin.promotion-codes.destroy', $code) }}">
+                                @csrf
+                                @method('DELETE')
+
+                                <button type="submit" class="btn-delete" onclick="return confirm('Delete this code?')">
+                                    Delete
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="8">No promotion codes registered.</td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+</div>
 
     <script>
       function openEdit(button) {

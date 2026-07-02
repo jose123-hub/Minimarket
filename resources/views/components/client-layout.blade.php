@@ -417,7 +417,17 @@
 
             .client-avatar-link:hover {
                opacity: 0.85;
-             }
+            }
+            .client-notification-item {
+              display: block;
+              text-decoration: none;
+              color: inherit;
+              cursor: pointer;
+            }
+
+            .client-notification-item:hover {
+              background: #f9fafb;
+            }
     </style>
 
     {{ $styles ?? '' }}
@@ -505,10 +515,10 @@
             <path d="M13.73 21a2 2 0 01-3.46 0"/>
         </svg>
 
-        @if(($clientNotificationCount ?? 0) > 0)
-            <span class="client-notification-dot">
-                {{ $clientNotificationCount > 9 ? '9+' : $clientNotificationCount }}
-            </span>
+        @if(($ClientNotificationCount ?? 0) > 0)
+          <span class="notification-dot" id="portal-notification-count">
+        {{ $ClientNotificationCount > 9 ? '9+' : $ClientNotificationCount }}
+         </span>
         @endif
     </button>
 
@@ -519,15 +529,20 @@
         </div>
 
         @forelse($clientNotifications ?? [] as $notification)
-            <div class="client-notification-item {{ $notification['type'] ?? '' }}">
-                <strong>{{ $notification['title'] }}</strong>
-                <p>{{ $notification['message'] }}</p>
-            </div>
+       <a href="{{ $notification['url'] ?? '#' }}"
+       class="client-notification-item {{ $notification['type'] ?? '' }}"
+       data-client-notification-key="{{ $notification['key'] ?? md5($notification['title']) }}"
+       onclick="dismissClientNotification(event, this)">
+        <strong>{{ $notification['title'] }}</strong>
+        <p>{{ $notification['message'] }}</p>
+        </a>
         @empty
-            <div class="client-notification-empty">
-                No notifications for now.
-            </div>
+         <div class="client-notification-empty">No notifications for now.</div>
         @endforelse
+
+        <div class="client-notification-empty" id="client-notification-empty-js" style="display:none;">
+        No notifications for now.
+      </div>
      </div>
     </div>
 
@@ -583,6 +598,87 @@
             document.getElementById('client-notification-dropdown')?.classList.remove('open');
         }
     });
+
+    function getDismissedClientNotifications() {
+    const saved = localStorage.getItem('dismissed_client_notifications');
+
+    if (!saved) {
+        return {};
+    }
+
+    try {
+        return JSON.parse(saved);
+    } catch (e) {
+        return {};
+    }
+}
+
+function saveDismissedClientNotifications(data) {
+    localStorage.setItem('dismissed_client_notifications', JSON.stringify(data));
+}
+
+function updateClientNotificationCount() {
+    const items = document.querySelectorAll('.client-notification-item');
+    let visibleCount = 0;
+
+    for (let i = 0; i < items.length; i++) {
+        if (items[i].style.display !== 'none') {
+            visibleCount++;
+        }
+    }
+
+    const countBadge = document.getElementById('client-notification-count');
+    const emptyBox = document.getElementById('client-notification-empty-js');
+
+    if (countBadge) {
+        if (visibleCount === 0) {
+            countBadge.remove();
+        } else {
+            countBadge.textContent = visibleCount > 9 ? '9+' : visibleCount;
+        }
+    }
+
+    if (emptyBox) {
+        emptyBox.style.display = visibleCount === 0 ? 'block' : 'none';
+    }
+}
+
+function loadDismissedClientNotifications() {
+    const dismissed = getDismissedClientNotifications();
+    const items = document.querySelectorAll('.client-notification-item');
+
+    for (let i = 0; i < items.length; i++) {
+        const key = items[i].dataset.clientNotificationKey;
+
+        if (dismissed[key] === true) {
+            items[i].style.display = 'none';
+        }
+    }
+
+    updateClientNotificationCount();
+}
+
+function dismissClientNotification(event, element) {
+    event.preventDefault();
+
+    const key = element.dataset.clientNotificationKey;
+    const url = element.getAttribute('href');
+
+    const dismissed = getDismissedClientNotifications();
+    dismissed[key] = true;
+    saveDismissedClientNotifications(dismissed);
+
+    element.style.display = 'none';
+    updateClientNotificationCount();
+
+    setTimeout(function () {
+        window.location.href = url;
+    }, 150);
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    loadDismissedClientNotifications();
+});
 </script>
 
 <script>
